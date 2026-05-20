@@ -119,6 +119,9 @@ switch (JavaVersion.current()) {
 }
 
 task setLocalRepo(type:Exec) {
+    onlyIf {
+        file("${rootDir}/.git").exists()
+    }
     commandLine 'git', 'worktree', 'list'
     standardOutput = new ByteArrayOutputStream()
     doLast {
@@ -130,6 +133,9 @@ task setLocalRepo(type:Exec) {
 // No group so it does not show up in the output of `gradlew tasks`
 task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     description = 'Copies git hooks to .git directory'
+    onlyIf {
+        file("${rootDir}/.git").exists()
+    }
     from files('checker/bin-devel/git.post-merge', 'checker/bin-devel/git.pre-commit')
     rename('git\\.(.*)', '$1')
     into localRepo + '/hooks'
