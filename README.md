@@ -11,12 +11,6 @@ The artifact has two evaluation tracks:
 - [Rocq formalization](Artifact-Evaluation-Rocq.md): mechanized model and proofs in `pico-rocq/`.
 - [PICO implementation in a modified Checker Framework](Artifact-Evaluation-Checker.md): PICO checker, tests, benchmarks, and annotated JDK case study.
 
-To create an anonymous archive for artifact distribution:
-
-```bash
-scripts/package-artifact.sh
-```
-
 Quick start:
 
 ```bash
