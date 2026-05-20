@@ -56,7 +56,7 @@ echo
 echo "=== Step 1: Checker Framework / JDK Evaluation ==="
 cd "${WORKSPACE}/checker-framework"
 
-run_logged "assembleforjavac" "${CHECKER_RESULTS_DIR}/assembleforjavac.log" ./gradlew assembleforjavac
+run_logged "assembleforjavac" "${CHECKER_RESULTS_DIR}/assembleforjavac.log" bash ./gradlew assembleforjavac
 
 mapfile -t JDK_UTIL_FILES < <(sed 's#^#'"${JDK_UTIL_DIR}"'/#' "${TYPECHECKED_LIST}")
 
@@ -85,8 +85,8 @@ echo "JDK checker exit status: ${JDK_CHECKER_STATUS}"
 echo "JDK checker log: ${CHECKER_RESULTS_DIR}/compile.log"
 echo "Completed JDK checker in $(format_seconds "${JDK_CHECKER_SECONDS}")"
 
-run_logged "PICOConstrictorTest" "${CHECKER_RESULTS_DIR}/PICOConstrictorTest.log" ./gradlew PICOConstrictorTest
-run_logged "PICOMutableDefaultTest" "${CHECKER_RESULTS_DIR}/PICOMutableDefaultTest.log" ./gradlew PICOMutableDefaultTest
+run_logged "PICOConstrictorTest" "${CHECKER_RESULTS_DIR}/PICOConstrictorTest.log" bash ./gradlew PICOConstrictorTest
+run_logged "PICOMutableDefaultTest" "${CHECKER_RESULTS_DIR}/PICOMutableDefaultTest.log" bash ./gradlew PICOMutableDefaultTest
 
 echo
 echo "=== Step 2: Annotation and Suppression Counts ==="

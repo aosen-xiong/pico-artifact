@@ -59,7 +59,7 @@ Build the Checker Framework javac wrapper:
 
 ```bash
 cd /workspace/checker-framework
-./gradlew assembleforjavac
+bash ./gradlew assembleforjavac
 ```
 
 Observed warm-run time: about 1 minute 15 seconds. Recommended budget: 2-3 minutes, depending on Gradle cache state.
@@ -115,8 +115,8 @@ Run the two focused PICO test suites:
 
 ```bash
 cd /workspace/checker-framework
-./gradlew PICOConstrictorTest
-./gradlew PICOMutableDefaultTest
+bash ./gradlew PICOConstrictorTest
+bash ./gradlew PICOMutableDefaultTest
 ```
 
 Expected result: both Gradle tasks finish successfully.
