@@ -94,6 +94,9 @@ tasks.register('cloneAnnotatedJdk', CloneTask) {
     description = 'Obtain or update the annotated JDK.'
     url.set('https://github.com/eisop/jdk.git')
     directory.set(file(annotatedJdkHome))
+    onlyIf {
+        !file("${annotatedJdkHome}/src").exists()
+    }
     outputs.upToDateWhen { false }
 }
 
