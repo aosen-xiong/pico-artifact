@@ -1,0 +1,2 @@
+Note: /workspace/jdk/src/java.base/share/classes/java/util/Collections.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.

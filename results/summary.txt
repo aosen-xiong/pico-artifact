@@ -1,0 +1,23 @@
+Artifact evaluation completed.
+
+Checker Framework / JDK:
+  assembleforjavac log: /workspace/results/checker/assembleforjavac.log
+  JDK checker log: /workspace/results/checker/compile.log
+  JDK checker exit status: 0
+  PICOConstrictorTest log: /workspace/results/checker/PICOConstrictorTest.log
+  PICOMutableDefaultTest log: /workspace/results/checker/PICOMutableDefaultTest.log
+
+Annotation counts:
+  LaTeX: /workspace/results/counts/java-util-annotation-counts.tex
+  CSV: /workspace/results/counts/java-util-annotation-counts.csv
+  Text: /workspace/results/counts/java-util-annotation-counts.txt
+
+Rocq:
+  make log: /workspace/results/rocq/make.log
+  make check log: /workspace/results/rocq/make-check.log
+  Alectryon HTML: /workspace/results/rocq/alectryon/index.html
+  Alectryon log: /workspace/results/rocq/alectryon-doc.log
+
+Timings:
+  TSV: /workspace/results/timings.tsv
+  Markdown: /workspace/results/timings.md

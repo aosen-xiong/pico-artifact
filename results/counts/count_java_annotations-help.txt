@@ -1,0 +1,39 @@
+Usage: count_java_annotations.pl [options] [files or directories]
+
+Count Java annotations in .java files
+
+Options:
+  -a, --annotation <name>   Count only specified annotation(s). Can be used multiple times.
+                            Examples: -a @Override -a @Test
+                            Note: Include the @ symbol or not, both work.
+  -s, --suppress-prefix <prefix>
+                            Count @SuppressWarnings values that start with the prefix.
+                            Can be used multiple times. Example: -s pico
+  -f, --file <filename>     Read list of files from a file (one filename per line)
+  -c, --case-sensitive      Make annotation matching case-sensitive (default: case-insensitive)
+  -t, --table               Output results as CSV table format
+  -l, --latex               Output results as LaTeX table format
+  -h, --help                Show this help message
+
+Examples:
+  # Count all annotations in a directory
+  count_java_annotations.pl src/
+  
+  # Count only @Test annotations
+  count_java_annotations.pl -a @Test src/test/
+
+  # Count @SuppressWarnings entries whose warning key starts with pico
+  count_java_annotations.pl -s pico src/
+  
+  # CSV table format with specific annotations as columns
+  count_java_annotations.pl -t -a @Test -a @Override -a @Deprecated src/
+
+  # LaTeX table format
+  count_java_annotations.pl -l -a @Test -a @Override -a @Deprecated src/
+
+  # Read files from a file
+  count_java_annotations.pl -f filelist.txt -a @Override
+  
+  # Case-sensitive matching
+  count_java_annotations.pl -c -a @Override src/
+

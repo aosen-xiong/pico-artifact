@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html class="alectryon-standalone"><head><title>ViewpointAdaptation.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.1
+compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Abstract Immutability VPA *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_qq_abs_imm</span> (<span class="nv">q1</span>: q)(<span class="nv">q2</span> : q) : q :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | RO, RDM =&gt; Lost
+    | q1, RDM =&gt; q1
+    | _, q2 =&gt; q2
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_tt_abs_imm</span> (<span class="nv">t1</span>: qualified_type)(<span class="nv">t2</span> : qualified_type) : qualified_type :=
+  <span class="k">match</span> (sqtype t1), (sqtype t2) <span class="k">with</span>
+    | RO, RDM =&gt; Build_qualified_type Lost (sctype t2)
+    | q1, RDM =&gt; Build_qualified_type q1 (sctype t2)
+    | _, _ =&gt; t2
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_stype_fld_abs_imm</span> (<span class="nv">q1</span>: q)(<span class="nv">q2</span> : q_f) : q :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | RO, RDM_f =&gt; Lost
+    | q1, RDM_f =&gt; q1
+    | _, Imm_f =&gt; Imm
+    | _, Mut_f =&gt; Mut
+    | _, RO_f =&gt; RO
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Safe Readonly VPA *)</span>
+
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_qq_safe_ro</span> (<span class="nv">q1</span>: q)(<span class="nv">q2</span> : q) : q :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | RO, RDM =&gt; Lost
+    | q1, RDM =&gt; q1
+    | _, Mut =&gt; Lost
+    | _, q2 =&gt; q2
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_tt_safe_ro</span> (<span class="nv">t1</span>: qualified_type)(<span class="nv">t2</span> : qualified_type) : qualified_type :=
+  <span class="k">match</span> (sqtype t1), (sqtype t2) <span class="k">with</span>
+    | RO, RDM =&gt; Build_qualified_type Lost (sctype t2)
+    | q1, RDM =&gt; Build_qualified_type q1 (sctype t2)
+    | _, Mut =&gt; Build_qualified_type Lost (sctype t2)
+    | _, _ =&gt; t2
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_stype_fld_safe_ro</span> (<span class="nv">q1</span>: q)(<span class="nv">q2</span> : q_f) : q :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | RO, RDM_f =&gt; Lost
+    | q1, RDM_f =&gt; q1
+    | _, Imm_f =&gt; Imm
+    | _, Mut_f =&gt; Lost
+    | _, RO_f =&gt; RO
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Viewpoint adaptation of assignability qualifiers *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_assignability</span> (<span class="nv">q1</span>: q) (<span class="nv">a1</span>: a) : a :=
+  <span class="k">match</span> q1, a1 <span class="k">with</span>
+    | Mut, RDA =&gt; Assignable
+    | _, Assignable =&gt; Assignable
+    | _, _ =&gt; Final
+  <span class="k">end</span>.</span><span class="alectryon-wsp">  
+</span></span><span class="alectryon-txt">
+<span class="c">(* Concrete Immutability *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_assignability_concret_imm</span> (<span class="nv">q1</span>: q) (<span class="nv">a1</span>: a) : a :=
+  <span class="k">match</span> q1, a1 <span class="k">with</span>
+    | Mut, RDA =&gt; Assignable
+    | Mut, Assignable =&gt; Assignable
+    | _, _ =&gt; Final
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Check whether a type respect its bound *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_bound</span> (<span class="nv">q1</span>: q)(<span class="nv">q2</span> : q_c) : q :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | RO, RDM_c =&gt; Lost
+    | q1, RDM_c =&gt; q1
+    | _, Imm_c =&gt; Imm
+    | _, Mut_c =&gt; Mut
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Check whether a field declaration respect its bound *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_fld_bound</span> (<span class="nv">q1</span>: q_f)(<span class="nv">q2</span> : q_c) : q_f :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | Imm_f, RDM_c =&gt; Imm_f
+    | Mut_f, RDM_c =&gt; Mut_f
+    | RDM_f, RDM_c =&gt; RDM_f
+    | RO_f, RDM_c =&gt; RO_f <span class="c">(* This is not the rule used to check assignability, use it for wellformedness only*)</span>
+    | _, Imm_c =&gt; Imm_f
+    | _, Mut_c =&gt; Mut_f
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+
+
+<span class="c">(* Adapting field type from constructor *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_constructor_fld</span> (<span class="nv">q1</span>: q_c)(<span class="nv">q2</span> : q_f) : q :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | Imm_c, RDM_f =&gt; Imm
+    | Mut_c, RDM_f =&gt; Mut
+    | RDM_c, RDM_f =&gt; RDM
+    | _, Imm_f =&gt; Imm
+    | _, Mut_f =&gt; Mut
+    | _, RO_f =&gt; RO
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Adapting field type from a runtime type *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_rec_fld</span> (<span class="nv">q1</span>: q_r)(<span class="nv">q2</span> : q_f) : q :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | Imm_r, RDM_f =&gt; Imm
+    | Mut_r, RDM_f =&gt; Mut
+    | _, Imm_f =&gt; Imm
+    | _, Mut_f =&gt; Mut
+    | _, RO_f =&gt; RO
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Used to exam runtime typability based on its context, </span>
+<span class="c">for example, m(Imm C this, RDM C c), </span>
+<span class="c">the value of c is a Imm obj at runtime but is typable because Imm |&gt; RDM = Imm *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_rs</span> (<span class="nv">q1</span>: q_r)(<span class="nv">q2</span> : q) : q :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | Imm_r, RDM =&gt; Imm
+    | Mut_r, RDM =&gt; Mut
+    | _, q2 =&gt; q2
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(*  Adapted object creation for operational semantics *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutabilty_object_creation</span> (<span class="nv">q1</span>: q_r)(<span class="nv">q2</span> : q_c) : q_r :=
+  <span class="k">match</span> q1, q2 <span class="k">with</span>
+    | Imm_r, RDM_c =&gt; Imm_r
+    | Mut_r, RDM_c =&gt; Mut_r
+    | _, Imm_c =&gt; Imm_r
+    | _, Mut_c =&gt; Mut_r
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+
+<span class="c">(* ################################################################# *)</span></span></pre></article></body></html>

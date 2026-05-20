@@ -4,11 +4,10 @@
 .idea/
 .vscode/
 
-# Artifact evaluation outputs
-results/
-alectryon/
-*.log
-*.exit-status
+# Local scratch outputs
+/alectryon/
+/*.log
+/*.exit-status
 *.class
 
 # Rocq generated files

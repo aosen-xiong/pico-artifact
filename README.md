@@ -15,11 +15,13 @@ Quick start:
 
 ```bash
 docker build -t pico-artifact:latest .
+rm -rf results
 mkdir -p results
 docker run --rm -it \
   -v "$PWD/results:/workspace/results" \
   pico-artifact:latest
 ```
 
-On the authors' Docker Desktop run, the image build took about 8 minutes. A warm automated evaluation after the image is built takes about 2-3 minutes.
+The evaluation outputs are preserved on the host under `./results`.
 
+On the authors' Docker Desktop run, the image build took about 8 minutes. A warm automated evaluation after the image is built takes about 2-3 minutes.

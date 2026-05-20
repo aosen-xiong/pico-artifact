@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="alectryon-standalone"><head><title>Tactics.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.1
+compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-txt"><span class="c">(* ------------------------------------------------------------------------ *)</span>
+<span class="c">(* Adapted from Celsius project : https://github.com/clementblaudeau/celsius *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require Export</span> String List Psatz Program.Tactics Arith.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Import</span> ListNotations.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Extern</span> <span class="mi">50</span> =&gt; <span class="bp">lia</span>: <span class="bp">lia</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Extern</span> <span class="mi">50</span> =&gt; <span class="nb">cbn</span>: <span class="nb">cbn</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Extern</span> <span class="mi">50</span> =&gt; <span class="nb">cbn</span>; <span class="nb">intuition</span> <span class="nb">auto</span>: cbn_intuition.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">options</span> :=
+<span class="nb">unfold</span> option_map <span class="k">in</span> *.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">invert_constructor_equalities</span> :=
+<span class="k">match goal with</span>
+| H: <span class="nl">?F</span> _ = <span class="nl">?F</span> _ |- _ =&gt; is_constructor F; <span class="nb">inversion</span> H; <span class="nb">clear</span> H
+| H: <span class="nl">?F</span> _ _ = <span class="nl">?F</span> _ _ |- _ =&gt; is_constructor F; <span class="nb">inversion</span> H; <span class="nb">clear</span> H
+| H: <span class="nl">?F</span> _ _ _ = <span class="nl">?F</span> _ _ _ |- _ =&gt; is_constructor F; <span class="nb">inversion</span> H; <span class="nb">clear</span> H
+| H: <span class="nl">?F</span> _ _ _ _ = <span class="nl">?F</span> _ _ _ _ |- _ =&gt; is_constructor F; <span class="nb">inversion</span> H; <span class="nb">clear</span> H
+| H: <span class="nl">?F</span> _ _ _ _ _ = <span class="nl">?F</span> _ _ _ _ _ |- _ =&gt; is_constructor F; <span class="nb">inversion</span> H; <span class="nb">clear</span> H
+| H: <span class="nl">?F</span> _ _ _ _ _ _ = <span class="nl">?F</span> _ _ _ _ _ _ |- _ =&gt; is_constructor F; <span class="nb">inversion</span> H; <span class="nb">clear</span> H
+<span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">destruct_exists</span> :=
+<span class="k">match goal with</span>
+| H: <span class="k">exists</span> <span class="nv">x</span>, _ |- _ =&gt; <span class="k">let</span> <span class="nv">freshX</span> := <span class="kp">fresh</span> x <span class="k">in</span>
+                  <span class="k">let</span> <span class="nv">matched</span> := <span class="kp">fresh</span> <span class="s2">&quot;matched_exists&quot;</span> <span class="k">in</span>
+                  <span class="nb">destruct</span> H <span class="k">as</span> [ freshX ] <span class="nb">eqn</span>:matched
+<span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">destruct_and</span> :=
+  <span class="k">match goal with</span>
+  | H: _ /\ _ |- _ =&gt; <span class="nb">destruct</span> H
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Rewrite</span> Bool.andb_true_iff: bools.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Rewrite</span> Bool.andb_false_iff: bools.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Rewrite</span> Bool.orb_true_iff: bools.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Rewrite</span> Bool.orb_false_iff: bools.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Rewrite</span> Bool.negb_true_iff: bools.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Rewrite</span> Bool.negb_false_iff: bools.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">bools</span> := <span class="nb">autorewrite with</span> bools <span class="k">in</span> *.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">destruct_match</span> :=
+<span class="k">match goal with</span>
+| [ |- <span class="kp">context</span>[<span class="k">match</span> <span class="nl">?t</span> <span class="k">with</span> _ =&gt; _ <span class="k">end</span>]] =&gt;
+<span class="k">let</span> <span class="nv">matched</span> := <span class="kp">fresh</span> <span class="s2">&quot;matched&quot;</span> <span class="k">in</span>
+<span class="nb">destruct</span> t <span class="nb">eqn</span>:matched
+| [ H: <span class="kp">context</span>[<span class="k">match</span> <span class="nl">?t</span> <span class="k">with</span> _ =&gt; _ <span class="k">end</span>] |- _ ] =&gt;
+<span class="k">let</span> <span class="nv">matched</span> := <span class="kp">fresh</span> <span class="s2">&quot;matched&quot;</span> <span class="k">in</span>
+<span class="nb">destruct</span> t <span class="nb">eqn</span>:matched
+<span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">flatten</span> :=
+  <span class="kp">repeat</span> <span class="nb">subst</span> ||
+         <span class="k">match goal with</span>
+         | H : _ \/ _ |- _ =&gt; <span class="k">let</span> <span class="nv">fresh1</span> := <span class="kp">fresh</span> H <span class="k">in</span>
+                           <span class="k">let</span> <span class="nv">fresh2</span> := <span class="kp">fresh</span> H <span class="k">in</span> <span class="nb">destruct</span> H <span class="k">as</span> [fresh1 | fresh2]
+         | H : _ /\ _ |- _ =&gt; <span class="k">let</span> <span class="nv">fresh1</span> := <span class="kp">fresh</span> H <span class="k">in</span>
+                           <span class="k">let</span> <span class="nv">fresh2</span> := <span class="kp">fresh</span> H <span class="k">in</span> <span class="nb">destruct</span> H <span class="k">as</span> [fresh1 fresh2]
+         | H : <span class="k">exists</span> <span class="nv">a</span>, _  |- _ =&gt; <span class="k">let</span> <span class="nv">fresh_a</span> := <span class="kp">fresh</span> a <span class="k">in</span> <span class="nb">destruct</span> H <span class="k">as</span> [fresh_a H]
+         <span class="k">end</span> || invert_constructor_equalities.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">ground</span> :=
+  <span class="kp">repeat</span> destruct_match || flatten.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">light</span> :=
+  (<span class="nb">intros</span>) ||
+  (<span class="nb">intuition</span> <span class="nb">auto</span>) ||
+  (<span class="bp">congruence</span>) ||
+  (<span class="nb">subst</span>) ||
+  (<span class="nb">cbn</span> <span class="k">in</span> *) ||
+  (autounfold <span class="k">in</span> *)
+.</span></span></pre><div class="doc">
+Taken from Cpdt 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --></pre><div class="doc">
+Succeed iff <span class="inlinecode"><span class="id" title="var">x</span></span> is in the list <span class="inlinecode"><span class="id" title="var">ls</span></span>, represented with left-associated nested tuples. 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">inList</span> x ls :=
+  <span class="k">match</span> ls <span class="k">with</span>
+    | x =&gt; <span class="kp">idtac</span>
+    | (_, x) =&gt; <span class="kp">idtac</span>
+    | (<span class="nl">?LS</span>, _) =&gt; inList x LS
+  <span class="k">end</span>.</span></span></pre><div class="doc">
+Taken from Cpdt 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">step_inversion</span> predicates :=
+  <span class="k">let</span> <span class="nv">invert</span> <span class="nv">H</span> <span class="nv">F</span> :=
+    inList F predicates;
+      (<span class="nb">inversion</span> H; <span class="kp">fail</span>) ||
+      (<span class="nb">inversion</span> H; [ <span class="kp">idtac</span> ]; <span class="nb">clear</span> H)
+  <span class="k">in</span>
+  <span class="k">match goal with</span>
+    | [ H: <span class="nl">?F</span> _ |- _ ] =&gt; invert H F
+    | [ H: <span class="nl">?F</span> _ _ |- _ ] =&gt; invert H F
+    | [ H: <span class="nl">?F</span> _ _ _ |- _ ] =&gt; invert H F
+    | [ H: <span class="nl">?F</span> _ _ _ _ |- _ ] =&gt; invert H F
+    | [ H: <span class="nl">?F</span> _ _ _ _ _ |- _ ] =&gt; invert H F
+    | [ H: <span class="nl">?F</span> _ _ _ _ _ _ |- _ ] =&gt; invert H F
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">containsExistential</span> := <span class="k">match goal with</span>
+  | [ |- <span class="nl">?G</span> ]  =&gt; <span class="nb">has_evar</span> G
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">noExistential</span> := <span class="k">tryif</span> containsExistential <span class="k">then</span> <span class="kp">fail</span> <span class="k">else</span> <span class="kp">idtac</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">removeDuplicateProps</span> := <span class="k">match goal with</span>
+  | [ H1: <span class="nl">?P</span>, H2: <span class="nl">?P</span> |- _ ] =&gt;
+    <span class="k">match</span> <span class="kp">type of</span> P <span class="k">with</span>
+    | <span class="kt">Prop</span> =&gt; <span class="kp">idtac</span>
+    <span class="k">end</span>;  <span class="nb">clear</span> H2
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">isThere</span> P := <span class="k">match goal with</span>
+  | H: <span class="nl">?Q</span> |- _ =&gt; <span class="nb">unify</span> P Q
+<span class="c">(*  | |- ?Q =&gt; unify P Q *)</span>
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">notThere</span> P := <span class="k">tryif</span> (isThere P) <span class="k">then</span> <span class="kp">fail</span> <span class="k">else</span> <span class="kp">idtac</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">not_var</span> P := <span class="k">tryif</span> (<span class="nb">is_var</span> P) <span class="k">then</span> <span class="kp">fail</span> <span class="k">else</span> <span class="kp">idtac</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">noUnify</span> P Q := <span class="k">tryif</span> (<span class="nb">unify</span> P Q) <span class="k">then</span> <span class="kp">fail</span> <span class="k">else</span> <span class="kp">idtac</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">strong_and</span>:
+  <span class="k">forall</span> (<span class="nv">A</span> <span class="nv">B</span>: <span class="kt">Prop</span>), A -&gt; (A -&gt; B) -&gt; (<span class="k">exists</span> <span class="nv">_</span>: A, B).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">step_gen</span> := <span class="k">match goal with</span>
+  | _ =&gt; <span class="kp">progress</span> light
+  | _ =&gt; <span class="nb">apply</span> strong_and
+  | H: <span class="k">exists</span> <span class="nv">x</span>, _ |- _ =&gt;
+    <span class="k">let</span> <span class="nv">x&#39;</span> := <span class="kp">fresh</span> x <span class="k">in</span>
+    <span class="nb">destruct</span> H <span class="k">as</span> [ x&#39; ]
+  | [ p: <span class="nl">?A</span>*<span class="nl">?B</span> |- _ ] =&gt; <span class="nb">destruct</span> p
+  | [ H: (_,_) = (_,_) |- _ ] =&gt; <span class="nb">inversion</span> H; <span class="nb">clear</span> H
+  | H: _ |- _ =&gt; <span class="nb">injection</span> H; <span class="nb">clear</span> H
+  | |- NoDup _ =&gt; <span class="nb">constructor</span>
+  | H: <span class="k">forall</span> <span class="nv">a</span>, _ -&gt; _ |- _ =&gt; <span class="nb">pose proof</span> (H _ eq_refl); <span class="nb">clear</span> H
+  | H: <span class="k">forall</span> <span class="nv">a</span> <span class="nv">b</span>, _ -&gt; _ |- _ =&gt; <span class="nb">pose proof</span> (H _ _ eq_refl); <span class="nb">clear</span> H
+  | H: <span class="k">forall</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span>, _ -&gt; _ |- _ =&gt; <span class="nb">pose proof</span> (H _ _ _ eq_refl); <span class="nb">clear</span> H
+  | H: <span class="k">forall</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span>, _ -&gt; _ |- _ =&gt; <span class="nb">pose proof</span> (H _ _ _ _ eq_refl); <span class="nb">clear</span> H
+  | H: <span class="k">forall</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span>, _ -&gt; _ |- _ =&gt; <span class="nb">pose proof</span> (H _ _ _ _ _ eq_refl); <span class="nb">clear</span> H
+  | [ |- <span class="kp">context</span>[<span class="k">match</span> <span class="nl">?t</span> <span class="k">with</span> _ =&gt; _ <span class="k">end</span>]] =&gt;
+      <span class="k">let</span> <span class="nv">matched</span> := <span class="kp">fresh</span> <span class="s2">&quot;matched&quot;</span> <span class="k">in</span>
+      <span class="nb">destruct</span> t <span class="nb">eqn</span>:matched
+  | [ H: <span class="kp">context</span>[<span class="k">match</span> <span class="nl">?t</span> <span class="k">with</span> _ =&gt; _ <span class="k">end</span>] |- _ ] =&gt;
+      <span class="k">let</span> <span class="nv">matched</span> := <span class="kp">fresh</span> <span class="s2">&quot;matched&quot;</span> <span class="k">in</span>
+      <span class="nb">destruct</span> t <span class="nb">eqn</span>:matched
+  | _ =&gt; removeDuplicateProps
+  | H := _: <span class="nl">?T</span> |- _ =&gt; noUnify T string; <span class="nb">clearbody</span> H
+  | _ =&gt; noExistential; <span class="kp">solve</span> [ <span class="nb">constructor</span> ]
+  | _ =&gt; noExistential; <span class="kp">solve</span> [ <span class="nb">constructor</span>; <span class="nb">constructor</span> ]
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">step</span> := step_gen || step_inversion (List.Forall, List.In).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">steps</span> := <span class="kp">repeat</span> step.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">apply_any</span> :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">apply</span> H
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">rewrite_any</span> :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">rewrite</span> H <span class="k">in</span> *
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">erewrite_any</span> :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">erewrite</span> H <span class="k">in</span> *
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">rewrite_back_any</span> :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">rewrite</span> &lt;- H <span class="k">in</span> *
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">eapply_any</span> :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">eapply</span> H
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">apply_anywhere</span> f :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">apply</span> f <span class="k">in</span> H
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">eapply_anywhere</span> f :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">eapply</span> f <span class="k">in</span> H
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">rewrite_anywhere</span> f :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">rewrite</span> f <span class="k">in</span> H
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">erewrite_anywhere</span> f :=
+  <span class="k">match goal with</span>
+  | H: _ |- _ =&gt; <span class="nb">erewrite</span> f <span class="k">in</span> H
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">destruct_eq</span> H :=
+  <span class="k">match</span> H <span class="k">with</span>
+  | <span class="nl">?a</span> = <span class="nl">?b</span> =&gt;
+      <span class="k">let</span> <span class="nv">fresh_H</span> := <span class="kp">fresh</span> <span class="s2">&quot;Heq&quot;</span> <span class="k">in</span> <span class="nb">pose proof</span> (PeanoNat.Nat.eq_dec a b) <span class="k">as</span> [fresh_H | fresh_H]
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">modus_ponens</span> :=
+  <span class="kp">repeat</span> <span class="k">match goal with</span>
+         | H1 : <span class="nl">?P</span> -&gt; <span class="nl">?Q</span>, H2: <span class="nl">?P</span> |- _ =&gt; <span class="nb">pose proof</span> (H1 H2) ; <span class="nb">clear</span> H1 <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">nat_le_trans</span> :=
+  <span class="kp">repeat</span> <span class="k">match goal with</span>
+  |H1: <span class="nl">?a</span> &lt;= <span class="nl">?b</span>, H2: <span class="nl">?b</span> &lt;= <span class="nl">?c</span> |- _ =&gt;
+   <span class="k">match goal with</span>
+   | H3 : a &lt;= c |- _ =&gt; <span class="kp">fail</span> <span class="mi">1</span>
+   | _ =&gt; <span class="nb">assert</span> (a &lt;= c) <span class="bp">by</span> <span class="bp">lia</span>
+   <span class="k">end</span>
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">modus</span> :=
+  <span class="kp">repeat</span> <span class="k">match goal with</span>
+         | H: <span class="nl">?A</span> -&gt; <span class="nl">?B</span>, H&#39;: <span class="nl">?A</span> |- _ =&gt; <span class="nb">specialize</span> (H H&#39;)
+         <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+
+
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">app_eq_nil</span> :=
+  <span class="kp">repeat</span> <span class="k">match goal with</span>
+         | H: nil = _ ++ (_ :: _) |- _ =&gt; <span class="nb">symmetry in</span> H
+         | H: _ ++ (_ :: _) = nil |- _ =&gt;
+             <span class="nb">exfalso</span>; <span class="nb">apply</span> app_eq_nil <span class="k">in</span> H <span class="k">as</span> [_ H];
+             <span class="nb">inversion</span> H
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Extern</span> <span class="mi">1</span> =&gt; app_eq_nil: core.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Export</span> LibTactics.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">cross_rewrites</span> :=
+  <span class="kp">repeat</span> <span class="k">match goal with</span>
+         | H: <span class="nl">?A</span> = <span class="nl">?B</span>, H&#39;: <span class="nl">?A</span> = <span class="nl">?C</span> |- _ =&gt; <span class="nb">rewrite</span> H <span class="k">in</span> H&#39;; inverts H&#39;
+         <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Global</span> <span class="kn">Hint Extern</span> <span class="mi">1</span> =&gt; cross_rewrites: core.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">destruct_if_eqb</span>:=
+  <span class="k">match goal with</span>
+  | H : <span class="kp">context</span> [<span class="k">if</span> Nat.eqb <span class="nl">?a</span> <span class="nl">?b</span> <span class="k">then</span> _ <span class="k">else</span> _ ] |- _ =&gt;
+      <span class="k">let</span> <span class="nv">Heq</span> := <span class="kp">fresh</span> <span class="s2">&quot;Heq&quot;</span> <span class="k">in</span>
+      <span class="nb">destruct</span> (Nat.eqb a b) <span class="nb">eqn</span>:Heq;
+      [<span class="nb">apply</span> PeanoNat.Nat.eqb_eq <span class="k">in</span> Heq ; rewrites Heq <span class="k">in</span> * ; <span class="nb">clear</span> Heq | <span class="nb">apply</span> PeanoNat.Nat.eqb_neq <span class="k">in</span> Heq ]
+  <span class="k">end</span>.</span></span></pre></article></body></html>

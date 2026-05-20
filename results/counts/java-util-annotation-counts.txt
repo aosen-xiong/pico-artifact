@@ -1,0 +1,437 @@
+
+================================================================================
+Java Annotation Count Report
+================================================================================
+Total files with annotations: 50
+Total annotations found: 4055
+
+--------------------------------------------------------------------------------
+Annotation Summary (by type)
+--------------------------------------------------------------------------------
+Annotation                                              Count
+--------------------------------------------------------------------------------
+@Readonly                                                1919
+@Mutable                                                  736
+@PolyMutable                                              650
+@Immutable                                                349
+@ReceiverDependentMutable                                 241
+@SuppressWarnings:pico                                     94
+@Assignable                                                66
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Per-File Annotation Details
+--------------------------------------------------------------------------------
+
+File: AbstractCollection.java
+  Total annotations: 28
+  Breakdown:
+    @Readonly                                :    16
+    @Mutable                                 :     6
+    @PolyMutable                             :     5
+    @ReceiverDependentMutable                :     1
+
+File: AbstractList.java
+  Total annotations: 70
+  Breakdown:
+    @Readonly                                :    25
+    @Mutable                                 :    22
+    @PolyMutable                             :    10
+    @ReceiverDependentMutable                :     9
+    @Assignable                              :     4
+
+File: AbstractMap.java
+  Total annotations: 47
+  Breakdown:
+    @Readonly                                :    24
+    @PolyMutable                             :     9
+    @Mutable                                 :     5
+    @Immutable                               :     4
+    @SuppressWarnings:pico                   :     2
+    @Assignable                              :     2
+    @ReceiverDependentMutable                :     1
+
+File: AbstractQueue.java
+  Total annotations: 7
+  Breakdown:
+    @Mutable                                 :     4
+    @Readonly                                :     2
+    @ReceiverDependentMutable                :     1
+
+File: AbstractSequentialList.java
+  Total annotations: 9
+  Breakdown:
+    @Mutable                                 :     4
+    @Readonly                                :     4
+    @ReceiverDependentMutable                :     1
+
+File: AbstractSet.java
+  Total annotations: 8
+  Breakdown:
+    @Readonly                                :     6
+    @ReceiverDependentMutable                :     1
+    @Mutable                                 :     1
+
+File: ArrayDeque.java
+  Total annotations: 93
+  Breakdown:
+    @Readonly                                :    54
+    @Mutable                                 :    31
+    @ReceiverDependentMutable                :     3
+    @PolyMutable                             :     3
+    @SuppressWarnings:pico                   :     2
+
+File: ArrayList.java
+  Total annotations: 182
+  Breakdown:
+    @Readonly                                :   104
+    @Mutable                                 :    49
+    @PolyMutable                             :    15
+    @ReceiverDependentMutable                :     7
+    @SuppressWarnings:pico                   :     7
+
+File: ArrayPrefixHelpers.java
+  Total annotations: 0
+  Breakdown:
+
+File: Arrays.java
+  Total annotations: 328
+  Breakdown:
+    @Readonly                                :   301
+    @SuppressWarnings:pico                   :    10
+    @PolyMutable                             :     9
+    @Mutable                                 :     4
+    @ReceiverDependentMutable                :     3
+    @Immutable                               :     1
+
+File: BitSet.java
+  Total annotations: 54
+  Breakdown:
+    @Readonly                                :    27
+    @Mutable                                 :    20
+    @ReceiverDependentMutable                :     3
+    @SuppressWarnings:pico                   :     3
+    @Assignable                              :     1
+
+File: Collection.java
+  Total annotations: 34
+  Breakdown:
+    @Readonly                                :    24
+    @Mutable                                 :     7
+    @PolyMutable                             :     2
+    @ReceiverDependentMutable                :     1
+
+File: Collections.java
+  Total annotations: 893
+  Breakdown:
+    @Readonly                                :   330
+    @PolyMutable                             :   230
+    @Immutable                               :   145
+    @Mutable                                 :   104
+    @ReceiverDependentMutable                :    60
+    @SuppressWarnings:pico                   :    13
+    @Assignable                              :    11
+
+File: Comparator.java
+  Total annotations: 16
+  Breakdown:
+    @Readonly                                :    13
+    @Immutable                               :     2
+    @ReceiverDependentMutable                :     1
+
+File: Comparators.java
+  Total annotations: 5
+  Breakdown:
+    @Readonly                                :     5
+
+File: Deque.java
+  Total annotations: 34
+  Breakdown:
+    @Mutable                                 :    18
+    @Readonly                                :    15
+    @ReceiverDependentMutable                :     1
+
+File: EmptyStackException.java
+  Total annotations: 1
+  Breakdown:
+    @ReceiverDependentMutable                :     1
+
+File: EnumMap.java
+  Total annotations: 124
+  Breakdown:
+    @Readonly                                :    60
+    @Mutable                                 :    24
+    @ReceiverDependentMutable                :    16
+    @PolyMutable                             :    13
+    @SuppressWarnings:pico                   :     7
+    @Assignable                              :     4
+
+File: EnumSet.java
+  Total annotations: 11
+  Breakdown:
+    @PolyMutable                             :     5
+    @Mutable                                 :     3
+    @ReceiverDependentMutable                :     2
+    @Readonly                                :     1
+
+File: Enumeration.java
+  Total annotations: 1
+  Breakdown:
+    @ReceiverDependentMutable                :     1
+
+File: FormatterClosedException.java
+  Total annotations: 1
+  Breakdown:
+    @ReceiverDependentMutable                :     1
+
+File: HashMap.java
+  Total annotations: 193
+  Breakdown:
+    @Readonly                                :    85
+    @Mutable                                 :    46
+    @PolyMutable                             :    24
+    @ReceiverDependentMutable                :    15
+    @Immutable                               :    13
+    @Assignable                              :     6
+    @SuppressWarnings:pico                   :     4
+
+File: HashSet.java
+  Total annotations: 36
+  Breakdown:
+    @Readonly                                :    19
+    @Mutable                                 :     6
+    @ReceiverDependentMutable                :     6
+    @Immutable                               :     3
+    @SuppressWarnings:pico                   :     2
+
+File: Hashtable.java
+  Total annotations: 161
+  Breakdown:
+    @Readonly                                :    84
+    @Mutable                                 :    40
+    @PolyMutable                             :    10
+    @ReceiverDependentMutable                :    10
+    @Assignable                              :     9
+    @Immutable                               :     4
+    @SuppressWarnings:pico                   :     4
+
+File: IdentityHashMap.java
+  Total annotations: 193
+  Breakdown:
+    @Readonly                                :   107
+    @Mutable                                 :    40
+    @ReceiverDependentMutable                :    14
+    @PolyMutable                             :    11
+    @Immutable                               :     8
+    @Assignable                              :     7
+    @SuppressWarnings:pico                   :     6
+
+File: IllformedLocaleException.java
+  Total annotations: 1
+  Breakdown:
+    @ReceiverDependentMutable                :     1
+
+File: ImmutableCollections.java
+  Total annotations: 127
+  Breakdown:
+    @Readonly                                :    61
+    @Immutable                               :    51
+    @SuppressWarnings:pico                   :     6
+    @PolyMutable                             :     4
+    @Mutable                                 :     3
+    @ReceiverDependentMutable                :     1
+    @Assignable                              :     1
+
+File: InputMismatchException.java
+  Total annotations: 1
+  Breakdown:
+    @ReceiverDependentMutable                :     1
+
+File: Iterator.java
+  Total annotations: 5
+  Breakdown:
+    @Mutable                                 :     3
+    @ReceiverDependentMutable                :     1
+    @Readonly                                :     1
+
+File: JumboEnumSet.java
+  Total annotations: 0
+  Breakdown:
+
+File: KeyValueHolder.java
+  Total annotations: 9
+  Breakdown:
+    @Readonly                                :     7
+    @Immutable                               :     2
+
+File: LinkedHashMap.java
+  Total annotations: 93
+  Breakdown:
+    @Readonly                                :    36
+    @Mutable                                 :    28
+    @PolyMutable                             :    11
+    @ReceiverDependentMutable                :    10
+    @Assignable                              :     3
+    @SuppressWarnings:pico                   :     3
+    @Immutable                               :     2
+
+File: LinkedHashSet.java
+  Total annotations: 3
+  Breakdown:
+    @SuppressWarnings:pico                   :     1
+    @Immutable                               :     1
+    @ReceiverDependentMutable                :     1
+
+File: LinkedList.java
+  Total annotations: 120
+  Breakdown:
+    @Mutable                                 :    55
+    @Readonly                                :    42
+    @ReceiverDependentMutable                :     8
+    @PolyMutable                             :     6
+    @SuppressWarnings:pico                   :     6
+    @Assignable                              :     3
+
+File: List.java
+  Total annotations: 79
+  Breakdown:
+    @Readonly                                :    41
+    @Immutable                               :    15
+    @Mutable                                 :    12
+    @PolyMutable                             :    10
+    @ReceiverDependentMutable                :     1
+
+File: ListIterator.java
+  Total annotations: 10
+  Breakdown:
+    @Readonly                                :     5
+    @Mutable                                 :     4
+    @ReceiverDependentMutable                :     1
+
+File: Map.java
+  Total annotations: 106
+  Breakdown:
+    @Readonly                                :    43
+    @Immutable                               :    38
+    @Mutable                                 :    15
+    @PolyMutable                             :     7
+    @ReceiverDependentMutable                :     2
+    @SuppressWarnings:pico                   :     1
+
+File: NavigableMap.java
+  Total annotations: 38
+  Breakdown:
+    @PolyMutable                             :    30
+    @Readonly                                :     4
+    @Mutable                                 :     2
+    @ReceiverDependentMutable                :     1
+    @Immutable                               :     1
+
+File: NavigableSet.java
+  Total annotations: 23
+  Breakdown:
+    @PolyMutable                             :    14
+    @Readonly                                :     6
+    @Mutable                                 :     2
+    @ReceiverDependentMutable                :     1
+
+File: NoSuchElementException.java
+  Total annotations: 3
+  Breakdown:
+    @ReceiverDependentMutable                :     3
+
+File: Objects.java
+  Total annotations: 10
+  Breakdown:
+    @Readonly                                :    10
+
+File: Queue.java
+  Total annotations: 8
+  Breakdown:
+    @Mutable                                 :     4
+    @Readonly                                :     3
+    @ReceiverDependentMutable                :     1
+
+File: RegularEnumSet.java
+  Total annotations: 29
+  Breakdown:
+    @Readonly                                :    15
+    @Mutable                                 :    11
+    @ReceiverDependentMutable                :     3
+
+File: Set.java
+  Total annotations: 60
+  Breakdown:
+    @Readonly                                :    33
+    @Immutable                               :    18
+    @Mutable                                 :     6
+    @PolyMutable                             :     2
+    @ReceiverDependentMutable                :     1
+
+File: SortedMap.java
+  Total annotations: 18
+  Breakdown:
+    @PolyMutable                             :    13
+    @Readonly                                :     3
+    @ReceiverDependentMutable                :     1
+    @Immutable                               :     1
+
+File: SortedSet.java
+  Total annotations: 11
+  Breakdown:
+    @PolyMutable                             :     6
+    @Readonly                                :     3
+    @ReceiverDependentMutable                :     1
+    @Mutable                                 :     1
+
+File: Spliterator.java
+  Total annotations: 31
+  Breakdown:
+    @Mutable                                 :    20
+    @Readonly                                :     6
+    @ReceiverDependentMutable                :     5
+
+File: Spliterators.java
+  Total annotations: 34
+  Breakdown:
+    @Readonly                                :    30
+    @PolyMutable                             :     4
+
+File: Stack.java
+  Total annotations: 7
+  Breakdown:
+    @Readonly                                :     4
+    @Mutable                                 :     2
+    @ReceiverDependentMutable                :     1
+
+File: TreeMap.java
+  Total annotations: 525
+  Breakdown:
+    @PolyMutable                             :   177
+    @Readonly                                :   171
+    @Mutable                                 :    86
+    @Immutable                               :    39
+    @ReceiverDependentMutable                :    28
+    @Assignable                              :    14
+    @SuppressWarnings:pico                   :    10
+
+File: TreeSet.java
+  Total annotations: 58
+  Breakdown:
+    @Readonly                                :    22
+    @PolyMutable                             :    18
+    @Mutable                                 :     9
+    @ReceiverDependentMutable                :     4
+    @SuppressWarnings:pico                   :     4
+    @Immutable                               :     1
+
+File: Vector.java
+  Total annotations: 117
+  Breakdown:
+    @Readonly                                :    67
+    @Mutable                                 :    39
+    @ReceiverDependentMutable                :     5
+    @SuppressWarnings:pico                   :     3
+    @PolyMutable                             :     2
+    @Assignable                              :     1
+

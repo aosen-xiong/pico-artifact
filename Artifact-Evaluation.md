@@ -38,11 +38,14 @@ Use the insecure apt build argument only as a fallback for mirror problems.
 To run both tracks and keep the generated logs/tables on the host, run from the repository root:
 
 ```bash
+rm -rf results
 mkdir -p results
 docker run --rm -it \
   -v "$PWD/results:/workspace/results" \
   pico-artifact:latest
 ```
+
+The `rm -rf results` command removes stale output from previous runs so the new results are easy to inspect. Omit it if you want to keep an earlier run for comparison.
 
 The container starts in `/workspace` and runs:
 

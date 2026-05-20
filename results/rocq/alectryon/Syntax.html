@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html class="alectryon-standalone"><head><title>Syntax.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.1
+compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require</span> List.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Stdlib.Sets.Ensembles.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> RecordUpdate <span class="kn">Require Import</span> RecordSet.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> RecordUpdate <span class="kn">Require Import</span> RecordUpdate.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* ------------------SYNTAX------------------*)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">var</span> : <span class="kt">Type</span> := nat.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">method_name</span> : <span class="kt">Type</span> := nat.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">class_name</span> : <span class="kt">Type</span> := nat.</span></span></pre><div class="doc">
+All Mutability Qualifer 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q</span> : <span class="kt">Type</span> :=
+  <span class="c">(* q_c *)</span>
+  | Mut
+  | Imm
+  | RDM
+  <span class="c">(* q_f *)</span>
+  | RO
+  <span class="c">(* q_h *)</span>
+  | Lost
+  | Bot.</span><span class="alectryon-wsp">  </span></span></pre><div class="doc">
+User-facing Mutability Qualifier  
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q_f</span> : <span class="kt">Type</span> :=
+  <span class="c">(* q_c *)</span>
+  | Mut_f
+  | Imm_f
+  | RDM_f
+  <span class="c">(* q_f *)</span>
+  | RO_f.</span></span></pre><div class="doc">
+Class Declaration Mutability Qualifier 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q_c</span> : <span class="kt">Type</span> :=
+  <span class="c">(* q_c *)</span>
+  | Mut_c
+  | Imm_c
+  | RDM_c.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Assignability Qualifier *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">a</span> : <span class="kt">Type</span> :=
+  | Assignable
+  | Final
+  | RDA.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Qualified type  *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">qualified_type</span> := {
+  sqtype: q; <span class="c">(* Type qualifier *)</span>
+  sctype: class_name; <span class="c">(* Class name *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">s_env</span> := list qualified_type.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">expr</span> : <span class="kt">Type</span> :=
+  | ENull : expr
+  | EVar : var -&gt; expr
+  | EField : var -&gt; var -&gt; expr.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">stmt</span>: <span class="kt">Type</span> :=
+  | SSkip: stmt <span class="c">(* skip *)</span>
+  | SLocal: qualified_type -&gt; var -&gt; stmt <span class="c">(* T x*)</span>
+  | SVarAss: var -&gt; expr -&gt; stmt <span class="c">(* x = e *)</span>
+  | SFldWrite: var -&gt; var -&gt; var -&gt; stmt <span class="c">(* x.f = y *)</span>
+  | SNew: var -&gt; q_c -&gt; class_name -&gt; list var -&gt; stmt <span class="c">(* x = new q_c C(y1, ..., yn) *)</span>
+  | SCall: var -&gt; var -&gt; method_name -&gt; list var -&gt; stmt <span class="c">(* x = y.m(z1, ..., zn) *)</span>
+  <span class="c">(* | SCast: var -&gt; q -&gt; class_name -&gt; var -&gt; stmt x = (q C) y  *)</span>
+  | SSeq: stmt -&gt; stmt -&gt; stmt. <span class="c">(* s1; s2 *)</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">field_type</span> := {
+  assignability: a;
+  mutability: q_f;
+  f_base_type : class_name;
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Field declaration with assignability and mutability *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">field_def</span> := {
+  ftype : field_type; <span class="c">(* Field type *)</span>
+  fname : var; <span class="c">(* Field name, the name should match the index from the field list *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">constructor_body</span> :={
+  assignments: list (var * var); <span class="c">(* this.f1 = f_1; ...; this.fn = f_n *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">constructor_sig</span> := {
+  cqualifier: q_c; <span class="c">(* Mutable, Immutable, or RDM *)</span>
+  cparams : list qualified_type; <span class="c">(* T y1, ..., T yn Parameters for field assignment *)</span> <span class="c">(*c -&gt; current*)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">constructor_def</span> := {
+  csignature : constructor_sig; <span class="c">(* Constructor signature *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">method_body</span> := {
+  mbody_stmt: stmt; <span class="c">(* Method body expression *)</span>
+  mreturn: var; <span class="c">(* Return variable *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">method_type</span> : <span class="kt">Type</span> :=
+  | AbstractImm
+  | SafeRO
+  | ConcreteImm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">method_sig</span> := {
+  mtype: method_type;
+  mret : qualified_type; <span class="c">(* Return type *)</span>
+  mname : method_name; <span class="c">(* Method name *)</span>
+  mreceiver: qualified_type; <span class="c">(*T this*)</span>
+  mparams : list qualified_type; <span class="c">(* T x1, ..., T xn *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">method_def</span> := {
+  msignature : method_sig; <span class="c">(* Method signature *)</span>
+  mbody : method_body; <span class="c">(* Method body *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">class_body</span> := {
+  fields : list field_def; <span class="c">(* Class fields *)</span>
+  <span class="nb">constructor</span>: constructor_def; <span class="c">(* Constructor declaration *)</span>
+  methods : list method_def; <span class="c">(* Class methods *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">class_sig</span> := {
+  class_qualifier : q_c; <span class="c">(* Mutable, Immutable, or RDM *)</span>
+  cname : class_name; <span class="c">(* Class name, need to be the same as the index from class_table *)</span>
+  super : option class_name;
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">class_def</span> := {
+  signature : class_sig; <span class="c">(* Class signature *)</span>
+  body : class_body; <span class="c">(* Class body *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">program_def</span> := {
+  classes: list class_def; <span class="c">(* List of class declarations *)</span>
+  main_statement: stmt; <span class="c">(* Main statement *)</span>
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* Class table is a list of class declarations *)</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">class_table</span> := list class_def.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+<span class="c">(* ------------------RUNTIME MODEL------------------*)</span></span></pre><div class="doc">
+Runtime Mutability Qualifier 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q_r</span> : <span class="kt">Type</span> :=
+  | Mut_r
+  | Imm_r
+  .</span></span></pre><div class="doc">
+Runtime Type 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">runtime_type</span> := mkruntime_type {
+  rqtype: q_r; <span class="c">(* Runtime mutability *)</span>
+  rctype: class_name; <span class="c">(* Class name *)</span>
+}.</span></span></pre><div class="doc">
+Memory Address 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">Loc</span> : <span class="kt">Type</span> := nat.</span></span></pre><div class="doc">
+Runtime Value 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">value</span> : <span class="kt">Type</span> :=
+  | Null_a : value
+  | Iot: Loc -&gt; value.</span></span></pre><div class="doc">
+Variable Mapping 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">var_mapping</span>   := list value.</span></span></pre><div class="doc">
+Runtime Environment 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">r_env</span> := mkr_env {
+  vars: var_mapping; <span class="c">(* Variable mapping *)</span>
+}.</span></span></pre><div class="doc">
+Field Mapping 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">fields_mapping</span> := list value.</span><span class="alectryon-wsp"> </span></span></pre><div class="doc">
+Runtime Object 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">Obj</span> := mkObj {
+  rt_type: runtime_type; <span class="c">(* Runtime type *)</span>
+  fields_map: fields_mapping; <span class="c">(* Field mapping *)</span>
+}.</span></span></pre><div class="doc">
+Heap 
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">heap</span>          := list Obj.</span></span></pre></article></body></html>
