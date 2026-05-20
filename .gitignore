@@ -1,0 +1,34 @@
+# macOS/editor noise
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+
+# Artifact evaluation outputs
+results/
+alectryon/
+*.log
+*.exit-status
+*.class
+
+# Rocq generated files
+pico-rocq/CoqMakefile
+pico-rocq/CoqMakefile.conf
+pico-rocq/.CoqMakefile.d
+pico-rocq/.Makefile.d
+pico-rocq/*.vo
+pico-rocq/*.vos
+pico-rocq/*.vok
+pico-rocq/*.glob
+pico-rocq/*.aux
+pico-rocq/.*.aux
+pico-rocq/_build/
+pico-rocq/doc/
+pico-rocq/alectryon/
+
+# Checker Framework generated files
+checker-framework/.gradle/
+checker-framework/**/build/
+checker-framework/checker/dist/
+checker-framework/framework/dist/
+checker-framework/compile.log
