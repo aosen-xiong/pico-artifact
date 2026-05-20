@@ -1,6 +1,6 @@
-# Checker Framework Artifact Evaluation Guide
+# PICO Checker Framework Artifact Evaluation Guide
 
-This document gives reviewer-facing instructions for reproducing the Checker Framework implementation and benchmark track for:
+This document gives reviewer-facing instructions for reproducing the PICO implementation and benchmark track in a modified Checker Framework for:
 
 **Transitive, Abstract, and Class Polymorphic Immutability**
 
@@ -17,6 +17,25 @@ Build and start the Docker container as described in [Artifact-Evaluation.md](Ar
 /workspace/jdk
 /workspace/scripts
 ```
+
+## Source Locations
+
+The PICO implementation is part of the bundled Checker Framework fork:
+
+- Main checker implementation: `checker-framework/checker/src/main/java/org/checkerframework/checker/pico/`
+- Qualifier annotations: `checker-framework/checker-qual/src/main/java/org/checkerframework/checker/pico/qual/`
+- Focused PICO regression and benchmark tests: `checker-framework/checker/tests/pico-constrictor/` and `checker-framework/checker/tests/pico-mutable-default/`
+- Annotated JDK case study: `jdk/src/java.base/share/classes/java/util/`, with the evaluated file list in `TypecheckedList.txt`
+
+The main implementation files are organized as follows:
+
+- `PICOChecker` and `PICONoInitSubchecker`: checker entry points and Checker Framework integration.
+- `PICONoInitAnnotatedTypeFactory` and `PICOInitializationAnnotatedTypeFactory`: qualifier defaults, tree/type annotation, initialization-aware field handling, and type-factory wiring.
+- `PICONoInitVisitor`, `PICOInitializationVisitor`, and `PICOValidator`: visitor checks, initialization visitor integration, and validation of legal qualifier/assignability use.
+- `PICOQualifierHierarchy`, `PICOViewpointAdapter`, and `PICOTypeUtil`: qualifier ordering, viewpoint adaptation, and shared PICO-specific type utilities.
+- `PICONoInitAnalysis`, `PICONoInitStore`, `PICONoInitTransfer`, and `PICONoInitValue`: flow-analysis support classes.
+- `ObjectIdentityMethodEnforcer`: checks that object identity methods use only abstract-state information.
+- `messages.properties`: diagnostic message text for PICO checker errors.
 
 ## 1. Smoke Test
 
@@ -108,7 +127,7 @@ Observed warm-run time: about 40 seconds total. Recommended budget: 1-2 minutes 
 
 The artifact includes a helper script for counting PICO annotations and `@SuppressWarnings` entries.
 
-The common annotation set used below is:
+The common `count_java_annotations.pl` option set used below is:
 
 ```bash
 -a @Assignable -a @Immutable -a @Readonly \
@@ -117,6 +136,8 @@ The common annotation set used below is:
 ```
 
 The `-s pico` option counts `@SuppressWarnings` values whose warning key starts with `pico`, including both `pico` and keys such as `pico:argument.type.incompatible`.
+
+The table counts explicit `@Assignable` annotations. Receiver-dependent assignability (RDA) is implicit in the checker for non-final instance fields without an explicit `@Assignable`; it is not a separate source annotation and therefore is not counted by `count_java_annotations.pl`.
 
 ### 4.1 JDK Case Study
 
@@ -148,7 +169,21 @@ For CSV output, replace `-l` with `-t`.
 
 For a human-readable per-file breakdown, omit both `-l` and `-t`.
 
-Note: the counts produced by this artifact may differ slightly from the numbers reported in the paper because the JDK case study was updated after the paper text was prepared. The artifact counts should be treated as the current reproducible counts for this version.
+The automated evaluation also writes the generated tables to:
+
+```text
+/workspace/results/counts/java-util-annotation-counts.csv
+/workspace/results/counts/java-util-annotation-counts.txt
+/workspace/results/counts/java-util-annotation-counts.tex
+```
+
+The current generated total row for the JDK case study is:
+
+| Files | LOC | `@Assignable` | `@Immutable` | `@Readonly` | `@ReceiverDependentMutable` | `@Mutable` | `@PolyMutable` | `@SuppressWarnings:pico` |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 52 | 22,992 | 66 | 349 | 1,919 | 241 | 736 | 650 | 94 |
+
+The artifact was updated and cleaned up after the paper submission to include the final JDK case-study annotations. The generated artifact counts above are the current reproducible counts for this artifact version and are the numbers to use for the final paper version.
 
 The JDK source tree contains PICO annotations outside these 52 files. The authors intentionally annotated additional JDK files while exploring a broader retrofit, so a repository-wide search for PICO annotations will find more occurrences than this table reports. The case-study count is limited to the files in `TypecheckedList.txt`, which are the files used for the reproducible JCF evaluation.
 

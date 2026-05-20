@@ -7,7 +7,7 @@ This document is the top-level reviewer guide for:
 The artifact has two independent evaluation tracks:
 
 - **Rocq formalization**: `pico-rocq/` contains the mechanized formal model and proofs.
-- **Checker Framework implementation**: `checker-framework/` contains the PICO checker implementation and benchmark tests. This track also uses `jdk/`, which contains the annotated OpenJDK sources for the Java Collections Framework case study.
+- **PICO implementation in a modified Checker Framework**: `checker-framework/` contains the PICO checker implementation and benchmark tests. This track also uses `jdk/`, which contains the annotated OpenJDK sources for the Java Collections Framework case study.
 
 ## Common Docker Setup
 
@@ -17,13 +17,15 @@ Recommended resources:
 
 - 4 CPU cores
 - 8 GB RAM
-- 100 GB free disk space
+- 15-20 GB free disk space
 
 Build the image from the repository root:
 
 ```bash
 docker build -t pico-artifact:latest .
 ```
+
+The checked-out artifact is about 1 GB. The 15-20 GB recommendation leaves room for Docker image layers, Gradle build outputs, OPAM/Rocq dependencies, and generated evaluation results; it is not an observed minimum.
 
 If an Ubuntu package mirror rejects the build because of temporary apt metadata or signature issues, retry with:
 
@@ -102,4 +104,4 @@ Inside the container, the expected repository layout is:
 Then follow either:
 
 - [Rocq artifact evaluation](Artifact-Evaluation-Rocq.md)
-- [Checker Framework artifact evaluation](Artifact-Evaluation-Checker.md)
+- [PICO implementation artifact evaluation](Artifact-Evaluation-Checker.md)
