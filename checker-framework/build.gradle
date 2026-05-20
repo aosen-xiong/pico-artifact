@@ -120,7 +120,7 @@ switch (JavaVersion.current()) {
 
 task setLocalRepo(type:Exec) {
     onlyIf {
-        file("${rootDir}/.git").exists()
+        false
     }
     commandLine 'git', 'worktree', 'list'
     standardOutput = new ByteArrayOutputStream()
@@ -134,7 +134,7 @@ task setLocalRepo(type:Exec) {
 task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     description = 'Copies git hooks to .git directory'
     onlyIf {
-        file("${rootDir}/.git").exists()
+        false
     }
     from files('checker/bin-devel/git.post-merge', 'checker/bin-devel/git.pre-commit')
     rename('git\\.(.*)', '$1')
