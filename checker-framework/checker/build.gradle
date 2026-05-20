@@ -120,6 +120,9 @@ interface InjectedExecOps {
 //   https://docs.gradle.org/7.1/userguide/validation_problems.html#implicit_dependency for more
 //   details about this problem.
 generateGitProperties.dependsOn(':installGitHooks')
+generateGitProperties.onlyIf {
+    false
+}
 gitProperties {
     dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
 }
