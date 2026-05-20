@@ -1,0 +1,408 @@
+\htmlhr
+\chapterAndLabel{Constant Value Checker}{constant-value-checker}
+
+The Constant Value Checker is a constant propagation analysis: for
+each variable, it determines whether that variable's value can be
+known at compile time.
+
+There are two ways to run the Constant Value Checker.
+\begin{itemize}
+\item
+Typically, it is automatically run by another type checker.
+\item
+Alternately, you can run just the Constant Value Checker, by
+supplying the following command-line options to javac:
+\code{-processor org.checkerframework.common.value.ValueChecker}
+\end{itemize}
+
+
+\sectionAndLabel{Annotations}{constant-value-checker-annotations}
+
+The Constant Value Checker uses type annotations to indicate the value of
+an expression (Section~\ref{constant-value-checker-type-annotations}), and
+it uses method annotations to indicate methods that the Constant Value
+Checker can execute at compile time
+(Section~\ref{constant-value-staticallyexecutable-annotation}).
+
+
+\subsectionAndLabel{Type Annotations}{constant-value-checker-type-annotations}
+
+Typically, the programmer does not write any type annotations.  Rather, the
+type annotations are inferred by the Constant Value Checker.
+The programmer is also permitted to write type annotations.  This is only necessary in
+locations where the Constant Value Checker does not infer annotations:  on fields
+and method signatures.
+
+The main type annotations are
+\refqualclass{common/value/qual}{BoolVal},
+\refqualclass{common/value/qual}{IntVal},
+\refqualclass{common/value/qual}{IntRange},
+\refqualclass{common/value/qual}{DoubleVal},
+\refqualclass{common/value/qual}{StringVal},
+\refqualclass{common/value/qual}{MatchesRegex},
+\refqualclass{common/value/qual}{DoesNotMatchRegex},
+and \refqualclass{common/value/qual}{EnumVal}.
+Additional type annotations for arrays and strings are
+\refqualclass{common/value/qual}{ArrayLen},
+\refqualclass{common/value/qual}{ArrayLenRange},
+and \refqualclass{common/value/qual}{MinLen}.
+A polymorphic qualifier (\refqualclass{common/value/qual}{PolyValue})
+is also supported (see Section~\ref{method-qualifier-polymorphism}).
+In addition, there are separate checkers for
+\refqualclass{common/reflection/qual}{ClassVal} and
+\refqualclass{common/reflection/qual}{MethodVal} annotations
+(see Section~\ref{methodval-and-classval-checkers}).
+
+Each \<*Val> type annotation takes as an argument a set of values, and its
+meaning is that at run time, the expression evaluates to one of the values.  For
+example, an expression of type
+\<\refqualclass{common/value/qual}{StringVal}("a", "b")> evaluates to
+one of the values \<"a">, \<"b">, or \<null>.
+The set is limited to 10 entries; if a variable
+could be more than 10 different values, the Constant Value
+Checker gives up and its type becomes
+\refqualclass{common/value/qual}{IntRange} for integral types,
+\refqualclass{common/value/qual}{ArrayLenRange} for array types,
+\refqualclass{common/value/qual}{MatchesRegex},
+\refqualclass{common/value/qual}{DoesNotMatchRegex},
+\refqualclass{common/value/qual}{ArrayLen}, or
+\refqualclass{common/value/qual}{ArrayLenRange} for \<String>, and
+\refqualclass{common/value/qual}{UnknownVal} for all other types.
+The \<@ArrayLen> annotation means that at run time, the expression
+evaluates to an array or a string whose length is one of the annotation's arguments.
+
+In the case of too many strings in \<@StringVal>, the values are forgotten
+and just the lengths are used in \<@ArrayLen>.
+If this would result in too many lengths,
+only the minimum and maximum lengths are used in \<@ArrayLenRange>,
+giving a range of possible lengths of the string.
+
+The \<@StringVal>, \<@MatchesRegex>, and \<@DoesNotMatchRegex>
+annotations may be applied to char arrays.  Although byte
+arrays are often converted to/from strings, these annotations may
+not be applied to them.  This is because the conversion depends on the
+platform's character set.
+
+The \<@MatchesRegex> and \<@DoesNotMatchRegex> annotations use the standard Java regular expression syntax.
+\<@MatchesRegex(A)> is only a subtype of \<@MatchesRegex(B)> if the set of regular
+expressions \<A> is a subset of the set of regular expressions \<B>. An
+\<@StringVal> annotation is a subtype of an \<@MatchesRegex> annotation if
+each string matches at least one of the regular expressions.
+\<@DoesNotMatchRegex(A)> is only a subtype of \<@MatchesRegex(B)> if the set of regular
+expressions \<A> is a superset of the set of regular expressions \<B>.
+Matching is done
+via the
+\href{https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html\#matches(java.lang.String)}{java.lang.String\#matches}
+method, which matches against the entire string (it does not look for a
+matching substring).
+
+The \<@EnumVal> annotation's argument is the names of the enum constants
+that the type might evaluate to.  (Java syntax does not allow the enum
+constants themselves to be arguments.)  \<@EnumVal>
+is treated identically to \<@StringVal> by the checker internally, so
+\<@StringVal> may appear in error messages related to enums.
+
+% \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
+% is dead or always has the value \<null>.
+
+\refqualclass{common/value/qual}{IntRange} takes two arguments --- a lower
+bound and an upper bound.  Its meaning is that at run time, the expression
+evaluates to a value between the bounds (inclusive).  For example, an
+expression of type \<@IntRange(from=0, to=255)> evaluates to
+0, 1, 2, \ldots, 254, or 255.
+An \refqualclass{common/value/qual}{IntVal} and
+\refqualclass{common/value/qual}{IntRange} annotation that represent the
+same set of values are semantically identical and interchangeable:  they
+have exactly the same meaning, and using either one has the same effect.
+\refqualclass{common/value/qual}{ArrayLenRange} has the same relationship
+to \refqualclass{common/value/qual}{ArrayLen} that
+\refqualclass{common/value/qual}{IntRange} has to
+\refqualclass{common/value/qual}{IntVal}.
+The \<@MinLen> annotation is an alias for \<@ArrayLenRange> (meaning that every \<@MinLen> annotation
+ is automatically converted to an \<@ArrayLenRange> annotation) that only takes
+one argument, which is the lower bound of the range. The upper bound of the
+range is the maximum integer value.
+
+Figure~\ref{fig-value-hierarchy} shows the
+subtyping relationship among the type annotations.
+For two annotations of the same type, subtypes have a smaller set of
+possible values, as also shown in the figure.
+Because \<int> can be casted to \<double>, an \<@IntVal> annotation is a
+subtype of a \<@DoubleVal> annotation with the same values.
+
+\begin{figure}
+\includeimage{value-subtyping}{7.9cm}
+\caption{At the top, the type qualifier hierarchy of the Constant Value Checker
+  annotations.
+  The first four qualifiers are applicable to primitives and their
+  wrappers; the next to \<String>s (it can also be written as \<@EnumVal> for
+  enumeration constants), and the final two to arrays.
+Qualifiers in gray are used
+internally by the type system but should never be written by a
+programmer.  At the bottom are examples of additional subtyping
+relationships that depend on the annotations' arguments.}
+\label{fig-value-hierarchy}
+\end{figure}
+
+Figure~\ref{fig-value-multivalue} illustrates how the Constant Value Checker
+infers type annotations (using flow-sensitive type qualifier refinement, Section~\ref{type-refinement}).
+
+\begin{figure}
+\begin{Verbatim}
+public void flowSensitivityExample(boolean b) {
+    int i = 1;     // i has type:  @IntVal({1}) int
+    if (b) {
+        i = 2;     // i now has type:  @IntVal({2}) int
+    }
+                   // i now has type:  @IntVal({1,2}) int
+    i = i + 1;     // i now has type:  @IntVal({2,3}) int
+}
+\end{Verbatim}
+\caption{The Constant Value Checker infers different types
+  for a variable on different lines of the program.}
+\label{fig-value-multivalue}
+\end{figure}
+
+
+\sectionAndLabel{Other constant value annotations}{other-constant-value-annotations}
+
+The Checker Framework's constant value annotations are similar to annotations used
+elsewhere.
+
+If your code is already annotated with a different constant value or range
+annotation, the Checker Framework can type-check your code.
+It treats annotations from other tools
+as if you had written the corresponding annotation from the
+Constant Value Checker, as described in Figure~\ref{fig-constant-value-refactoring}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
+
+
+% These lists should be kept in sync with ValueAnnotatedTypeFactory.java .
+\begin{figure}
+\begin{center}
+% The ~ around the text makes things look better in Hevea (and not terrible
+% in LaTeX).
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~android.support.annotation.IntRange~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.common.value.qual.IntRange~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other constant value and range annotations
+  and the Checker Framework's annotations.}
+\label{fig-constant-value-refactoring}
+\end{figure}
+
+The Constant Value Checker trusts the
+\refqualclass{checker/index/qual}{Positive},
+\refqualclass{checker/index/qual}{NonNegative},
+and \refqualclass{checker/index/qual}{GTENegativeOne} annotations.  If your code
+contains any of these annotations, then
+in order to guarantee soundness, you must run the Index Checker whenever
+you run the Constant Value Checker.
+
+
+\subsectionAndLabel{Compile-time execution of expressions}{constant-value-compile-time-execution}
+
+Whenever all the operands of an expression are compile-time constants (that
+is, their types have constant-value type annotations), the Constant Value
+Checker attempts to execute the expression.  This is independent of any
+optimizations performed by the compiler and does not affect the code that
+is generated.
+
+The Constant Value Checker statically executes (at compile time) operators that do
+not throw exceptions (e.g., \<+>, \<->, \code{<}\code{<}, \<!=>).
+
+
+\subsectionAndLabel{\<@StaticallyExecutable> methods and the classpath}{constant-value-staticallyexecutable-annotation}
+
+The Constant Value Checker statically executes (at compile time) methods annotated with
+\refqualclass{common/value/qual}{StaticallyExecutable}.
+
+\begin{figure}
+\begin{Verbatim}
+@StaticallyExecutable @Pure
+public static int myAdd(int a, int b) {
+    return a + b;
+}
+
+public void bar() {
+    int a = 5;            // a has type:  @IntVal({5}) int
+    int b = 4;            // b has type:  @IntVal({4}) int
+    int c = myAdd(a, b);  // c has type:  @IntVal({9}) int
+}
+\end{Verbatim}
+\caption{The
+  \refqualclass{common/value/qual}{StaticallyExecutable} annotation enables
+  constant propagation through method calls.}
+\label{fig-staticallyexecutable}
+\end{figure}
+
+The static execution feature has some requirements:
+
+\begin{itemize}
+\item
+  A \<@StaticallyExecutable> method must be
+  \refqualclass{dataflow/qual}{Pure} (side-effect-free and deterministic).
+
+\item
+  The Constant Value Checker must have an estimate for all the arguments at
+  a call site.
+
+  This means that \<@StaticallyExecutable> is not applicable
+  to user-written instance methods.  It is only applicable to instance
+  methods whose receiver is a compile-time constant, such as a primitive
+  wrapper or an array.
+
+\item
+  The \<@StaticallyExecutable> method and any method it calls must be on
+  the same path (the classpath or the processorpath) as the Checker
+  Framework.  This is because the Constant Value Checker reflectively calls
+  these methods at compile time.
+
+To use \<@StaticallyExecutable> on methods in your own code, you should
+first compile the code without the Constant Value Checker and then add
+the location of the resulting \code{.class} files to the
+classpath or processorpath, whichever is appropriate. For example, the
+command-line arguments to the Checker Framework
+might include:
+\begin{Verbatim}
+  -processor org.checkerframework.common.value.ValueChecker
+  -classpath $CLASSPATH:MY_PROJECT/build/
+\end{Verbatim}
+or
+\begin{Verbatim}
+  -processor org.checkerframework.common.value.ValueChecker
+  -processorpath ${CHECKERFRAMEWORK}/checker/build/libs/checker-3.6.1-SNAPSHOT.jar:MY_PROJECT/build/
+\end{Verbatim}
+
+\end{itemize}
+
+
+\sectionAndLabel{Warnings}{value-checker-warnings}
+
+If the option \code{-AreportEvalWarns} options is used, the Constant Value Checker issues a warning if it cannot load and run, at
+compile time, a method marked as \<@StaticallyExecutable>.  If it issues
+such a warning, then the return value of the method will be \<@UnknownVal>
+instead of being able to be resolved to a specific value annotation.
+Some examples of these:
+% This section describes potentially-confusing messages, not every message.
+
+\begin{sloppypar}
+\begin{itemize}
+\item \code{[class.find.failed] Failed to find class named Test.}
+
+  The checker could not find the class
+  specified for resolving a \<@StaticallyExecutable> method. Typically
+  this means that the path that contains the Checker Framework (the
+  classpath or the processorpath) lacks the given classfile.
+
+\item \code{[method.find.failed] Failed to find a method named foo with argument types [@IntVal(3) int].}
+
+  The checker could not find the method \code{foo(int)} specified for
+  resolving a \<@StaticallyExecutable> method, but could find the
+  class. This is usually due to providing an outdated version of the
+  classfile that does not contain the
+  method that was annotated as \<@StaticallyExecutable>.
+
+\item \code{[method.evaluation.exception] Failed to evaluate method public static int Test.foo(int) because it threw an exception: java.lang.ArithmeticException: / by zero.}
+
+  An exception was thrown when trying to statically execute (at compile time) the
+  method. In this case it was a divide-by-zero exception. If the
+  arguments to the method each only had one value in their annotations
+  then this exception will always occur when the program is actually
+  run as well. If there are multiple possible values then the exception
+  might not be thrown on every execution, depending on the run-time values.
+
+\end{itemize}
+\end{sloppypar}
+
+There are some other situations in which the Constant Value Checker produces a
+warning message:
+
+\begin{sloppypar}
+\begin{itemize}
+\item \code{[too.many.values.given] The maximum number of arguments permitted is 10.}
+
+  The Constant Value Checker only tracks up to 10 possible values for an
+  expression.  If you write an annotation with more values than will be
+  tracked, the annotation is replaced with \<@IntRange>, \<@ArrayLen>, \<@ArrayLenRange>, or \<@UnknownVal>.
+
+\end{itemize}
+\end{sloppypar}
+
+
+\sectionAndLabel{Unsoundly ignoring overflow}{value-checker-overflow}
+
+The Constant Value Checker takes Java's overflow rules into account when
+computing the possible values of expressions.
+%
+The \code{-AignoreRangeOverflow} command-line option makes it ignore the
+possibility of overflow for range annotations
+\refqualclass{common/value/qual}{IntRange} and
+\refqualclass{common/value/qual}{ArrayLenRange}.
+%
+Figure~\ref{fig-value-ignore-overflow} gives an example of behavior with
+and without the \code{-AignoreRangeOverflow} command-line option.
+
+\begin{figure}
+\begin{Verbatim}
+  ...
+  if (i > 5) {
+    // i now has type:  @IntRange(from=5, to=Integer.MAX_VALUE)
+    i = i + 1;
+    // If i started out as Integer.MAX_VALUE, then i is now Integer.MIN_VALUE.
+    // i's type is now @IntRange(from=Integer.MIN_VALUE, to=Integer.MAX_VALUE).
+    // When ignoring overflow, i's type is now @IntRange(from=6, to=Integer.MAX_VALUE).
+  }
+\end{Verbatim}
+\caption{With the \code{-AignoreRangeOverflow} command-line option,
+the Constant Value Checker ignores overflow
+for range types, which gives smaller ranges to range types.}
+\label{fig-value-ignore-overflow}
+\end{figure}
+
+As with any unsound behavior in the Checker Framework, this option reduces
+the number of errors and warnings produced, and may reduce the number of
+\<@IntRange> qualifiers that you need to write in the source code.
+However, it is possible that at run time, an expression might evaluate to a
+value that is not in its \<@IntRange> qualifier.  You should either accept
+that possibility, or verify the lack of overflow using some other tool or
+manual analysis.
+
+
+\sectionAndLabel{Strings can be null in concatenations}{non-null-strings-concats}
+
+By default, the Constant Value Checker is sound with respect to string
+concatenation and nullness.  It assumes that, in a string concatenation,
+every non-primitive argument might be null, except for String literals
+and compile-time constants. It ignores Nullness Checker annotations.
+(This behavior is conservative but sound.)
+
+Consider a variable declared as
+\<\refqualclass{common/value/qual}{StringVal}("a", "b") String x;>.
+At run time, \<x> evaluates to one of the values \<"a">, \<"b">, or
+\<null>.
+Therefore, the type of ``\<x + "c">'' is
+\<@StringVal("ac", "bc", "nullc") String>.
+
+The \code{-AnonNullStringsConcatenation} command-line option makes the
+Constant Value Checker unsoundly assume that no arguments in a string
+concatenation are null.
+With the command-line argument, the type of ``\<x + "c">'' is
+\<@StringVal("ac", "bc") String>.
+
+%%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange bc
+%%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
+%%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
+%%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
+%%  LocalWords:  staticallyexecutable concats AnonNullStringsConcatenation
+%%  LocalWords:  ClassVal MethodVal processorpath nullc

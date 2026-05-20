@@ -1,0 +1,1086 @@
+\htmlhr
+\chapterAndLabel{Generics and polymorphism}{polymorphism}
+
+Section~\ref{generics} describes support for Java generics (also known as
+``parametric polymorphism'').
+Section~\ref{method-qualifier-polymorphism} describes polymorphism over
+type qualifiers for methods. Section~\ref{class-qualifier-polymorphism} describes
+polymorphism over type qualifiers for classes.
+
+
+\sectionAndLabel{Generics (parametric polymorphism or type polymorphism)}{generics}
+
+The Checker Framework fully supports
+type-qualified Java generic types and methods (also known as ``parametric
+polymorphism'').
+When instantiating a generic type,
+clients supply the qualifier along with the type argument, as in
+\code{List<@NonNull String>}.
+When using a type variable \code{T} within the implementation of a generic type,
+typically no type qualifier is written (see Section~\ref{type-variable-use});
+rather, the instantiation of the type parameter is restricted (see
+Section~\ref{generics-instantiation}).
+
+
+\subsectionAndLabel{Raw types}{generics-raw-types}
+
+Before running any pluggable type-checker, we recommend that you eliminate
+raw types from your code (e.g., your code should use \code{List<...>} as
+opposed to \code{List}).
+Your code should compile without warnings when using the standard Java
+compiler and the \<-Xlint:unchecked -Xlint:rawtypes> command-line options.
+Using generics helps prevent type errors just as using a pluggable
+type-checker does, and makes the Checker Framework's warnings easier to
+understand.
+
+If your code uses raw types, then the Checker Framework will do its best to
+infer the Java type arguments and the type qualifiers.  By default these
+inferred types are ignored in subtyping checks. If you supply the
+command-line option \<-AignoreRawTypeArguments=false> you will see errors
+from raw types.
+
+
+\subsectionAndLabel{Restricting instantiation of a generic class}{generics-instantiation}
+
+When you define a generic class in Java, the \<extends> clause
+of the generic type parameter (known as the ``upper bound'') requires that
+the corresponding type argument must be a subtype of the bound.
+For example, given the definition
+\verb|class G<T extends Number> {...}|,
+the upper bound is \<Number>
+and a client can instantiate it as \code{G<Number>} or \code{G<Integer>}
+but not \code{G<Date>}.
+
+You can write a type qualifier on the \<extends> clause to make the upper
+bound a qualified type.  For example, you can declare that a generic list class can hold only non-null values:
+% Similarly, a generic map
+% class might indicate it requires an immutable key type, but that it
+% supports both nullable and non-null value types.
+
+\begin{Verbatim}
+  class MyList<T extends @NonNull Object> {...}
+
+  MyList<@NonNull String> m1;       // OK
+  MyList<@Nullable String> m2;      // error
+\end{Verbatim}
+
+That is, in the above example, all
+arguments that replace \code{T} in \code{MyList<T>} must be subtypes of
+\code{@NonNull Object}.
+
+
+\subsubsectionAndLabel{Syntax for upper and lower bounds}{generics-bounds-syntax}
+
+Conceptually, each generic type parameter has two bounds --- a lower bound
+and an upper bound --- and at instantiation, the type argument must be
+within the bounds.  Java only allows you to specify the upper bound; the
+lower bound is implicitly the bottom type \<NullType>
+(the null type is a special \href{https://docs.oracle.com/javase/specs/jls/se24/html/jls-4.html#jls-4.1}{unnamed type}).
+The Checker Framework gives you more power:  you can specify both an upper and lower bound for type parameters.
+Write the upper bound on the \<extends> clause, and
+write the lower bound on the type variable.
+
+\begin{Verbatim}
+  class MyList<@LowerBound T extends @UpperBound Object> { ... }
+\end{Verbatim}
+
+You may omit either the upper or the lower bound, and the Checker Framework
+will use a default.
+
+For a discussion of wildcards, see Section~\ref{annotations-on-wildcards}.
+
+For a concrete example, consider the type system of the Regex Checker (see
+Figure~\refwithpage{fig-regex-hierarchy}) in which
+ \<@Regex(0)> :>
+ \<@Regex(1)> :>
+ \<@Regex(2)> :>
+ \<@Regex(3)> :> \ldots.
+
+\begin{Verbatim}
+  class MyRegexes<@Regex(5) T extends @Regex(1) String> { ... }
+
+  MyRegexes<@Regex(0) String> mu;   // error - @Regex(0) is not a subtype of @Regex(1)
+  MyRegexes<@Regex(1) String> m1;   // OK
+  MyRegexes<@Regex(3) String> m3;   // OK
+  MyRegexes<@Regex(5) String> m5;   // OK
+  MyRegexes<@Regex(6) String> m6;   // error - @Regex(6) is not a supertype of @Regex(5)
+\end{Verbatim}
+
+The above declaration states that the upper bound of the type variable
+is \<@Regex(1) String> and the lower bound is \<@Regex(5) void>.  That is,
+arguments that replace \code{T} in \code{MyList<T>} must be subtypes of
+\code{@Regex(1) String} and supertypes of \code{@Regex(5) void}.
+Since \<void> cannot be used to instantiate a generic class, \<MyList> may
+be instantiated with \<@Regex(1) String> through \<@Regex(5) String>.
+
+
+To specify an exact bound, place the same annotation on both bounds.  For example:
+
+\begin{Verbatim}
+  class MyListOfNonNulls<@NonNull T extends @NonNull Object> { ... }
+  class MyListOfNullables<@Nullable T extends @Nullable Object> { ... }
+
+  MyListOfNonNulls<@NonNull Number> v1;      // OK
+  MyListOfNonNulls<@Nullable Number> v2;     // error
+  MyListOfNullables<@NonNull Number> v4;     // error
+  MyListOfNullables<@Nullable Number> v3;    // OK
+\end{Verbatim}
+
+It is an error if the lower bound is not a subtype of the upper bound.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a subtype of @NonNull
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+
+\subsubsectionAndLabel{Defaults}{generics-defaults}
+
+A generic type parameter or wildcard is written as \code{class
+  MyClass<\emph{@LowerBound} T extends \emph{@UpperBound} JavaUpperBound>} or as
+\code{MyClass<\emph{@UpperBound} ? super \emph{@LowerBound} JavaLowerBound>}, where
+``\<\emph{@LowerBound}>'' and ``\<\emph{@UpperBound}>'' are type qualifiers.
+
+For lower bounds:
+If no type annotation is written in front of \<?>,
+then the lower bound defaults to \<@\emph{BottomType} void>.
+
+For upper bounds:
+\begin{itemize}
+\item
+If the \<extends> clause is omitted,
+then the upper bound defaults to \<@\emph{TopType} Object>.
+\item
+If the \<extends> clause is written but contains no type qualifier,
+then the normal defaulting rules apply to the type in the \<extends>
+clause (see Section~\ref{climb-to-top}).
+\end{itemize}
+
+The upper-bound rules mean that even though in Java the following two
+declarations are equivalent:
+
+\begin{Verbatim}
+  class MyClass<T>
+  class MyClass<T extends Object>
+\end{Verbatim}
+
+\noindent
+they specify different type qualifiers on the upper bound,
+if the type system's default annotation is not its top annotation.
+
+The Nullness type system is an example.
+
+\begin{Verbatim}
+  class MyClass<T>                 ==  class MyClass<T extends @Nullable Object>
+  class MyClass<T extends Object>  ==  class MyClass<T extends @NonNull Object>
+\end{Verbatim}
+
+The rationale for this choice is:
+\begin{itemize}
+\item
+  The ``\code{<T>}'' in \code{MyClass<T>} means ``fully unconstrained'',
+  and the rules maintain that, without the need for a programmer to
+  change existing code.
+\item
+  The ``\code{Object}'' in \code{MyClass<T extends Object>} is treated
+  exactly like every other occurrence of \code{Object} in the program ---
+  it would be confusing for different occurrences of \code{Object} to mean
+  different annotated types.
+\end{itemize}
+
+Here are some style guidelines:
+\begin{itemize}
+\item
+  Use ``\code{<T>}'' when there are no constraints on the type qualifiers.
+  This is short and is what already appears in source code.
+\item
+  Whenever you write an \<extends> clause, write an explicit type
+  annotation on it.  For example, for the Nullness Checker, write
+  \code{class MyClass<T>} rather than \code{class MyClass<T extends
+    @Nullable Object>}, and write \code{class MyClass<T extends @NonNull
+    Object>} rather than \code{class MyClass<T extends Object>}.
+\end{itemize}
+
+For further discussion, see Section~\ref{faq-implicit-bounds}.
+
+
+\subsectionAndLabel{Type annotations on a use of a generic type variable}{type-variable-use}
+
+A type annotation on a use of a generic type variable overrides/ignores any type
+qualifier (in the same type hierarchy) on the corresponding actual type
+argument.  For example, suppose that \code{T} is a formal type parameter.
+Then using \code{@Nullable T} within the scope of \code{T} applies the type
+qualifier \code{@Nullable} to the (unqualified) Java type of \code{T}\@.
+This feature is sometimes useful, but more often the implementation of a
+generic type just uses the type variable \code{T}, whose instantiation is
+restricted (see Section~\ref{generics-instantiation}).
+
+Here is an example of applying a type annotation to a generic type
+variable:
+
+\begin{Verbatim}
+  class MyClass2<T> {
+    ...
+    @Nullable T myField = null;
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+The type annotation does not restrict how \code{MyClass2} may be
+instantiated.  In other words, both
+\code{MyClass2<@NonNull String>} and \code{MyClass2<@Nullable String>} are
+legal, and in both cases \code{@Nullable T} means \code{@Nullable String}.
+In \code{MyClass2<@Interned String>},
+\code{@Nullable T} means \code{@Nullable @Interned String}.
+
+% Note that a type annotation on a generic type variable does not act like
+% other type qualifiers.  In both cases the type annotation acts as a type
+% constructor, but as noted above they act slightly differently.
+
+
+% %% This isn't quite right because a type qualifier is itself a type
+% %% constructor.
+% More formally, a type annotation on a generic type variable acts as a type
+% constructor rather than a type qualifier.  Another example of a type
+% constructor is \code{[]}.  Just as \code{T[]} is not the same type as
+% \code{T}, \code{@Nullable T} is not (necessarily) the same type as
+% \code{T}.
+
+
+Defaulting never affects a use of a type variable, even if the type
+variable use has no explicit annotation.  Defaulting helps to choose a
+single type qualifier for a concrete Java class or interface.  By contrast,
+a type variable use represents a set of possible types.
+
+
+\subsectionAndLabel{Annotations on wildcards}{annotations-on-wildcards}
+
+At an instantiation of a generic type, a Java wildcard indicates that some
+constraints are known on the type argument, but the type argument is not known
+exactly.
+For example, you can indicate that the type parameter for variable \<ls> is
+some unknown subtype of \<CharSequence>:
+
+\begin{Verbatim}
+  List<? extends CharSequence> ls;
+  ls = new ArrayList<String>();      // OK
+  ls = new ArrayList<Integer>();     // error: Integer is not a subtype of CharSequence
+\end{Verbatim}
+
+For more details about wildcards, see the
+\href{https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html}{Java
+  tutorial on wildcards} or
+\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.5.1}{JLS
+  \S 4.5.1}.
+
+You can write a type annotation on the bound of a wildcard:
+
+\begin{Verbatim}
+  List<? extends @NonNull CharSequence> ls;
+  ls = new ArrayList<@NonNull String>();    // OK
+  ls = new ArrayList<@Nullable String>();   // error: @Nullable is not a subtype of @NonNull
+\end{Verbatim}
+
+Conceptually, every wildcard has two bounds --- an upper bound and a lower
+bound.  Java only permits you to write one bound.
+You can specify the upper bound with \code{<?\ extends SomeType>}, in which
+case the lower bound is implicitly the bottom type \<void>.
+You can specify the lower bound (with \code{<?\ super OtherType>}), in
+which case the upper bound is implicitly the top type \<Object>.
+The Checker Framework is more flexible:  it lets you similarly write
+annotations on both the upper and lower bound.
+
+To annotate the \emph{implicit} bound, write the type annotation
+before the \<?>.  For example:
+
+\begin{Verbatim}
+  List<@LowerBound ? extends @UpperBound CharSequence> lo;
+  List<@UpperBound ? super @NonNull Number> ls;
+\end{Verbatim}
+
+For an unbounded wildcard (\code{<?>}, with neither
+bound specified), the annotation in front of a wildcard applies
+to both bounds.  The following three declarations are equivalent (except
+that you cannot write the bottom type \<NullType>; note that
+\sunjavadoc{java.base/java/lang/Void.html}{Void} does not denote the bottom type):
+
+\begin{Verbatim}
+  List<@NonNull ?> lnn;
+  List<@NonNull ? extends @NonNull Object> lnn;
+  List<@NonNull ? super @NonNull NullType> lnn;
+\end{Verbatim}
+
+\noindent
+Note that the annotation in front of a type parameter always applies to its
+lower bound, because type parameters can only be written with \<extends>
+and never \<super>.
+
+
+% Defaults are as for type variables (see Section~\ref{generics-defaults}),
+% with one exception.
+
+The defaulting rules for
+wildcards also differ from those of type parameters (see
+Section~\ref{inherited-wildcard-annotations}).
+
+
+%% Mike isn't sure that this section pulls its weight, especially since it
+%% doesn't justify why it is desirable to be able to constrain both the
+%% upper and the lower bound of a type.  If readers believe that, they will
+%% be OK with the syntax.
+% \subsubsectionAndLabel{Type parameter declaration annotation rationale}{type-parameter-rationale}
+%
+% It is desirable to be able to constrain both the upper and the lower bound
+% of a type, as in
+%
+% \begin{Verbatim}
+%   class MyClass<T extends @C MyUpperBound super @D void> { ... }
+% \end{Verbatim}
+%
+% However, doing so is not possible due to two limitations of Java's syntax.
+% First, it is illegal to specify both the upper and the lower bound of a
+% type parameter or wildcard.
+% Second, it is impossible to specify a type annotation for a lower
+% bound without also specifying a type (use of \<void> is illegal).
+%
+% Thus, when you wish to specify both bounds, you write one of them
+% explicitly, and you write the other one in front of the type variable name
+% or \<?>.  When you wish to specify two identical bounds, you write a
+% single annotation in front of the type variable name or \<?>.
+
+
+\subsectionAndLabel{Examples of qualifiers on a type parameter}{type-parameter-qualifier-examples}
+
+Recall that \<@Nullable \emph{X}> is a supertype of \<@NonNull \emph{X}>,
+for any \emph{X}\@.
+Most of the following types mean different things:
+
+\begin{Verbatim}
+  class MyList1<@Nullable T> { ... }
+  class MyList1a<@Nullable T extends @Nullable Object> { ... } // same as MyList1
+  class MyList2<@NonNull T extends @NonNull Object> { ... }
+  class MyList2a<T extends @NonNull Object> { ... } // same as MyList2
+  class MyList3<T extends @Nullable Object> { ... }
+\end{Verbatim}
+
+\<MyList1> and \<MyList1a> must be instantiated with a nullable type.
+The implementation of \<MyList1> must be able to consume (store) a null
+value and produce (retrieve) a null value.
+
+\<MyList2> and \<MyList2a> must be instantiated with non-null type.
+The implementation of \<MyList2> has to account for only non-null values --- it
+does not have to account for consuming or producing null.
+
+\<MyList3> may be instantiated either way:
+with a nullable type or a non-null type.  The implementation of \<MyList3> must consider
+that it may be instantiated either way --- flexible enough to support either
+instantiation, yet rigorous enough to impose the correct constraints of the
+specific instantiation.  It must also itself comply with the constraints of
+the potential instantiations.
+
+One way to express the difference among \<MyList1>, \<MyList2>, and
+\<MyList3> is by comparing what expressions are legal in the implementation
+of the list --- that is, what expressions may appear in the ellipsis in the
+declarations above, such as inside a method's body.  Suppose each class
+has, in the ellipsis, these declarations:
+
+\begin{Verbatim}
+  T t;
+  @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", below,
+  @NonNull T nn;         // further explains the meaning of "@Nullable T" and "@NonNull T".
+  void add(T arg) {}
+  T get(int i) {}
+\end{Verbatim}
+
+\noindent
+Then the following expressions would be legal, inside a given
+implementation --- that is, also within the ellipses.
+(Compilable source code appears as file
+\<checker-framework/checker/tests/nullness/generics/GenericsExample.java>.)
+
+\begin{tabular}{|l|c|c|c|c|c|} \hline
+                        & MyList1 & MyList2 & MyList3 \\ \hline
+  t = null;             & OK      & error   & error   \\ \hline
+  t = nble;             & OK      & error   & error   \\ \hline
+  nble = null;          & OK      & OK      & OK      \\ \hline
+  nn = null;            & error   & error   & error   \\ \hline
+  t = this.get(0);      & OK      & OK      & OK      \\ \hline
+  nble = this.get(0);   & OK      & OK      & OK      \\ \hline
+  nn = this.get(0);     & error   & OK      & error   \\ \hline
+  this.add(t);          & OK      & OK      & OK      \\ \hline
+  this.add(nble);       & OK      & error   & error   \\ \hline
+  this.add(nn);         & OK      & OK      & OK      \\ \hline
+\end{tabular}
+
+
+%% This text is not very helpful.
+% The
+% implementation of \code{MyList2} may only place non-null objects in the
+% list and may assume that retrieved elements are non-null.  The
+% implementation of \code{MyList3} is similar in that it may only place
+% non-null objects in the list, because it might be instantiated as, say,
+% \code{MyList3<@NonNull Date>}.  When retrieving elements from the list,
+% the implementation of \code{MyList3} must account for the fact that
+% elements of \code{MyList3} may be null, because it might be instantiated
+% as, say, \code{MyList3<@Nullable Date>}.
+The differences are more
+significant when the qualifier hierarchy is more complicated than just
+\<@Nullable> and \<@NonNull>.
+
+\subsectionAndLabel{Covariant type parameters}{covariant-type-parameters}
+
+Java types are \emph{invariant} in their type parameter.  This means that
+\code{A<X>} is a subtype of \code{B<Y>} only if \<X> is identical to \<Y>.  For
+example, \code{ArrayList<Number>} is a subtype of \code{List<Number>}, but
+neither \code{ArrayList<Integer>} nor \code{List<Integer>} is a subtype of
+\code{List<Number>}.  (If they were, there would be a loophole in the Java
+type system.)  For the same reason, type parameter annotations are treated
+invariantly.  For example, \code{List<@Nullable String>} is not a subtype
+of \code{List<String>}.
+
+When a type parameter is used in a read-only way --- that is, when clients
+read values of that type from the class but never pass values of that type
+to the class --- then it is safe for the
+type to be \emph{covariant} in the type parameter.  Use the
+\refqualclass{framework/qual}{Covariant} annotation to indicate this.
+When a type parameter is covariant, two instantiations of the class with
+different type arguments have the same subtyping relationship as the type
+arguments do.
+
+For example, consider \<Iterator>.  A client can read elements but not
+write them, so \code{Iterator<@Nullable String>} can be a subtype of
+\code{Iterator<String>} without introducing a hole in the type system.
+Therefore, its type parameter is annotated with
+\refqualclass{framework/qual}{Covariant}.
+The first type parameter of \<Map.Entry> is also covariant.
+Another example would be the type parameter of a hypothetical class
+\<ImmutableList>.
+
+The \<@Covariant> annotation is trusted but not checked.
+If you incorrectly specify as covariant a type parameter that can be
+written (say, the class supports a
+\<set> operation or some other mutation on an object of that type), then
+you have created an unsoundness in the type system.
+For example, it would be incorrect to annotate the type parameter of
+\<ListIterator> as covariant, because \<ListIterator> supports a \<set>
+operation.
+
+
+\subsectionAndLabel{Method type argument inference and type qualifiers}{infer-method-type-qualifiers}
+
+Sometimes method type argument inference does not interact well with
+type qualifiers. In such situations, you might need to provide
+explicit method type arguments, for which the syntax is as follows:
+
+\begin{alltt}
+    Collections.<@MyTypeAnnotation Object>sort(l, c);
+\end{alltt}
+
+\noindent
+This uses Java's existing syntax for specifying a method call's type arguments.
+
+
+\subsectionAndLabel{The Bottom type}{bottom-type}
+
+Many type systems have a \<*Bottom> type that is used only for the \<null>
+value, dead code, and some erroneous situations.  A programmer should
+rarely write the bottom type.
+
+One use is on a lower bound, to indicate that any type qualifier is
+permitted.  A lower-bounded wildcard indicates that a consumer method can
+accept a collection containing any Java type above some Java type, and you
+can add the bottom type qualifier as well:
+
+\begin{Verbatim}
+public static void addNumbers(List<? super @SignednessBottom Integer> list) { ... }
+\end{Verbatim}
+
+
+\sectionAndLabel{Qualifier polymorphism for methods\label{qualifier-polymorphism}}{method-qualifier-polymorphism}
+
+Type qualifier polymorphism permits a single method to have multiple different qualified
+type signatures.
+
+Here is where a polymorphic qualifier (e.g., \<@PolyNull>) can be used:
+\begin{itemize}
+\item Polymorphic qualifiers are most often used in method signatures.
+  See the examples below in Section~\ref{qualifier-polymorphism-examples}.
+\item Polymorphic qualifiers can also be written in method bodies
+  (implementations).
+\item If you can use generics, you typically do not need to use a
+  polymorphic qualifier.  Do not write a polymorphic qualifier on a type
+  variable declaration.
+\item Polymorphic qualifiers may not be used on a class declaration.
+  To apply qualifier polymorphism to classes, use a class qualifier
+  parameter; see Section~\ref{class-qualifier-polymorphism}.
+\item A polymorphic qualifier may be used on a field declaration only in a
+  class with a class qualifier parameter; see Section~\ref{class-qual-param-field}.
+\item If a class has a class qualifier parameter, then a polymorphic
+  qualifier written on a method in the class has a slightly different
+  meaning, see Section~\ref{class-qual-param-method}.
+\end{itemize}
+
+Section~\ref{creating-declarative-hierarchy} explains how to define a
+polymorphic qualifier.
+
+
+\subsectionAndLabel{Using polymorphic qualifiers in a method signature}{qualifier-polymorphism-examples}
+
+A method whose signature has a polymorphic qualifier (such as \<@PolyNull>) conceptually has multiple
+versions, somewhat like the generics feature of Java or a template in C++.
+In each version, each instance of the polymorphic qualifier has been
+replaced by the same other qualifier from the hierarchy.
+
+The method body must type-check with all signatures.  A method call is
+type-correct if it type-checks under any one of the signatures.  If a call
+matches multiple signatures, then the compiler uses the most specific
+matching signature for the purpose of type-checking.  This is the same as
+Java's rule for resolving overloaded methods.
+
+
+As an example of the use of \<@PolyNull>, method
+\sunjavadoc{java.base/java/lang/Class.html\#cast(java.lang.Object)}{Class.cast}
+returns null if and only if its argument is \<null>:
+
+\begin{Verbatim}
+  @PolyNull T cast(@PolyNull Object obj) { ... }
+\end{Verbatim}
+
+\noindent
+This is like writing:
+
+\begin{Verbatim}
+   @NonNull T cast( @NonNull Object obj) { ... }
+  @Nullable T cast(@Nullable Object obj) { ... }
+\end{Verbatim}
+
+\noindent
+except that the latter is not legal Java, since it defines two
+methods with the same Java signature.
+
+
+As another example, consider
+
+\begin{Verbatim}
+  // Returns null if either argument is null.
+  @PolyNull T max(@PolyNull T x, @PolyNull T y);
+\end{Verbatim}
+
+\noindent
+which is like writing
+
+\begin{Verbatim}
+   @NonNull T max( @NonNull T x,  @NonNull T y);
+  @Nullable T max(@Nullable T x, @Nullable T y);
+\end{Verbatim}
+
+\noindent
+At a call site, the most specific applicable signature is selected.
+
+Another way of thinking about which one of the two \code{max} variants is
+selected is that the nullness annotations of (the declared types of) both
+arguments are \emph{unified} to a type that is a supertype of both, also
+known as the \emph{least upper bound} or lub.  If both
+arguments are \code{@NonNull}, their unification (lub) is \<@NonNull>, and the
+method return type is \<@NonNull>.  But if even one of the arguments is \<@Nullable>,
+then the unification (lub) is \<@Nullable>, and so is the return type.
+
+
+
+\subsectionAndLabel{Relationship to subtyping and generics}{qualifier-polymorphism-vs-subtyping}
+
+Qualifier polymorphism has the same purpose and plays the same role as
+Java's generics.  You use them for the similar reasons, such as:
+\begin{itemize}
+\item
+  A method operates on collections with different types of
+  elements.
+\item
+  Two different arguments have the same type, without constraining them to
+  be one specific type.
+\item
+  A method returns a value of the same type as its argument.
+\end{itemize}
+
+
+If a method is written using Java generics, it usually does not need
+qualifier polymorphism.  If you can use Java's generics, then that is often
+better.  On the other hand, if you have legacy code that is not
+written generically, and you cannot change it to use generics, then you can
+use qualifier polymorphism to achieve a similar effect, with respect to
+type qualifiers only.  The Java compiler still treats the base Java types
+non-generically.
+
+In some cases, you don't need qualifier polymorphism because subtyping
+already provides the needed functionality.
+\<String> is a supertype of \<@Interned String>, so a method \<toUpperCase>
+that is declared to take a \<String> parameter can also be called on an
+\<@Interned String> argument.
+
+%% TODO: Polymorphic qualifiers do not yet take an optional argument.
+% PolyAll in the section below should be changed to any poly qualifier.
+%
+% \subsectionAndLabel{Multiple instances of polymorphic qualifiers (the index argument)}{qualifier-polymorphism-multiple-instances}
+%
+% Each polymorphic qualifier such as \refqualclass{framework/qual}{PolyAll}
+% takes an optional argument so that you can
+% specify multiple, independent polymorphic type qualifiers.  For example,
+% this signature is overly restrictive:
+%
+% \begin{Verbatim}
+%   /**
+%    * Returns true if the arrays are elementwise equal,
+%    * testing for equality using == (not the equals method).
+%    */
+%   public static int eltwiseEqualUsingEq(@PolyAll Object[] a, @PolyAll Object elt) {
+%     for (int i=0; i<a.length; i++) {
+%       if (elt != a[i]) {
+%         return false;
+%       }
+%     }
+%     return true;
+%   }
+% \end{Verbatim}
+%
+% \noindent
+% That signature requires the element type annotation to be identical for the
+% two arguments.  For example, it forbids this invocation:
+%
+% \begin{Verbatim}
+%   @Nullable Object[] x;
+%    @NonNull Object   y;
+%   ... indexOf(x, y) ...
+% \end{Verbatim}
+%
+% \noindent
+% A better signature lets the two arrays' element types vary independently:
+%
+% \begin{Verbatim}
+%   public static int eltwiseEqualUsingEq(@PolyAll(1) Object[] a, @PolyAll(2) Object elt)
+% \end{Verbatim}
+%
+% \noindent
+% Note that in this case, the \<@Nullable> annotation on \<elt>'s type is no
+% longer necessary, since it is subsumed by \<@PolyAll>.
+%
+% The \<@PolyAll> annotation at a location $l$ applies to every type
+% qualifier hierarchy for which no explicit qualifier is written at location
+% $l$.  For example, a declaration like
+% \<@PolyAll @NonNull Object elt> is polymorphic over every type system
+% \emph{except} the nullness type system, for which the type is fixed at
+% \<@NonNull>.  That would be the proper declaration for \<elt> if the body
+% had used \<elt.equals(a[i])> instead of \<elt == a[i]>.
+%
+%
+% % Suppose that some type system has two qualifiers, such as
+% % \<@Nullable> and \<@NonNull>.  When a polymorphic type qualifier such
+% % as \<@PolyNull> is used in a method, then the method conceptually
+% % has two different versions:  one in which every instance of
+% % \<@PolyNull> has been replaced by \<@NonNull> and one in
+% % which every instance of \<@PolyNull> has been replaced by
+% % \<@Nullable>.
+%
+% If a method signature contains only indexless versions of a polymorphic
+% qualifier such as \refqualclass{framework/qual}{PolyAll} or
+% \refqualclass{checker/nullness/qual}{PolyNull}, then all of them refer to
+% the same type as described in
+% Section~\ref{qualifier-polymorphism-multiple-qualifiers}.  If any indexed
+% version appears, then every occurrence of the polymorphic qualifier without
+% an index is considered to use a fresh index.  For example, the following
+% two declarations are equivalent (where \<@PA> means \<@PolyAll>, for brevity):
+%
+% \begin{smaller}
+% \begin{Verbatim}
+%   @PA(1) foo(@PA(1) Object a, @PA(2) Object b, @PA(2) Object c, @PA    Object d, @PA    Object e) {...}
+%
+%   @PA(1) foo(@PA(1) Object a, @PA(2) Object b, @PA(2) Object c, @PA(3) Object d, @PA(4) Object e) {...}
+% \end{Verbatim}
+% \end{smaller}
+%
+% As described in Section~\ref{qualifier-polymorphism-return-type}, the
+% qualifier on a return type must be the same as that on some formal parameter.
+% Therefore, the first of these declarations is legal because it is
+% equivalent to the second, but the third is illegal because it is
+% equivalent to the fourth.
+%
+% \begin{Verbatim}
+%   @PolyAll    m1(@PolyAll    Object a, @PolyAll    Object b) { ... } // OK
+%   @PolyAll(1) m2(@PolyAll(1) Object a, @PolyAll(1) Object b) { ... } // OK (same as m1)
+%
+%   @PolyAll    m3(@PolyAll    Object a, @PolyAll(1) Object b) { ... } // illegal
+%   @PolyAll(2) m4(@PolyAll(3) Object a, @PolyAll(1) Object b) { ... } // illegal (same as m3)
+% \end{Verbatim}
+
+
+\subsectionAndLabel{Using multiple polymorphic qualifiers in a method signature}{qualifier-polymorphism-multiple-qualifiers}
+
+%% I can't think of a non-clumsy way to say this.
+% Each method containing a polymorphic qualifier is (conceptually) expanded
+% into multiple versions completely independently.
+
+Usually, it does not make sense to write only a single instance of a polymorphic
+qualifier in a method definition:  if you write one instance of (say)
+\<@PolyNull>, then you should use at least two.
+The main benefit of polymorphic qualifiers comes when one is used multiple times
+in a method, since then each instance turns into the same type qualifier.
+(Section~\ref{qualifier-polymorphism-single-qualifier} describes some
+exceptions to this rule:  times when it makes sense to write a single
+polymorphic qualifier in a signature.)
+
+Most frequently, the polymorphic qualifier appears on at least one formal
+parameter and also on the return type.
+
+
+
+  It can also be useful to have
+polymorphic qualifiers on (only) multiple formal parameters, especially if
+the method side-effects one of its arguments.
+For example, consider
+
+\begin{Verbatim}
+void moveBetweenStacks(Stack<@PolyNull Object> s1, Stack<@PolyNull Object> s2) {
+  s1.push(s2.pop());
+}
+\end{Verbatim}
+
+\noindent
+In this particular example, it would be cleaner to rewrite your code to use
+Java generics, if you can do so:
+
+\begin{Verbatim}
+<T> void moveBetweenStacks(Stack<T> s1, Stack<T> s2) {
+  s1.push(s2.pop());
+}
+\end{Verbatim}
+
+
+\subsectionAndLabel{Using a single polymorphic qualifier in a method signature}{qualifier-polymorphism-single-qualifier}
+
+As explained in Section~\ref{qualifier-polymorphism-multiple-qualifiers},
+you will usually use a polymorphic qualifier
+multiple times in a signature.
+This section describes situations when it makes sense to write just one
+polymorphic qualifier in a method signature.
+Some of these situations can be avoided by writing a generic method,
+but in legacy code it may not be possible for you to change a method to be
+generic.
+
+
+\subsubsectionAndLabel{Using a single polymorphic qualifier on a return type}{qualifier-polymorphism-return-type}
+
+It is unusual, but permitted, to write just one polymorphic qualifier, on a return type.
+
+This is just like it is unusual, but permitted, to write just one
+occurrence of a generic type parameter, on a return type.  An example of
+such a method is
+\sunjavadoc{java.base/java/util/Collections.html\#emptyList()}{Collections.emptyList()}.
+
+
+\subsubsectionAndLabel{Using a single polymorphic qualifier on an element type}{qualifier-polymorphism-element-types}
+
+It can make sense to use a polymorphic qualifier just once, on an array or
+generic element type.
+
+For example, consider a routine that returns the index, in an array, of a
+given element:
+
+\begin{Verbatim}
+  public static int indexOf(@PolyNull Object[] a, @Nullable Object elt) { ... }
+\end{Verbatim}
+
+If \<@PolyNull> were replaced with either \<@Nullable> or \<@NonNull>, then
+one of these safe client calls would be rejected:
+
+\begin{Verbatim}
+  @Nullable Object[] a1;
+  @NonNull Object[] a2;
+
+  indexOf(a1, someObject);
+  indexOf(a2, someObject);
+\end{Verbatim}
+
+Of course, it would be better style to use a generic method, as in either
+of these signatures:
+
+\begin{Verbatim}
+ public static <T extends @Nullable Object> int indexOf(T[] a, @Nullable Object elt) { ... }
+ public static <T extends @Nullable Object> int indexOf(T[] a, T elt) { ... }
+\end{Verbatim}
+
+
+Another example is a method that writes bytes to a file.  It accepts an
+array of signed or unsigned bytes, and it behaves identically for both:
+
+\begin{Verbatim}
+  void write(@PolySigned byte[] b) { ... }
+\end{Verbatim}
+
+
+These examples use arrays, but there are similar examples that
+use collections.
+
+
+\subsubsectionAndLabel{Don't use a single polymorphic qualifier on a formal parameter type}{qualifier-polymorphism-formal-parameter}
+
+There is no point to writing just one polymorphic qualifier in a method
+signature, as the main type qualifier on a formal parameter type.
+Consider this signature:
+
+\begin{Verbatim}
+  void m(@PolyNull Object obj)
+\end{Verbatim}
+
+\noindent
+which expands to
+
+\begin{Verbatim}
+  void m(@NonNull Object obj)
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+This is no different (in terms of which calls to the method will
+type-check) than writing just
+
+\begin{Verbatim}
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+However, it does make sense to write a single polymorphic qualifier
+\emph{within} a formal parameter type, as in
+\begin{Verbatim}
+  void m2a(List<@PolyNull MySubClass> strings)
+\end{Verbatim}
+which is similar to
+\begin{Verbatim}
+  void m2b(List<? extends @Nullable MySubClass> strings)
+\end{Verbatim}
+Method \<m2b()> can be called on (for example) \code{List<@Nullable
+  MySubClass>} and \code{List<@NonNull MySubClass>}, which are not legal
+arguments to method \<m2a()>.
+
+
+\sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
+
+Class qualifier parameters permit you to supply a type qualifier (only,
+without a Java basetype) to any class (generic or not).
+
+When a generic class represents a collection, a user can write a type
+qualifier on the type argument, as in \code{List<@Tainted Character>}
+versus \code{List<@Untainted Character>}.  When a non-generic class
+represents a collection with a hard-coded type (as \<StringBuffer>
+hard-codes \<Character>), you can use a class qualifier parameter to
+distinguish \<StringBuffer>s that contain different types of characters.
+% (For a discussion of tainting, see \chapterpageref{tainting-checker}.)
+
+To add a qualifier parameter to a class, annotate its declaration with \refqualclass{framework/qual}{HasQualifierParameter}
+and write the class of the top qualifier as its element.
+
+\begin{Verbatim}
+@HasQualifierParameter(Tainted.class)
+class StringBuffer { ... }
+\end{Verbatim}
+
+A qualifier on a use of \<StringBuffer> is treated as
+appearing both on the \<StringBuffer> and on its conceptual type argument.  That
+is:\\
+\begin{tt}
+  @Tainted StringBuffer $\approx$ @Tainted Collection<@Tainted Character>\\
+  @Untainted StringBuffer $\approx$ @Untainted Collection<@Untainted Character>
+\end{tt}
+
+If two types have different qualifier arguments, they have no subtyping
+relationship.  (This is ``invariant subtyping'', also used by Java for
+generic classes.)  In particular, \<@Untainted StringBuffer> is not a
+subtype of \<@Tainted StringBuffer>; an attempt to cast between them, in
+either direction, will yield an \<invariant.cast.unsafe> error.
+
+\<@HasQualifierParameter> is inherited.  If type $T$ has a
+\<@HasQualifierParameter> annotation, then its subtypes are automatically
+treated as having the same annotation.
+
+%% TODO: Inheritance of classes with a qualifier parameter below.
+
+Within a class with a qualifier parameter,
+the default qualifier for uses of that class is the polymorphic qualifier.
+
+
+\subsectionAndLabel{Resolving polymorphism when the receiver type has a polymorphic qualifier}{class-qual-param-method}
+
+Qualifier polymorphism changes the rules for instantiating polymorphic
+qualifiers (Section~\ref{method-qualifier-polymorphism}).
+If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
+then at a call site all polymorphic annotations are instantiated to
+the same qualifier as the type of the receiver expression of the method call.
+Otherwise, use the rules of Section~\ref{method-qualifier-polymorphism}
+
+For example, consider
+
+\begin{Verbatim}
+@HasQualifierParameter(Tainted.class)
+class Buffer {
+  void append(@PolyTainted Buffer this, @PolyTainted String s) { ... }
+}
+\end{Verbatim}
+
+\noindent
+Because \<@PolyTainted> applies to a type (\<Buffer>) with a qualifier parameter, all
+uses of \<@PolyTainted> are instantiated to the qualifiers on the type of
+the receiver expression at call sites to \<append>. For example,
+
+\begin{Verbatim}
+@Untainted Buffer untaintedBuffer = ...;
+@Tainted String taintedString = ...;
+untaintedBuffer.append(taintedString); // error: (argument.type.incompatible)
+\end{Verbatim}
+The above \<append> call is illegal because the \<@PolyTainted> is instantiated to \<@Untainted> and
+the type of the argument is \<@Tainted> which is a supertype of \<@Untainted>.  If the type of
+\<untaintedBuffer> were \<@Tainted> then the call would be legal.
+
+\subsectionAndLabel{Using class qualifier parameters in the type of a field}{class-qual-param-field}
+
+To express that the type of a field
+should have the same qualifier as the class qualifier parameter,
+annotate the field type with the polymorphic qualifier for the type system.
+
+\begin{Verbatim}
+@HasQualifierParameter(Tainted.class)
+class Buffer {
+  @PolyTainted String field;
+}
+\end{Verbatim}
+
+At a field access where the declared type of the field has a polymorphic
+qualifier, that polymorphic qualifier is instantiated to the qualifier on the
+type of the receiver of the field access (or in the case of type variables, the
+qualifier on the upper bound).  That is, the qualifier on \<myBuffer.field>
+is that same as that on \<myBuffer>.
+
+\subsectionAndLabel{Local variable defaults for types with qualifier parameters}{local-vars-qual-param-defaults}
+
+Local variables default to the top type (see
+Section~\ref{climb-to-top}). Type refinement determines if a variable can be
+treated as a suitable subtype, and annotations on local variables are rarely
+needed as a result. However, since qualifier parameters add invariant subtyping,
+type refinement is no longer valid. For example, suppose in the following code
+that \<StringBuffer> is annotated with \<@HasQualifierParameter(Tainted.class)>.
+
+\begin{Verbatim}
+    void method(@Untainted StringBuffer buffer) {
+        StringBuffer local = buffer;
+        executeSql(local.toString());
+    }
+
+    void executeSql(@Untainted String code) {
+        // ...
+    }
+\end{Verbatim}
+
+Normally, the framework would determine that \<local> has type \<@Untainted
+StringBuffer> and the call to \<executeSql> would be valid. However, since by
+default \<local> has type \<@Tainted StringBuffer>, and
+\<@Untainted StringBuffer> is not a subtype, no type refinement would be
+performed, leading to an error. Fixing this would require manually annotating
+\<local> as an \<@Untainted StringBuffer>, increasing the annotation burden on
+programmers.
+
+For this reason, local variables with types that have a qualifier parameter use
+different defaulting rules. When a local variable has an initializer, the type
+of that initializer is used as the default type of that variable if no other
+annotations are written. For example, in the above code, the type of \<local>
+would be \<@Untainted StringBuffer>. This eliminates the need for type
+refinement.
+
+\subsectionAndLabel{Qualifier parameters by default}{default-has-qualifier-parameter}
+
+If many classes in a project should have \<@HasQualifierParameter>, it's
+possible to enable it on all classes in a package by default. Writing
+\<@HasQualifierParameter> on a package is equivalent to writing
+\<@HasQualifierParameter> on each class in that package and all subpackages with
+the same arguments.
+
+For example, writing this annotation enables \<@HasQualifierParameter>
+for all classes in \code{mypackage}.
+
+\begin{Verbatim}
+@HasQualifierParameter(Tainted.class)
+package mypackage;
+\end{Verbatim}
+
+When using \<@HasQualifierParameter> on a package, it's possible to disable it
+for a specific class using \refqualclass{framework/qual}{NoQualifierParameter}.
+Writing this on a class indicates it has no class qualifier parameter and
+\<@HasQualifierParameter> will not be enabled by default. Like
+\<@HasQualifierParameter>, it takes one or more top annotations. It is illegal
+to explicitly write both \<@HasQualifierParameter> and \<@NoQualifierParameter>
+on the same class for the same hierarchy.
+
+%% TODO: implement this.
+%% https://github.com/typetools/checker-framework/issues/3400
+%\subsectionAndLabel{Inheritance of classes with a qualifier parameter}{class-qual-param-inheritance}
+%
+%If a class extends a \<@HasQualifierParameter> class (or implements a
+%\<@HasQualifierParameter> interface), then that class must also be marked
+%\<@HasQualifierParameter>. A particular subclass can specify which qualifier
+%parameter should be used for the super class.  (This is similar to \<class
+%StringList implements List<String> \{...\}>.) For example,
+%
+%\begin{Verbatim}
+%  @HasQualifierParameter(Tainted.class)
+%  class Buffer {
+%  void append(@PolyTainted Buffer this, @PolyTainted String s) { ... }
+%  }
+%  @HasQualifierParameter(Tainted.class)
+%  @Tainted class TaintedBuffer extends @Tainted Buffer {
+%  @Override
+%  void append(@Tainted TaintedBuffer this, @Tainted String s) { ... } // legal override
+%  }
+%\end{Verbatim}
+%
+% \<@Untainted TaintedBuffer> is an invalid type.
+
+\subsectionAndLabel{Types with qualifier parameters as type arguments}{class-qual-param-type-arg}
+
+Types with qualifier parameters are only allowed as type arguments to type parameters whose upper bound
+have a qualifier parameter. If they were allowed for as type arguments for any type parameter, then
+unsound casts would be permitted. For example:
+
+\begin{Verbatim}
+    @HasQualifierParameter(Tainted.class)
+    interface Buffer {
+        void append(@PolyTainted String s);
+    }
+
+    public class ClassQPTypeVarTest {
+        <T> @Tainted T cast(T param) {
+            return param;
+        }
+
+        void bug(@Untainted Buffer b, @Tainted String s) {
+            cast(b).append(s);  // error
+        }
+    }
+
+
+\end{Verbatim}
+
+% LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
+% LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
+% LocalWords:  PolyNull java lub invariantly supertype's
+% LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase elt
+% LocalWords:  PolyAll arrays' Xlint rawtypes AignoreRawTypeArguments s1
+% LocalWords:  call's Regex taintedHolder untaintedHolder taintedHolder2
+% LocalWords:  wildcards holderExtends holderSuper getTaintedString s2 JLS
+% LocalWords:  getUntaintedString Typesystem Param ClassTaintingParam h1
+% LocalWords:  arg param MethodTaintingParam Util meth value1 h2 TopType
+% LocalWords:  nestedHolder nestedHolder2 extendsHolder PolyTainted Poly
+%%  LocalWords:  BottomType CharSequence SomeType OtherType MyList1a
+%%  LocalWords:  MyList2a polymorphism'' bound'' LowerBound UpperBound
+% LocalWords:  JavaUpperBound JavaLowerBound MyTypeAnnotation myBuffer
+% LocalWords:  HasQualifierParameter myUntaintedBuffer myTaintedString
+% LocalWords:  myTaintedBuffer myUntaintedString

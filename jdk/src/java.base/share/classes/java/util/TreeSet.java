@@ -1,0 +1,604 @@
+/*
+ * Copyright (c) 1998, 2019, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
+ */
+
+package java.util;
+
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty;
+import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
+import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.nonempty.qual.PolyNonEmpty;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.pico.qual.Immutable;
+import org.checkerframework.checker.pico.qual.Mutable;
+import org.checkerframework.checker.pico.qual.PolyMutable;
+import org.checkerframework.checker.pico.qual.Readonly;
+import org.checkerframework.checker.pico.qual.ReceiverDependentMutable;
+import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.AnnotatedFor;
+import org.checkerframework.framework.qual.CFComment;
+
+/**
+ * A {@link NavigableSet} implementation based on a {@link TreeMap}.
+ * The elements are ordered using their {@linkplain Comparable natural
+ * ordering}, or by a {@link Comparator} provided at set creation
+ * time, depending on which constructor is used.
+ *
+ * <p>This implementation provides guaranteed log(n) time cost for the basic
+ * operations ({@code add}, {@code remove} and {@code contains}).
+ *
+ * <p>Note that the ordering maintained by a set (whether or not an explicit
+ * comparator is provided) must be <i>consistent with equals</i> if it is to
+ * correctly implement the {@code Set} interface.  (See {@code Comparable}
+ * or {@code Comparator} for a precise definition of <i>consistent with
+ * equals</i>.)  This is so because the {@code Set} interface is defined in
+ * terms of the {@code equals} operation, but a {@code TreeSet} instance
+ * performs all element comparisons using its {@code compareTo} (or
+ * {@code compare}) method, so two elements that are deemed equal by this method
+ * are, from the standpoint of the set, equal.  The behavior of a set
+ * <i>is</i> well-defined even if its ordering is inconsistent with equals; it
+ * just fails to obey the general contract of the {@code Set} interface.
+ *
+ * <p><strong>Note that this implementation is not synchronized.</strong>
+ * If multiple threads access a tree set concurrently, and at least one
+ * of the threads modifies the set, it <i>must</i> be synchronized
+ * externally.  This is typically accomplished by synchronizing on some
+ * object that naturally encapsulates the set.
+ * If no such object exists, the set should be "wrapped" using the
+ * {@link Collections#synchronizedSortedSet Collections.synchronizedSortedSet}
+ * method.  This is best done at creation time, to prevent accidental
+ * unsynchronized access to the set: <pre>
+ *   SortedSet s = Collections.synchronizedSortedSet(new TreeSet(...));</pre>
+ *
+ * <p>The iterators returned by this class's {@code iterator} method are
+ * <i>fail-fast</i>: if the set is modified at any time after the iterator is
+ * created, in any way except through the iterator's own {@code remove}
+ * method, the iterator will throw a {@link ConcurrentModificationException}.
+ * Thus, in the face of concurrent modification, the iterator fails quickly
+ * and cleanly, rather than risking arbitrary, non-deterministic behavior at
+ * an undetermined time in the future.
+ *
+ * <p>Note that the fail-fast behavior of an iterator cannot be guaranteed
+ * as it is, generally speaking, impossible to make any hard guarantees in the
+ * presence of unsynchronized concurrent modification.  Fail-fast iterators
+ * throw {@code ConcurrentModificationException} on a best-effort basis.
+ * Therefore, it would be wrong to write a program that depended on this
+ * exception for its correctness:   <i>the fail-fast behavior of iterators
+ * should be used only to detect bugs.</i>
+ *
+ * <p>This class is a member of the
+ * <a href="{@docRoot}/java.base/java/util/package-summary.html#CollectionsFramework">
+ * Java Collections Framework</a>.
+ *
+ * @param <E> the type of elements maintained by this set
+ *
+ * @author  Josh Bloch
+ * @see     Collection
+ * @see     Set
+ * @see     HashSet
+ * @see     Comparable
+ * @see     Comparator
+ * @see     TreeMap
+ * @since   1.2
+ */
+
+@CFComment({"lock/nullness: Subclasses of this interface/class may opt to prohibit null elements"})
+@AnnotatedFor({"lock", "nullness"})
+@ReceiverDependentMutable
+public class TreeSet<E extends @Immutable Object> extends AbstractSet<E>
+    implements NavigableSet<E>, Cloneable, java.io.Serializable
+{
+    /**
+     * The backing map.
+     */
+    private transient NavigableMap<E, @Readonly Object> m;
+
+    // Dummy value to associate with an Object in the backing Map
+    private static final Object PRESENT = new Object();
+
+    /**
+     * Constructs a set backed by the specified navigable map.
+     */
+    TreeSet(@ReceiverDependentMutable NavigableMap<E, @Readonly Object> m) {
+        this.m = m;
+    }
+
+    /**
+     * Constructs a new, empty tree set, sorted according to the
+     * natural ordering of its elements.  All elements inserted into
+     * the set must implement the {@link Comparable} interface.
+     * Furthermore, all such elements must be <i>mutually
+     * comparable</i>: {@code e1.compareTo(e2)} must not throw a
+     * {@code ClassCastException} for any elements {@code e1} and
+     * {@code e2} in the set.  If the user attempts to add an element
+     * to the set that violates this constraint (for example, the user
+     * attempts to add a string element to a set whose elements are
+     * integers), the {@code add} call will throw a
+     * {@code ClassCastException}.
+     */
+    public TreeSet() {
+        this(new @ReceiverDependentMutable TreeMap<E, @Readonly Object>());
+    }
+
+    /**
+     * Constructs a new, empty tree set, sorted according to the specified
+     * comparator.  All elements inserted into the set must be <i>mutually
+     * comparable</i> by the specified comparator: {@code comparator.compare(e1,
+     * e2)} must not throw a {@code ClassCastException} for any elements
+     * {@code e1} and {@code e2} in the set.  If the user attempts to add
+     * an element to the set that violates this constraint, the
+     * {@code add} call will throw a {@code ClassCastException}.
+     *
+     * @param comparator the comparator that will be used to order this set.
+     *        If {@code null}, the {@linkplain Comparable natural
+     *        ordering} of the elements will be used.
+     */
+    public TreeSet(@Nullable Comparator<? super E> comparator) {
+        this(new @ReceiverDependentMutable TreeMap<E, @Readonly Object>(comparator));
+    }
+
+    /**
+     * Constructs a new tree set containing the elements in the specified
+     * collection, sorted according to the <i>natural ordering</i> of its
+     * elements.  All elements inserted into the set must implement the
+     * {@link Comparable} interface.  Furthermore, all such elements must be
+     * <i>mutually comparable</i>: {@code e1.compareTo(e2)} must not throw a
+     * {@code ClassCastException} for any elements {@code e1} and
+     * {@code e2} in the set.
+     *
+     * @param c collection whose elements will comprise the new set
+     * @throws ClassCastException if the elements in {@code c} are
+     *         not {@link Comparable}, or are not mutually comparable
+     * @throws NullPointerException if the specified collection is null
+     */
+    @SuppressWarnings("pico:method.invocation.invalid") // PICO constructor fix
+    public @PolyNonEmpty TreeSet(@PolyNonEmpty Collection<? extends E> c) {
+        this();
+        addAll(c);
+    }
+
+    /**
+     * Constructs a new tree set containing the same elements and
+     * using the same ordering as the specified sorted set.
+     *
+     * @param s sorted set whose elements will comprise the new set
+     * @throws NullPointerException if the specified sorted set is null
+     */
+    @SuppressWarnings("pico:method.invocation.invalid") // PICO constructor fix
+    public @PolyNonEmpty TreeSet(@PolyNonEmpty SortedSet<E> s) {
+        this(s.comparator());
+        addAll(s);
+    }
+
+    /**
+     * Returns an iterator over the elements in this set in ascending order.
+     *
+     * @return an iterator over the elements in this set in ascending order
+     */
+    @SideEffectFree
+    @SuppressWarnings("pico:method.invocation.invalid") // lost can not invoke poly method.
+    public @PolyNonEmpty Iterator<E> iterator(@PolyNonEmpty @Readonly TreeSet<E> this) {
+        return m.navigableKeySet().iterator();
+    }
+
+    /**
+     * Returns an iterator over the elements in this set in descending order.
+     *
+     * @return an iterator over the elements in this set in descending order
+     * @since 1.6
+     */
+    @SuppressWarnings("pico:method.invocation.invalid") // lost can not invoke poly method.
+    public @PolyNonEmpty Iterator<E> descendingIterator(@PolyNonEmpty @Readonly TreeSet<E> this) {
+        return m.descendingKeySet().iterator();
+    }
+
+    /**
+     * @since 1.6
+     */
+    public @PolyMutable NavigableSet<E> descendingSet(@PolyMutable TreeSet<E> this) {
+        return new @PolyMutable TreeSet<>(m.descendingMap());
+    }
+
+    /**
+     * Returns the number of elements in this set (its cardinality).
+     *
+     * @return the number of elements in this set (its cardinality)
+     */
+    @Pure
+    public @NonNegative int size(@GuardSatisfied @Readonly TreeSet<E> this) {
+        return m.size();
+    }
+
+    /**
+     * Returns {@code true} if this set contains no elements.
+     *
+     * @return {@code true} if this set contains no elements
+     */
+    @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
+    @Pure
+    @EnsuresNonEmptyIf(result = false, expression = "this")
+    public boolean isEmpty(@GuardSatisfied @Readonly TreeSet<E> this) {
+        return m.isEmpty();
+    }
+
+    /**
+     * Returns {@code true} if this set contains the specified element.
+     * More formally, returns {@code true} if and only if this set
+     * contains an element {@code e} such that
+     * {@code Objects.equals(o, e)}.
+     *
+     * @param o object to be checked for containment in this set
+     * @return {@code true} if this set contains the specified element
+     * @throws ClassCastException if the specified object cannot be compared
+     *         with the elements currently in the set
+     * @throws NullPointerException if the specified element is null
+     *         and this set uses natural ordering, or its comparator
+     *         does not permit null elements
+     */
+    @Pure
+    @EnsuresNonEmptyIf(result = true, expression = "this")
+    public boolean contains(@GuardSatisfied @Readonly TreeSet<E> this, @GuardSatisfied @UnknownSignedness @Readonly Object o) {
+        return m.containsKey(o);
+    }
+
+    /**
+     * Adds the specified element to this set if it is not already present.
+     * More formally, adds the specified element {@code e} to this set if
+     * the set contains no element {@code e2} such that
+     * {@code Objects.equals(e, e2)}.
+     * If this set already contains the element, the call leaves the set
+     * unchanged and returns {@code false}.
+     *
+     * @param e element to be added to this set
+     * @return {@code true} if this set did not already contain the specified
+     *         element
+     * @throws ClassCastException if the specified object cannot be compared
+     *         with the elements currently in this set
+     * @throws NullPointerException if the specified element is null
+     *         and this set uses natural ordering, or its comparator
+     *         does not permit null elements
+     */
+    @EnsuresNonEmpty("this")
+    public boolean add(@GuardSatisfied @Mutable TreeSet<E> this, E e) {
+        return m.put(e, PRESENT)==null;
+    }
+
+    /**
+     * Removes the specified element from this set if it is present.
+     * More formally, removes an element {@code e} such that
+     * {@code Objects.equals(o, e)},
+     * if this set contains such an element.  Returns {@code true} if
+     * this set contained the element (or equivalently, if this set
+     * changed as a result of the call).  (This set will not contain the
+     * element once the call returns.)
+     *
+     * @param o object to be removed from this set, if present
+     * @return {@code true} if this set contained the specified element
+     * @throws ClassCastException if the specified object cannot be compared
+     *         with the elements currently in this set
+     * @throws NullPointerException if the specified element is null
+     *         and this set uses natural ordering, or its comparator
+     *         does not permit null elements
+     */
+    public boolean remove(@GuardSatisfied @Mutable TreeSet<E> this, @GuardSatisfied @UnknownSignedness @Readonly Object o) {
+        return m.remove(o)==PRESENT;
+    }
+
+    /**
+     * Removes all of the elements from this set.
+     * The set will be empty after this call returns.
+     */
+    public void clear(@GuardSatisfied @Mutable TreeSet<E> this) {
+        m.clear();
+    }
+
+    /**
+     * Adds all of the elements in the specified collection to this set.
+     *
+     * @param c collection containing elements to be added to this set
+     * @return {@code true} if this set changed as a result of the call
+     * @throws ClassCastException if the elements provided cannot be compared
+     *         with the elements currently in the set
+     * @throws NullPointerException if the specified collection is null or
+     *         if any element is null and this set uses natural ordering, or
+     *         its comparator does not permit null elements
+     */
+    public  boolean addAll(@GuardSatisfied @Mutable TreeSet<E> this, @Readonly Collection<? extends E> c) {
+        // Use linear-time version if applicable
+        if (m.size()==0 && c.size() > 0 &&
+            c instanceof SortedSet &&
+                m instanceof TreeMap<E, Object> map) {
+            SortedSet<? extends E> set = (SortedSet<? extends E>) c;
+            if (Objects.equals(set.comparator(), map.comparator())) {
+                map.addAllForTreeSet(set, PRESENT);
+                return true;
+            }
+        }
+        return super.addAll(c);
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code fromElement} or {@code toElement}
+     *         is null and this set uses natural ordering, or its comparator
+     *         does not permit null elements
+     * @throws IllegalArgumentException {@inheritDoc}
+     * @since 1.6
+     */
+    @SideEffectFree
+    public @PolyMutable NavigableSet<E> subSet(@GuardSatisfied @PolyMutable TreeSet<E> this, @GuardSatisfied E fromElement, boolean fromInclusive,
+                                  @GuardSatisfied E toElement,   boolean toInclusive) {
+        return new @PolyMutable TreeSet<>(m.subMap(fromElement, fromInclusive,
+                                       toElement,   toInclusive));
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code toElement} is null and
+     *         this set uses natural ordering, or its comparator does
+     *         not permit null elements
+     * @throws IllegalArgumentException {@inheritDoc}
+     * @since 1.6
+     */
+    @SideEffectFree
+    public @PolyMutable NavigableSet<E> headSet(@GuardSatisfied @PolyMutable TreeSet<E> this, @GuardSatisfied E toElement, boolean inclusive) {
+        return new @PolyMutable TreeSet<>(m.headMap(toElement, inclusive));
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code fromElement} is null and
+     *         this set uses natural ordering, or its comparator does
+     *         not permit null elements
+     * @throws IllegalArgumentException {@inheritDoc}
+     * @since 1.6
+     */
+    @SideEffectFree
+    public @PolyMutable NavigableSet<E> tailSet(@GuardSatisfied @PolyMutable TreeSet<E> this, @GuardSatisfied E fromElement, boolean inclusive) {
+        return new @PolyMutable TreeSet<>(m.tailMap(fromElement, inclusive));
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code fromElement} or
+     *         {@code toElement} is null and this set uses natural ordering,
+     *         or its comparator does not permit null elements
+     * @throws IllegalArgumentException {@inheritDoc}
+     */
+    @SideEffectFree
+    public @PolyMutable SortedSet<E> subSet(@GuardSatisfied @PolyMutable TreeSet<E> this, @GuardSatisfied E fromElement, @GuardSatisfied E toElement) {
+        return subSet(fromElement, true, toElement, false);
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code toElement} is null
+     *         and this set uses natural ordering, or its comparator does
+     *         not permit null elements
+     * @throws IllegalArgumentException {@inheritDoc}
+     */
+    @SideEffectFree
+    public @PolyMutable SortedSet<E> headSet(@GuardSatisfied @PolyMutable TreeSet<E> this, E toElement) {
+        return headSet(toElement, false);
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code fromElement} is null
+     *         and this set uses natural ordering, or its comparator does
+     *         not permit null elements
+     * @throws IllegalArgumentException {@inheritDoc}
+     */
+    @SideEffectFree
+    public @PolyMutable SortedSet<E> tailSet(@GuardSatisfied @PolyMutable TreeSet<E> this, E fromElement) {
+        return tailSet(fromElement, true);
+    }
+
+    @Pure
+    public @Nullable Comparator<? super E> comparator(@GuardSatisfied @Readonly TreeSet<E> this) {
+        return m.comparator();
+    }
+
+    /**
+     * @throws NoSuchElementException {@inheritDoc}
+     */
+    @SideEffectFree
+    public E first(@GuardSatisfied @NonEmpty @Readonly TreeSet<E> this) {
+        return m.firstKey();
+    }
+
+    /**
+     * @throws NoSuchElementException {@inheritDoc}
+     */
+    @SideEffectFree
+    public E last(@GuardSatisfied @NonEmpty @Readonly TreeSet<E> this) {
+        return m.lastKey();
+    }
+
+    // NavigableSet API methods
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified element is null
+     *         and this set uses natural ordering, or its comparator
+     *         does not permit null elements
+     * @since 1.6
+     */
+    public @Nullable E lower(@Readonly TreeSet<E> this, E e) {
+        return m.lowerKey(e);
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified element is null
+     *         and this set uses natural ordering, or its comparator
+     *         does not permit null elements
+     * @since 1.6
+     */
+    public @Nullable E floor(@Readonly TreeSet<E> this, E e) {
+        return m.floorKey(e);
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified element is null
+     *         and this set uses natural ordering, or its comparator
+     *         does not permit null elements
+     * @since 1.6
+     */
+    public @Nullable E ceiling(@Readonly TreeSet<E> this, E e) {
+        return m.ceilingKey(e);
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified element is null
+     *         and this set uses natural ordering, or its comparator
+     *         does not permit null elements
+     * @since 1.6
+     */
+    public @Nullable E higher(@Readonly TreeSet<E> this, E e) {
+        return m.higherKey(e);
+    }
+
+    /**
+     * @since 1.6
+     */
+    public @Nullable E pollFirst(@GuardSatisfied @Mutable TreeSet<E> this) {
+        Map.Entry<E,?> e = m.pollFirstEntry();
+        return (e == null) ? null : e.getKey();
+    }
+
+    /**
+     * @since 1.6
+     */
+    public @Nullable E pollLast(@GuardSatisfied @Mutable TreeSet<E> this) {
+        Map.Entry<E,?> e = m.pollLastEntry();
+        return (e == null) ? null : e.getKey();
+    }
+
+    /**
+     * Returns a shallow copy of this {@code TreeSet} instance. (The elements
+     * themselves are not cloned.)
+     *
+     * @return a shallow copy of this set
+     */
+    @SideEffectFree
+    @SuppressWarnings("unchecked")
+    public Object clone(@GuardSatisfied @Mutable TreeSet<E> this) {
+        TreeSet<E> clone;
+        try {
+            clone = (TreeSet<E>) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new InternalError(e);
+        }
+
+        clone.m = new TreeMap<E, @Readonly Object>(m);
+        return clone;
+    }
+
+    /**
+     * Save the state of the {@code TreeSet} instance to a stream (that is,
+     * serialize it).
+     *
+     * @serialData Emits the comparator used to order this set, or
+     *             {@code null} if it obeys its elements' natural ordering
+     *             (Object), followed by the size of the set (the number of
+     *             elements it contains) (int), followed by all of its
+     *             elements (each an Object) in order (as determined by the
+     *             set's Comparator, or by the elements' natural ordering if
+     *             the set has no Comparator).
+     */
+    @java.io.Serial
+    private void writeObject(@Mutable TreeSet<E> this, java.io.ObjectOutputStream s)
+        throws java.io.IOException {
+        // Write out any hidden stuff
+        s.defaultWriteObject();
+
+        // Write out Comparator
+        s.writeObject(m.comparator());
+
+        // Write out size
+        s.writeInt(m.size());
+
+        // Write out all elements in the proper order.
+        for (E e : m.keySet())
+            s.writeObject(e);
+    }
+
+    /**
+     * Reconstitute the {@code TreeSet} instance from a stream (that is,
+     * deserialize it).
+     */
+    @java.io.Serial
+    private void readObject(@Mutable TreeSet<E> this, java.io.ObjectInputStream s)
+        throws java.io.IOException, ClassNotFoundException {
+        // Read in any hidden stuff
+        s.defaultReadObject();
+
+        // Read in Comparator
+        @SuppressWarnings("unchecked")
+            Comparator<? super E> c = (Comparator<? super E>) s.readObject();
+
+        // Create backing TreeMap
+        TreeMap<E, @Readonly Object> tm = new TreeMap<E, @Readonly Object>(c);
+        m = tm;
+
+        // Read in size
+        int size = s.readInt();
+
+        tm.readTreeSet(size, s, PRESENT);
+    }
+
+    /**
+     * Creates a <em><a href="Spliterator.html#binding">late-binding</a></em>
+     * and <em>fail-fast</em> {@link Spliterator} over the elements in this
+     * set.
+     *
+     * <p>The {@code Spliterator} reports {@link Spliterator#SIZED},
+     * {@link Spliterator#DISTINCT}, {@link Spliterator#SORTED}, and
+     * {@link Spliterator#ORDERED}.  Overriding implementations should document
+     * the reporting of additional characteristic values.
+     *
+     * <p>The spliterator's comparator (see
+     * {@link java.util.Spliterator#getComparator()}) is {@code null} if
+     * the tree set's comparator (see {@link #comparator()}) is {@code null}.
+     * Otherwise, the spliterator's comparator is the same as or imposes the
+     * same total ordering as the tree set's comparator.
+     *
+     * @return a {@code Spliterator} over the elements in this set
+     * @since 1.8
+     */
+    public Spliterator<E> spliterator() {
+        return TreeMap.keySpliteratorFor(m);
+    }
+
+    @java.io.Serial
+    private static final long serialVersionUID = -2479143000061671589L;
+}

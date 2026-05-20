@@ -1,0 +1,349 @@
+\htmlhr
+\chapterAndLabel{Signedness Checker}{signedness-checker}
+
+The Signedness Checker guarantees that signed and unsigned integral values are not mixed
+together in a computation. In addition, it prohibits meaningless operations, such
+as division on an unsigned value.
+
+Recall that a computer represents a number as a sequence of bits.
+Signedness indicates how to interpret the most significant bit.  For
+example, the bits \<10000010> ordinarily represent the value -126, but when
+interpreted as unsigned, those bits represent the value 130.  The bits
+\<01111110> represent the value 126 in signed and in unsigned interpretation.
+The range of signed byte values is -128 to 127.  The range of unsigned byte
+values is 0 to 255.
+
+Signedness is only applicable to the integral types \<byte>,
+\<short>, \<int>, and \<long> and their boxed variants \<Byte>,
+\<Short>, \<Integer>, and \<Long>.
+\<char> and \<Character> are always unsigned.
+Floating-point types \<float>, \<double>, \<Float>, and \<Double> are always signed.
+% , because they do not have operations that interpret the bits as unsigned.
+
+Signedness is primarily about how the bits of the representation are
+\emph{interpreted}, not about the values that it can represent.  An unsigned value
+is always non-negative, but just because a variable's value is non-negative does
+not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
+compared to a signed value, or used in arithmetic operations with a signed
+value, then $v$ should have signed type.
+To indicate the range of possible values for a variable, use the
+\refqualclass{checker/index/qual}{NonNegative} annotation of the Index
+Checker (see \chapterpageref{index-checker}) or the
+\refqualclass{common/value/qual}{IntRange} annotation of the Constant Value
+Checker (see \chapterpageref{constant-value-checker}).
+
+Additional details appear in the paper
+``Preventing signedness errors in numerical computations in
+Java''~\cite{Mackie2016} (FSE 2016).
+
+To run the Signedness Checker, run javac with
+\<-processor org.checkerframework.checker.signedness.SignednessChecker>.
+
+
+\sectionAndLabel{Annotations}{signedness-checker-annotations}
+
+The Signedness Checker uses type annotations to indicate the signedness that the programmer intends an expression to have.
+
+\begin{figure}
+\includeimage{signedness}{3.5cm}
+\caption{The type qualifier hierarchy of the signedness annotations.
+Qualifiers in gray are used internally by the type system but should never be written by a programmer.}
+\label{fig-signedness-hierarchy}
+\end{figure}
+
+These are the qualifiers in the signedness type system:
+
+\begin{description}
+
+\item[\refqualclass{checker/signedness/qual}{Unsigned}]
+    indicates that the programmer intends the value to be
+    interpreted as unsigned.
+    That is, if the most significant bit in the bitwise representation is
+    set, then the bits should be interpreted as a large positive value.
+
+\item[\refqualclass{checker/signedness/qual}{Signed}]
+    indicates that the programmer intends the value to be
+    interpreted as signed.
+    That is, if the most significant bit in the bitwise representation is
+    set, then the bits should be interpreted as a negative value.
+    This is the default annotation.
+
+\item[\refqualclass{checker/signedness/qual}{SignedPositive}]
+    indicates that a value is known at compile time to be in the non-negative
+    signed range, so it has the same interpretation as signed or unsigned
+    and may be used with either interpretation.  (Equivalently, the most
+    significant bit is guaranteed to be 0.)  Programmers should usually
+    write \refqualclass{checker/signedness/qual}{Signed} or
+    \refqualclass{checker/signedness/qual}{Unsigned} instead.
+
+\item[\refqualclass{checker/signedness/qual}{SignednessGlb}]
+    indicates that a value may be interpreted as unsigned or signed.  It
+    covers the same cases as
+    \refqualclass{checker/signedness/qual}{SignedPositive}, plus manifest literals, to
+    prevent the programmer from having to annotate them all explicitly.
+    \emph{Programmers should rarely write this annotation,
+    except on fields whose value is a negative manifest literal.}
+
+ \item[\refqualclass{checker/signedness/qual}{PolySigned}]
+   indicates qualifier polymorphism.
+   When two formal parameter types are annotated with
+   \refqualclass{checker/signedness/qual}{PolySigned}, the two arguments
+   at a call site
+   must have the same signedness type annotation.  (This differs from the
+   standard rule for polymorphic qualifiers.)
+   For a description of qualifier polymorphism, see
+   Section~\ref{method-qualifier-polymorphism}.
+
+\item[\refqualclass{checker/signedness/qual}{UnknownSignedness}]
+    indicates that a value's type is not relevant or known to this checker.
+    This annotation is used internally, and should not be
+    written by the programmer.
+
+\item[\refqualclass{checker/signedness/qual}{SignednessBottom}]
+  indicates that the value is \<null>.
+    This annotation is used internally, and should not
+    be written by the programmer.
+
+\end{description}
+
+
+\subsectionAndLabel{Default qualifiers}{signedness-checker-annotations-default-qualifiers}
+
+The only type qualifier that the programmer should need to write is
+\refqualclass{checker/signedness/qual}{Unsigned}.
+When a programmer leaves an expression unannotated, the
+Signedness Checker treats it in one of the following ways:
+
+\begin{itemize}
+
+    \item
+    All \code{byte}, \code{short}, \code{int}, and \code{long} literals default
+    to \refqualclass{checker/signedness/qual}{SignednessGlb}.
+    \item
+    All \code{char} and \code{Character} expressions are
+    \refqualclass{checker/signedness/qual}{Unsigned}; this cannot be changed.
+    \item
+    All \code{char} and \code{Character} variables are
+    \refqualclass{checker/signedness/qual}{Unsigned}; this cannot be changed.
+    \item
+    All other expressions default to \refqualclass{checker/signedness/qual}{Signed}.
+
+\end{itemize}
+
+\sectionAndLabel{Prohibited operations}{signedness-checker-prohibited-operations}
+
+The Signedness Checker prohibits the following uses of operators:
+
+\begin{itemize}
+
+    \item
+    Division (\code{/}) or modulus (\code{\%}) with an \code{@Unsigned}
+    operand.
+    \item
+    Signed right shift (\verb|>>|) with an \code{@Unsigned} left operand.
+    \item
+    Unsigned right shift (\verb|>>>|) with a \code{@Signed} left operand.
+    \item
+    Greater/less than (or equal) comparators
+    (\code{<}, \code{<=}, \code{>}, \code{>=}) with an \code{@Unsigned}
+    operand.
+    \item
+    Any other binary operator with one \code{@Unsigned} operand and one
+    \code{@Signed} operand, with the exception of left shift (\verb|<<|).
+
+\end{itemize}
+
+There are some special cases where these operations are permitted; see
+Section~\ref{signedness-checker-permitted-shifts}.
+
+Like every type-checker built with the Checker Framework, the Signedness
+Checker ensures that assignments and pseudo-assignments have consistent types.
+For example, it is not permitted to assign a \code{@Signed} expression to an
+\code{@Unsigned} variable or vice versa.
+
+
+\subsectionAndLabel{Rationale}{signedness-checker-rationale}
+
+The Signedness Checker prevents misuse of unsigned values in Java code.
+Most Java operations interpret operands as signed.  If applied to unsigned
+values, those operations would produce unexpected, incorrect results.
+
+Consider the following Java code:
+
+\begin{Verbatim}
+public class SignednessManualExample {
+
+    int s1 = -2;
+    int s2 = -1;
+
+    @Unsigned int u1 = 2147483646; // unsigned: 2^32 - 2, signed: -2
+    @Unsigned int u2 = 2147483647; // unsigned: 2^32 - 1, signed: -1
+
+    void m() {
+        int w = s1 / s2; // OK: result is 2, which is correct for -2 / -1
+        int x = u1 / u2; // ERROR: result is 2, which is incorrect for (2^32 - 2) / (2^32 - 1)
+    }
+
+    int s3 = -1;
+    int s4 = 5;
+
+    @Unsigned int u3 = 2147483647; // unsigned: 2^32 - 1, signed: -1
+    @Unsigned int u4 = 5;
+
+    void m2() {
+        int y = s3 % s4; // OK: result is -1, which is correct for -1 % 5
+        int z = u3 % u4; // ERROR: result is -1, which is incorrect for (2^32 - 1) % 5 = 2
+    }
+}
+\end{Verbatim}
+
+These examples illustrate why division and modulus with an unsigned operand
+are illegal.  Other uses of operators are prohibited for similar reasons.
+
+
+\subsectionAndLabel{Permitted shifts}{signedness-checker-permitted-shifts}
+
+As exceptions to the rules given above, the Signedness Checker permits
+certain right shifts which are immediately followed by a cast or
+masking operation.
+
+For example, right shift by 8 then mask by 0xFF evaluates to the same value
+whether the argument is interpreted as signed or unsigned.  Thus, the
+Signedness Checker permits both \verb|((myInt >> 8) & 0xFF)| and
+\verb|((myInt >>> 8) & 0xFF)|, regardless of the qualifier on the type of
+\<myInt>.
+
+Likewise, right shift by 8 then cast to byte evaluates to the
+same value whether the argument is interpreted as signed or unsigned, so
+the Signedness Checker permits both \verb|(byte) (myInt >> 8)| and
+\verb|(byte) (myInt >>> 8)|, regardless of the type of \<myInt>.
+
+%% TODO: This is not yet implemented.  Should it be?
+% These masked/casted shift expressions have type
+% \refqualclass{checker/signedness/qual}{SignednessGlb}.  They are bit
+% patterns that can be interpreted as either signed or unsigned values.
+
+
+% There are two distinct reasons to use \verb|>>>|, the unsigned right shift operator:
+% \begin{itemize}
+% \item
+%    To perform arithmetic:  dividing or multiplying by 2.
+%    The left-hand operand must be an unsigned value, and
+%    the result is an unsigned value.
+%  \item
+%    To extract bits.
+%    The left-hand operand may be arbitrary, and \verb|>>>| behaves the same
+%    as \verb|>>|.
+%    % TODO: The result should be @SignednessUnknown.
+%    % The result is a bit string: no arithmetic should be performed on it (@SignednessUnknown).
+% \end{itemize}
+
+
+\sectionAndLabel{Utility routines for manipulating unsigned values}{signedness-utilities}
+
+Class \refclass{checker/signedness/util}{SignednessUtil} provides static
+utility methods for working with unsigned values.  They are
+properly annotated with \refqualclass{checker/signedness/qual}{Unsigned}
+where appropriate, so using them may reduce the number of annotations that
+you need to write.
+To use the \refclass{checker/signedness/util}{SignednessUtil} class, the
+\<checker-util.jar> file must be on the classpath at run time.
+
+Class \refclass{checker/signedness/util}{SignednessUtilExtra} contains more utility
+methods that reference packages not included in Android.  This class is not
+included in \code{checker-util.jar}, so you may want to copy the methods to your code.
+
+
+\sectionAndLabel{Local type refinement}{signedness-refinement}
+
+Local type refinement/inference (Section~\ref{type-refinement}) may be
+surprising for the Signedness type system.  Ordinarily, an expression with
+unsigned type may not participate in a division, as shown in
+Sections~\ref{signedness-checker-prohibited-operations}
+and~\ref{signedness-checker-rationale}.  However, if a constant is assigned
+to a variable that was declared with \<@Unsigned> type, then --- just like
+the constant --- the variable may be treated as either signed or unsigned,
+due to local type refinement (Section~\ref{type-refinement}).
+For example, it can participate in division.
+
+\begin{Verbatim}
+    void useLocalVariables() {
+
+        int s1 = -2;
+        int s2 = -1;
+
+        @Unsigned int u1 = 2147483646; // unsigned: 2^32 - 2, signed: -2
+        @Unsigned int u2 = 2147483647; // unsigned: 2^32 - 1, signed: -1
+
+        int w = s1 / s2; // OK: result is 2, which is correct for -2 / -1
+        int x = u1 / u2; // OK; computation over constants, interpreted as signed; result is signed
+    }
+\end{Verbatim}
+
+To prevent local type refinement, use a cast:
+\begin{Verbatim}
+        @Unsigned int u1 = (@Unsigned int) 2147483646;
+\end{Verbatim}
+
+Note that type-checking produces a different result for \<int x = u1 / u2;>
+here than in the similar example in
+Section~\ref{signedness-checker-rationale}.  In
+Section~\ref{signedness-checker-rationale}, the method is reading fields,
+and all it knows is the declared type of the field.  In 20.4, the method is
+reading a local variable, and dataflow (that is, flow-sensitive type
+refinement) refines the types of local variables.
+
+
+\sectionAndLabel{Instantiating polymorphism}{signedness-instantiating-polymorphism}
+
+When calling a method with formal parameters annotated as
+\refqualclass{checker/signedness/qual}{PolySigned}, all arguments for
+\<@PolySigned> formal parameters must have comparable types.  (One way to
+do this is for all types to be the same.)  This is different than the usual
+rules for polymorphic qualifiers.  If you violate this rule, then the
+Signedness Checker's error messages can be obscure, because they are about
+\<@SignednessBottom>.  You can fix the signedness error messages by casting
+the arguments.
+
+
+\sectionAndLabel{Other signedness annotations}{signedness-other-annotations}
+
+The Checker Framework's signedness annotations are similar to annotations used
+elsewhere.
+
+If your code is already annotated with a different
+annotation, the Checker Framework can type-check your code.
+It treats annotations from other tools
+as if you had written the corresponding annotation from the
+Signedness Checker, as described in Figure~\ref{fig-signedness-refactoring}.
+% If the other annotation is a declaration annotation, it may be moved; see
+% Section~\ref{declaration-annotations-moved}.
+
+
+% These lists should be kept in sync with SignednessAnnotatedTypeFactory.java .
+\begin{figure}
+\begin{center}
+% The ~ around the text makes things look better in Hevea (and not terrible
+% in LaTeX).
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~jdk.jfr.Unsigned~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.signedness.qual.Unsigned~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other signedness annotations
+  and the Checker Framework's annotations.}
+\label{fig-signedness-refactoring}
+\end{figure}
+
+% LocalWords:  Signedness signedness IntRange bitwise SignedPositive myInt
+% LocalWords:  SignednessGlb PolySigned qual
+% LocalWords:  UnknownSignedness SignednessBottom upcasting comparators
+% LocalWords:  SignednessUtil SignednessUtilExtra

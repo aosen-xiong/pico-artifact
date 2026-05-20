@@ -1,0 +1,140 @@
+OrderOfCheckers.java:14:99: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : @UnknownVal int @UnknownVal []
+required: @UnknownVal int @BottomVal []
+OrderOfCheckers.java:14:99: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : int []
+required: @SearchIndexBottom int []
+OrderOfCheckers.java:14:99: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : int @SameLen("y") []
+required: int @SameLenBottom []
+OrderOfCheckers.java:14:99: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : int []
+required: @GTENegativeOne int []
+OrderOfCheckers.java:14:99: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : int []
+required: @UpperBoundBottom int []
+ErrorOrders.java:13:11: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
+found   : int
+required: an integer >= 0 (@NonNegative or @Positive)
+ErrorOrders.java:13:11: compiler.err.proc.messager: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
+found   : int
+required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
+ErrorOrders.java:25:33: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : @UpperBoundLiteral(0) int
+required: @LTLengthOf("p2") int
+ErrorOrders.java:26:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
+ErrorOrders.java:26:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : @LTLengthOf("p2") int
+required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
+ErrorOrders.java:31:15: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of ErrorOrders.test4.
+found   : int
+required: @GTENegativeOne int
+ErrorOrders.java:31:15: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of ErrorOrders.test4.
+found   : int
+required: @UpperBoundBottom int
+ErrorOrders.java:31:24: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p2 of ErrorOrders.test4.
+found   : int
+required: @GTENegativeOne int
+ErrorOrders.java:31:24: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p2 of ErrorOrders.test4.
+found   : int
+required: @UpperBoundBottom int
+ErrorOrders.java:31:25: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of ErrorOrders.test4.
+found   : int
+required: @GTENegativeOne int
+ErrorOrders.java:31:25: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of ErrorOrders.test4.
+found   : int
+required: @UpperBoundBottom int
+ErrorOrders.java:31:29: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p2 of ErrorOrders.test4.
+found   : int
+required: @GTENegativeOne int
+ErrorOrders.java:31:29: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p2 of ErrorOrders.test4.
+found   : int
+required: @UpperBoundBottom int
+ErrorOrders.java:31:33: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p3 of ErrorOrders.test4.
+found   : @UnknownVal int @UnknownVal []
+required: @UnknownVal int @BottomVal []
+ErrorOrders.java:31:37: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p4 of ErrorOrders.test4.
+found   : int @SameLen("p4") []
+required: int @SameLenBottom []
+ErrorOrders.java:31:41: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p5 of ErrorOrders.test4.
+found   : @UnknownVal int
+required: @BottomVal int
+ErrorOrders.java:31:46: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p3 of ErrorOrders.test4.
+found   : @UnknownVal int @UnknownVal []
+required: @UnknownVal int @BottomVal []
+ErrorOrders.java:31:50: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p4 of ErrorOrders.test4.
+found   : int @SameLen("p4") []
+required: int @SameLenBottom []
+ErrorOrders.java:31:54: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p5 of ErrorOrders.test4.
+found   : @UnknownVal int
+required: @BottomVal int
+ErrorOrders.java:35:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
+ErrorOrders.java:35:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : @UpperBoundLiteral(0) int
+required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
+ErrorOrders.java:38:15: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
+found   : int
+required: an integer >= 0 (@NonNegative or @Positive)
+ErrorOrders.java:38:15: compiler.err.proc.messager: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
+found   : int
+required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
+ErrorOrders.java:44:43: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
+ErrorOrders.java:44:51: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : @UpperBoundLiteral(0) int
+required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
+ErrorOrders.java:47:11: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
+found   : int
+required: an integer >= 0 (@NonNegative or @Positive)
+ErrorOrders.java:47:11: compiler.err.proc.messager: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
+found   : int
+required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
+ErrorOrders.java:59:33: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : @UpperBoundLiteral(0) int
+required: @LTLengthOf("p2") int
+ErrorOrders.java:60:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
+ErrorOrders.java:60:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+found   : @LTLengthOf("p2") int
+required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
+ErrorOrders.java:65:15: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of InSameCompilationUnit.test4.
+found   : int
+required: @GTENegativeOne int
+ErrorOrders.java:65:15: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of InSameCompilationUnit.test4.
+found   : int
+required: @UpperBoundBottom int
+ErrorOrders.java:65:24: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p2 of InSameCompilationUnit.test4.
+found   : int
+required: @GTENegativeOne int
+ErrorOrders.java:65:24: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p2 of InSameCompilationUnit.test4.
+found   : int
+required: @UpperBoundBottom int
+ErrorOrders.java:65:25: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of InSameCompilationUnit.test4.
+found   : int
+required: @GTENegativeOne int
+ErrorOrders.java:65:25: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of InSameCompilationUnit.test4.
+found   : int
+required: @UpperBoundBottom int
+ErrorOrders.java:65:29: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p2 of InSameCompilationUnit.test4.
+found   : int
+required: @GTENegativeOne int
+ErrorOrders.java:65:29: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p2 of InSameCompilationUnit.test4.
+found   : int
+required: @UpperBoundBottom int
+ErrorOrders.java:65:33: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p3 of InSameCompilationUnit.test4.
+found   : @UnknownVal int @UnknownVal []
+required: @UnknownVal int @BottomVal []
+ErrorOrders.java:65:37: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p4 of InSameCompilationUnit.test4.
+found   : int @SameLen("p4") []
+required: int @SameLenBottom []
+ErrorOrders.java:65:41: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p5 of InSameCompilationUnit.test4.
+found   : @UnknownVal int
+required: @BottomVal int
+ErrorOrders.java:65:46: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p3 of InSameCompilationUnit.test4.
+found   : @UnknownVal int @UnknownVal []
+required: @UnknownVal int @BottomVal []
+ErrorOrders.java:65:50: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p4 of InSameCompilationUnit.test4.
+found   : int @SameLen("p4") []
+required: int @SameLenBottom []
+ErrorOrders.java:65:54: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p5 of InSameCompilationUnit.test4.
+found   : @UnknownVal int
+required: @BottomVal int
+49 errors

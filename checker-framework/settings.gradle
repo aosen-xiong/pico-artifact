@@ -1,0 +1,22 @@
+rootProject.name = 'checker-framework'
+include 'checker'
+include 'javacutil'
+include 'dataflow'
+include 'framework'
+include 'checker-qual'
+include 'checker-qual-android'
+include 'checker-util'
+include 'framework-test'
+include 'docs'
+
+/* NO-AFU
+ includeBuild ('../annotation-tools/annotation-file-utilities') {
+ if (!file('../annotation-tools/annotation-file-utilities').exists()) {
+ def executed = providers.exec {
+ commandLine("checker/bin-devel/clone-related.sh")
+ }
+ println executed.standardOutput.asText.get()
+ println executed.standardError.asText.get()
+ }
+ }
+ */

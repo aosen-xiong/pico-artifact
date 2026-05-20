@@ -1,0 +1,2332 @@
+\htmlhr
+\chapterAndLabel{Nullness Checker}{nullness-checker}
+
+If the Nullness Checker issues no warnings for a given program, then
+running that program will never throw a null pointer exception.  In
+other words, the Nullness Checker prevents all \<NullPointerException>s.
+See Section~\ref{nullness-checks} for more details about
+the guarantee and what is checked.
+
+The most important annotations supported by the Nullness Checker are
+\refqualclass{checker/nullness/qual}{NonNull} and
+\refqualclass{checker/nullness/qual}{Nullable}.
+\refqualclass{checker/nullness/qual}{NonNull} is rarely written, because it is
+the default in most locations.  All of the annotations are explained in
+Section~\ref{nullness-annotations}.
+See Section~\ref{writing-nullness-annotations} for details on how to
+use the annotations and Section~\ref{generics} for details on
+generics.
+
+To run the Nullness Checker, supply the
+\code{-processor org.checkerframework.checker.nullness.NullnessChecker}
+command-line option to javac.  For
+examples, see Section~\ref{nullness-example}.
+
+The Nullness Checker is actually an ensemble of three pluggable
+type-checkers that work together: the Nullness Checker proper (which is the
+main focus of this chapter), the Initialization Checker
+(Section~\ref{initialization-checker}), and the Map Key Checker
+(\chapterpageref{map-key-checker}).
+Their type hierarchies are completely independent, but they work together
+to provide precise nullness checking.
+
+
+\sectionAndLabel{What the Nullness Checker guarantees}{nullness-checks}
+
+% TODO: The actual guarantee is a bit more subtle than this; put it here
+% rather than this more imprecise one.
+
+If the Nullness Checker type-checks your program without errors, then your
+program will not crash with a \<NullPointerException> that is caused by
+misuse of \<null> in checked code.
+%
+Section~\ref{checker-guarantees} notes some limitations to guarantees made
+by the Checker Framework.
+
+The checker issues a warning in these cases:
+
+\begin{enumerate}
+
+\item
+  When an expression of non-\refqualclass{checker/nullness/qual}{NonNull} type
+  is dereferenced, because it might cause a null pointer exception.
+  Dereferences occur not only when a field is accessed, but when an array
+  is indexed, an exception is thrown, a lock is taken in a synchronized
+  block, and more.  For a complete description of all checks performed by
+  the Nullness Checker, see the Javadoc for
+  \refclass{checker/nullness}{NullnessVisitor}.
+
+\item
+  When an expression of \refqualclass{checker/nullness/qual}{NonNull} type
+  might become null, because it
+  is a misuse of the type:  the null value could flow to a dereference that
+  the checker does not warn about.
+
+  As a special case of an \refqualclass{checker/nullness/qual}{NonNull}
+  type becoming null, the checker also warns whenever a field of
+  \refqualclass{checker/nullness/qual}{NonNull} type is not initialized in a
+  constructor.
+
+\end{enumerate}
+
+This example illustrates the programming errors that the checker detects:
+
+\begin{Verbatim}
+  @Nullable Object   obj;  // might be null
+  @NonNull  Object nnobj;  // never null
+  ...
+  obj.toString()         // checker warning:  dereference might cause null pointer exception
+  nnobj = obj;           // checker warning:  nnobj may become null
+  if (nnobj == null)     // checker warning:  redundant test
+\end{Verbatim}
+
+Parameter passing and return values are checked analogously to assignments.
+
+The Nullness Checker also checks the correctness, and correct use, of
+initialization (see
+Section~\ref{initialization-checker}) and of map key annotations (see
+\chapterpageref{map-key-checker}).
+
+
+The checker performs additional checks if certain \code{-Alint}
+command-line options are provided.  (See
+Section~\ref{alint} for more details about the \code{-Alint}
+command-line option.)
+
+
+\subsectionAndLabel{Nullness Checker optional warnings}{nullness-lint}
+
+\begin{enumerate}
+\item
+  Options that control soundness:
+
+\begin{itemize}
+\item
+  \label{nullness-lint-soundArrayCreationNullness}%
+  \label{nullness-lint-nonnullarraycomponents}% temporary, for backward compatibility
+  If you supply the \code{-Alint=soundArrayCreationNullness} command-line
+  option, then the checker warns if it encounters an array creation
+  with a non-null component type.
+  See Section~\ref{nullness-arrays} for a discussion.
+  % TODO: this option is temporary and the sound option
+  % should become the default.
+
+\item
+  \label{collection-object-parameters-may-be-null}
+  If you supply the
+  \code{-Astubs=collection-object-parameters-may-be-null.astub}
+  command-line option, then in JDK collection classes, the checker
+  unsoundly permits null as an argument for any key or value formal
+  parameter whose type is \<Object> (instead of the element type).
+  See Section~\ref{nullness-collection-arguments}.
+
+\item
+  \label{nullness-lint-trustarraylenzero}%
+  If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
+  the checker will trust \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+  annotations. See Section~\ref{nullness-collection-toarray} for a discussion.
+
+\item
+  \label{nullness-assumeKeyFor}%
+  If you supply the \code{-AassumeKeyFor} command-line option, then the
+  checker will unsoundly assume that the argument to \<Map.get> is a key
+  for the receiver map.  It will not do any checking of
+  \refqualclass{checker/nullness/qual}{KeyFor} and related qualifiers.
+
+\item
+  \label{nullness-assumeInitialized}%
+  If you supply the \code{-AassumeInitialized} command-line option, then the
+  checker will unsoundly assume that every field is initialized before
+  being used. It will not do any checking of
+  \refqualclass{checker/initialization/qual}{Initialized} and related qualifiers.
+
+\item
+  \label{nullness-conservativeArgumentNullnessAfterInvocation}%
+  \label{nullness-invocationPreservesArgumentNullness}%
+  If you supply the \code{-AconservativeArgumentNullnessAfterInvocation} command-line option, the soundness of
+  the Nullness Checker is improved. In previous versions and without supplying the new flag, the receiver and
+  arguments that are passed to non-null parameters in a method call or constructor invocation are assumed to
+  be non-null after the invocation.
+  This assumption is unsound in general, but holds for most code.
+  Use this flag to soundly handle the nullness of the receiver and arguments in an invocation.
+
+\item
+  \label{nullness-AcheckEnclosingExpr}%
+  If you supply the \code{-AcheckEnclosingExpr} command-line option, the soundness of
+  the Nullness Initialization Checker is improved. In previous versions and without supplying the new flag,
+  the uninitialized enclosing expression of an inner class instantiation cannot be detected, which is unsound.
+  However, this option is by default disabled since it is strict and will result in many false positives.
+  Use this flag to soundly handle the nullness of the enclosing expression for the inner class instantiation.
+\end{itemize}
+
+\item
+  Options that warn about poor code style:
+
+\begin{itemize}
+\item
+  \label{nullness-lint-nulltest}%
+  If you supply the \code{-Alint=redundantNullComparison} command-line option, then the
+  checker warns when a null check is performed against a value that is
+  guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
+  unnecessary and might indicate a programmer error or misunderstanding.
+  The lint option is disabled by default because sometimes such checks are
+  part of ordinary defensive programming.
+\end{itemize}
+
+\item
+  Options that enable checking modes:
+
+\begin{itemize}
+\item
+  If you supply the \code{-Alint=permitClearProperty} command-line option,
+  then the checker permits calls to
+  \sunjavadoc{java.base/java/lang/System.html\#setProperties(java.util.Properties)}{System.setProperties}
+  and calls to
+  \sunjavadoc{java.base/java/lang/System.html\#clearProperty(java.lang.String)}{System.clearProperty}
+  that might clear one of the built-in properties.
+
+  By default, the checker forbids calls to those methods, and also
+  special-cases type-checking of calls to
+  \sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String,java.lang.String)}{System.getProperty()}
+  and
+  \sunjavadoc{java.base/java/lang/System.html\#setProperties(java.util.Properties)}{System.setProperties}.
+  A call to one of these methods
+  can return null in general, but by default the Nullness Checker treats it
+  as returning non-null if the argument is one of the literal strings
+  listed in the documentation of
+  \sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.getProperties()}.
+  To make this behavior sound, the Nullness Checker forbids calls that
+  might clear any built-in property, as described above.
+
+\item
+  \label{nullness-jspecifyNullMarkedAlias}%
+  If you supply the \code{-AjspecifyNullMarkedAlias=false} command-line option, then the
+  checker will not treat \code{org.jspecify.nullness.NullMarked} as a defaulting
+  annotation. By default the \code{NullMarked} annotation is recognized.
+\end{itemize}
+
+\end{enumerate}
+
+
+\sectionAndLabel{Nullness annotations}{nullness-annotations}
+
+The Nullness Checker uses three separate type hierarchies:  one for nullness,
+one for initialization (Section~\ref{initialization-checker}),
+and one for map keys (\chapterpageref{map-key-checker}).
+The Nullness Checker has four varieties of annotations:  nullness
+type qualifiers, nullness method annotations, initialization type qualifiers, and
+map key type
+qualifiers.
+
+\subsectionAndLabel{Nullness qualifiers}{nullness-qualifiers}
+
+The nullness hierarchy contains these qualifiers:
+
+\begin{description}
+
+\item[\refqualclass{checker/nullness/qual}{Nullable}]
+  indicates a type that includes the null value.  For example, the Java
+  type \code{Boolean}
+  is nullable:  a variable of type \code{Boolean} always has one of the
+  values \code{TRUE}, \code{FALSE}, or \code{null}.
+  (Since \<@NonNull> is the default type annotation, you would actually
+  write this type as \<@Nullable Boolean>.)
+
+\item[\refqualclass{checker/nullness/qual}{NonNull}]
+  indicates a type that does not include the null value.  The type
+  \code{boolean} is non-null; a variable of type \code{boolean} always has
+  one of the values \code{true} or \code{false}.  The type \code{@NonNull
+    Boolean} is also non-null:  a variable of type \code{@NonNull Boolean}
+  always has one of the values \code{TRUE} or \code{FALSE} --- never
+  \code{null}.  Dereferencing an expression of non-null type can never cause
+  a null pointer exception.
+
+  The \<@NonNull> annotation is rarely written in a program, because it is
+  the default (see Section~\ref{null-defaults}).
+
+\item[\refqualclass{checker/nullness/qual}{PolyNull}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
+
+\item[\refqualclass{checker/nullness/qual}{MonotonicNonNull}]
+  indicates a reference that may be \code{null}, but if it ever becomes
+  non-\code{null}, then it never becomes \code{null} again.  This is
+  appropriate for lazily-initialized fields, for field initialization that
+  occurs in a lifecycle method other than the constructor (e.g., an
+  override of \<android.app.Activity.onCreate>), and other uses.
+  \<@MonotonicNonNull> is typically written on field types, but not elsewhere.
+
+  \begin{sloppypar}
+  The benefit of \<@MonotonicNonNull> over \<@Nullable> is that after a
+  check of a \<@MonotonicNonNull> field, all subsequent accesses
+  \emph{within that method} can be assumed to be \<@NonNull>, even after
+  arbitrary external method calls that have access to the given field.
+  By contrast, for a \<@Nullable> field, the Nullness Checker assumes that
+  most method calls might set it to \<null>. (Exceptions are calls to
+  methods that are \refqualclass{dataflow/qual}{SideEffectFree} or that
+  have an \refqualclass{checker/nullness/qual}{EnsuresNonNull} or
+  \refqualclass{checker/nullness/qual}{EnsuresNonNullIf} annotation.)
+  \end{sloppypar}
+
+  A \<@MonotonicNonNull> field may be initialized to null, but the
+  field may not be assigned to null anywhere else in the program.  If you
+  supply the \<noInitForMonotonicNonNull> lint flag (for example, supply
+  \<-Alint=noInitForMonotonicNonNull> on the command line), then
+  \<@MonotonicNonNull> fields are not allowed to have initializers at their
+  declarations.
+
+  Use of \<@MonotonicNonNull> on a \emph{static} field is a code smell:  it may
+  indicate poor design.  You should consider whether it is possible to make
+  the field a member field that is set in the constructor.
+
+  In the type system, \<@MonotonicNonNull> is a supertype of \<@NonNull>
+  and a subtype of \<@Nullable>.
+
+\end{description}
+
+Figure~\ref{fig-nullness-hierarchy} shows part of the type hierarchy for the
+Nullness type system.
+(The annotations exist only at compile time; at run time, Java has no
+multiple inheritance.)
+
+\begin{figure}
+\includeimage{nullness}{3.5cm}
+\caption{Partial type hierarchy for the Nullness type system.
+Java's \<Object> is expressed as \<@Nullable Object>.  Programmers can omit
+most type qualifiers, because the default annotation
+(Section~\ref{null-defaults}) is usually correct.
+The Nullness Checker verifies three type hierarchies:  this one for
+nullness, one for initialization (Section~\ref{initialization-checker}),
+and one for map keys (\chapterpageref{map-key-checker}).}
+\label{fig-nullness-hierarchy}
+\end{figure}
+
+
+\subsectionAndLabel{Nullness method annotations}{nullness-method-annotations}
+
+The Nullness Checker supports several annotations that specify method
+behavior.  These are declaration annotations, not type annotations:  they
+apply to the method itself rather than to some particular type.
+
+\begin{description}
+
+\item[\refqualclass{checker/nullness/qual}{RequiresNonNull}]
+  indicates a method precondition:  The annotated method expects the
+  specified variables to be non-null when the
+  method is invoked.  Don't use this for formal parameters (just annotate
+  their type as \<@NonNull>).  \<@RequiresNonNull> is appropriate for
+  a field that is \<@Nullable> in general, but some method requires the
+  field to be non-null.
+
+\item[\refqualclass{checker/nullness/qual}{EnsuresNonNull}]
+  indicates a method postcondition.
+  With \<EnsuresNonNull>, the successful return (i.e., a non-exceptional
+  return) of the annotated method results in the given expressions being
+  non-null. See the Javadoc for examples of its use.
+\item[\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}]
+  indicates a method postcondition.  With \<@EnsuresNonNull>, the given
+  expressions are non-null after the method returns; this is useful for a
+  method that initializes a field, for example.  With
+  \<@EnsuresNonNullIf>, if the annotated
+  method returns the given boolean value (true or false), then the given
+  expressions are non-null.  See Section~\ref{conditional-nullness} and the
+  Javadoc for examples of their use.
+
+\end{description}
+
+
+\subsectionAndLabel{Initialization qualifiers}{initialization-qualifiers-overview}
+
+The Nullness Checker invokes an Initialization Checker, whose annotations indicate whether
+an object is fully initialized --- that is, whether all of its fields have
+been assigned.
+
+\begin{description}
+\item[\refqualclass{checker/initialization/qual}{Initialized}]
+\item[\refqualclass{checker/initialization/qual}{UnknownInitialization}]
+\item[\refqualclass{checker/initialization/qual}{UnderInitialization}]
+\item[\refqualclass{checker/initialization/qual}{PolyInitialized}]
+\end{description}
+
+\noindent
+Use of these annotations can help you to type-check more
+code.  Figure~\ref{fig-initialization-hierarchy} shows its type hierarchy.  For
+details, see Section~\ref{initialization-checker}.
+
+
+\subsectionAndLabel{Map key qualifiers}{map-key-qualifiers}
+
+\begin{description}
+\item[\refqualclass{checker/nullness/qual}{KeyFor}]
+\end{description}
+    indicates that a value is a key for a given map --- that is, indicates
+    whether \code{map.containsKey(value)} would evaluate to \code{true}.
+
+This annotation is checked by a Map Key Checker
+(\chapterpageref{map-key-checker}) that the Nullness Checker
+invokes.  The \refqualclass{checker/nullness/qual}{KeyFor} annotation enables
+the Nullness Checker to treat calls to
+\sunjavadoc{java.base/java/util/Map.html\#get(java.lang.Object)}{\code{Map.get}}
+precisely rather than assuming it may always return null.  In particular,
+a call \<mymap.get(mykey)> returns a non-\<null> value if two conditions
+are satisfied:
+\begin{enumerate}
+\item \<mymap>'s values are all non-\<null>; that is, \<mymap> was
+  declared as \code{Map<\emph{KeyType}, @NonNull \emph{ValueType}>}.  Note
+  that \<@NonNull> is the default type, so it need not be written explicitly.
+\item \<mykey> is a key in \<mymap>; that is, \<mymap.containsKey(mykey)>
+  returns \<true>.  You express this fact to the Nullness Checker by
+  declaring \<mykey> as \<@KeyFor("mymap") \emph{KeyType} mykey>.  For a
+  local variable, you generally do not need to write the
+  \<@KeyFor("mymap")> type qualifier, because it can be inferred.
+\end{enumerate}
+\noindent
+If either of these two conditions is violated, then \<mymap.get(mykey)> has
+the possibility of returning \<null>.
+
+The command-line argument \<-AassumeKeyFor> makes the Nullness Checker not
+run the Map Key Checker.  The Nullness Checker will unsoundly assume that
+the argument to \<Map.get> is a key for the receiver map.  That is, the
+second condition above is always considered to be \<true>.
+
+
+\sectionAndLabel{Writing nullness annotations}{writing-nullness-annotations}
+
+\subsectionAndLabel{Implicit qualifiers}{nullness-implicit-qualifiers}
+
+The Nullness Checker
+adds implicit qualifiers, reducing the number of annotations that must
+appear in your code (see Section~\ref{effective-qualifier}).
+For example, enum types are implicitly non-null, so you never need to write
+\<@NonNull MyEnumType>.
+
+If you want details about implicitly-added nullness qualifiers, see the
+implementation of \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
+
+
+
+\subsectionAndLabel{Default annotation}{null-defaults}
+
+Unannotated references are treated as if they had a default annotation.
+All types default to
+\<@NonNull>, except that \<@Nullable> is used for casts, locals,
+instanceof, and implicit bounds (see Section~\ref{climb-to-top}).
+A user can choose a different defaulting
+rule by writing a \refqualclass{framework/qual}{DefaultQualifier} annotation on a
+ package, class, or method.  In the example below, fields are defaulted to
+\<@Nullable> instead of \<@NonNull>.
+
+\begin{Verbatim}
+@DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.FIELD)
+class MyClass {
+    Object nullableField = null;
+    @NonNull Object nonNullField = new Object();
+}
+\end{Verbatim}
+
+
+%% Cut this to shorten the section.  Most users won't care about it.
+% %BEGIN LATEX
+% \begin{sloppy}
+% %END LATEX
+% Here are three possible default rules you may wish to use.  Other rules are
+% possible but are not as useful.
+% \begin{itemize}
+% \item
+%   \refqualclass{checker/nullness/qual}{Nullable}:  Unannotated types are regarded as possibly-null, or
+%   nullable.  This default is backward-compatible with Java, which permits
+%   any reference to be null.  You can activate this default by writing
+%   a \code{@DefaultQualifier(Nullable.class)} annotation on a
+%   % package/
+%   class or method
+%   % /variable
+%   declaration.
+% \item
+%   \refqualclass{checker/nullness/qual}{NonNull}:  Unannotated types are treated as non-null.
+%   % This may leads to fewer annotations written in your code.
+%   You can activate this
+%   default via the
+%   \code{@DefaultQualifier(NonNull.class)} annotation.
+% \item
+%   Non-null except locals (NNEL):  Unannotated types are treated as
+%   \refqualclass{checker/nullness/qual}{NonNull}, \emph{except} that the
+%   unannotated raw type of a local variable is treated as
+%   \refqualclass{checker/nullness/qual}{Nullable}.  (Any generic arguments to a
+%   local variable still default to
+%   \refqualclass{checker/nullness/qual}{NonNull}.)  This is the standard
+%   behavior.  You can explicitly activate this default via the
+%   \code{@DefaultQualifier(value=NonNull.class,
+%     locations=\discretionary{}{}{}\{DefaultLocation\discretionary{}{}{}.ALL\_EXCEPT\_LOCALS\})}
+%   annotation.
+%
+%   The NNEL default leads to the smallest number of explicit annotations in
+%   your code~\cite{PapiACPE2008}.  It is what we recommend.  If you do not
+%   explicitly specify a different default, then NNEL is the default.
+% \end{itemize}
+% %BEGIN LATEX
+% \end{sloppy}
+% %END LATEX
+
+
+\subsectionAndLabel{Conditional nullness}{conditional-nullness}
+
+The Nullness Checker supports a form of conditional nullness types, via the
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf} method annotations.
+The annotation on a method declares that some expressions are non-null, if
+the method returns true (false, respectively).
+
+Consider \sunjavadoc{java.base/java/lang/Class.html}{java.lang.Class}.
+Method
+\sunjavadoc{java.base/java/lang/Class.html\#getComponentType()}{Class.getComponentType()}
+may return null, but it is specified to return a non-null value if
+\sunjavadoc{java.base/java/lang/Class.html\#isArray()}{Class.isArray()} is
+true.
+You could declare this relationship in the following way (this particular
+example is already
+done for you in the annotated JDK that comes with the Checker Framework):
+
+\begin{Verbatim}
+  class Class<T> {
+    @EnsuresNonNullIf(expression="getComponentType()", result=true)
+    public native boolean isArray();
+
+    public native @Nullable Class<?> getComponentType();
+  }
+\end{Verbatim}
+
+A client that checks that a \code{Class} reference is indeed that of an array,
+can then de-reference the result of \code{Class.getComponentType} safely
+without any nullness check.  The Checker Framework source code itself
+uses such a pattern:
+
+\begin{Verbatim}
+    if (clazz.isArray()) {
+      // no possible null dereference on the following line
+      TypeMirror componentType = typeFromClass(clazz.getComponentType());
+      ...
+    }
+\end{Verbatim}
+
+Another example is \sunjavadoc{java.base/java/util/Queue.html\#peek()}{Queue.peek}
+and \sunjavadoc{java.base/java/util/Queue.html\#poll()}{Queue.poll}, which return
+non-null if \sunjavadoc{java.base/java/util/Collection.html\#isEmpty()}{isEmpty}
+returns false.
+
+The argument to \code{@EnsuresNonNullIf} is a Java expression, including method calls
+(as shown above), method formal parameters, fields, etc.; for details, see
+Section~\ref{java-expressions-as-arguments}.
+More examples of the use of these annotations appear in the Javadoc for
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}.
+
+Java programs sometimes contain more complex nullness invariants.  When
+these invariants are more complex than handled by the Nullness Checker, you
+will need to suppress a warning (see
+Section~\ref{suppressing-warnings-nullness}).
+
+
+\subsectionAndLabel{Nullness and array initialization}{nullness-arrays}
+
+Suppose that you declare an array to contain non-null elements:
+
+\begin{Verbatim}
+  Object [] oa = new Object[10];
+\end{Verbatim}
+
+\noindent
+(recall that \<Object> means the same thing as \<@NonNull Object>).
+By default, the Nullness Checker unsoundly permits this code.
+
+To make the Nullness Checker conservatively reject code that may leave a
+non-null value in an array, use the command-line option
+\code{-Alint=soundArrayCreationNullness}.  The option is currently disabled
+because it makes the checker issue many false positive errors.
+% TODO: flip the default after collecting more data.
+
+With the option enabled, you can write your code to create a nullable or
+lazy-nonnull array, initialize
+each component, and then assign the result to a non-null array:
+
+\begin{Verbatim}
+  @MonotonicNonNull Object [] temp = new @MonotonicNonNull Object[10];
+  for (int i = 0; i < temp.length; ++i) {
+    temp[i] = new Object();
+  }
+  @SuppressWarnings("nullness") // temp array is now fully initialized
+  @NonNull Object [] oa = temp;
+\end{Verbatim}
+
+Note that the checker is currently not powerful enough to ensure that
+each array component was initialized. Therefore, the last assignment
+needs to be trusted:  that is, a programmer must verify that it is safe,
+then write a \<@SuppressWarnings> annotation.
+
+% TODO: explain more aspects, give more examples.
+
+
+\subsectionAndLabel{Nullness and conversions from collections to arrays}{nullness-collection-toarray}
+
+% Implemented in org.checkerframework.checker.nullness.CollectionToArrayHeuristics
+
+The nullness semantics of
+\sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
+cannot be captured by just the nullness type system, though the Nullness
+Checker contains special-case code to type-check calls to \<toArray>.
+Therefore, you will probably have to write \<@SuppressWarnings("nullness")>
+on any overriding definitions of \<toArray>.
+
+The nullness type of the
+returned array depends on the \emph{size} of the passed parameter. In particular, the
+returned array component is of type \<@NonNull> if the following conditions
+hold:
+
+\begin{itemize}
+  \item The receiver collection's type argument (that is, the element type) is \<@NonNull>, and
+  \item The passed array size is less than or equal to the collection size. The
+    Nullness Checker uses these heuristics to handle the most common cases:
+
+  \begin{itemize}
+    \item the argument has length 0:
+
+      \begin{itemize}
+        \item an empty array initializer, e.g. \<c.toArray(new String[] \{\})>, or
+
+        \item an array creation tree of size 0, e.g. \<c.toArray(new String[0])>.
+
+        \item a reference to a private, final field with a zero-length array as initializer, e.g. \<c.toArray(EMPTY\_STRING\_ARRAY)>, where \<EMPTY\_STRING\_ARRAY> is initialized to \<new String[0]> (or an equivalent zero-length array expression).
+      \end{itemize}
+
+    \item array creation tree with a collection \<size()> method invocation as argument
+      \<c.toArray(new String[c.size()])>.
+  \end{itemize}
+
+\end{itemize}
+
+Additionally, when you supply the \code{-Alint=trustArrayLenZero} command-line
+option, a call to \code{Collection.toArray} will be estimated to return an array
+with a non-null component type if the argument is a field access where the field
+declaration has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+annotation.
+This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
+Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
+that annotation.
+
+Note: The nullness of the returned array doesn't depend on the passed array nullness.
+This is a fact about
+\sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])},
+not a limitation of this heuristic.
+
+
+\subsectionAndLabel{Run-time checks for nullness}{nullness-runtime-checks}
+
+When you perform a run-time check for nullness, such as \<if (x != null)
+...>, then the Nullness Checker refines the type of \<x> to
+\<@NonNull>.  The refinement lasts until the end of the scope of the test
+or until \<x> may be side-effected.  For more details, see
+Section~\ref{type-refinement}.
+
+
+\subsectionAndLabel{Inference of \code{@NonNull} and \code{@Nullable} annotations}{nullness-inference}
+
+It can be tedious to write annotations in your code.  Tools exist that
+can automatically infer annotations and insert them in your source code.
+(This is different than type qualifier refinement for local variables
+(Section~\ref{type-refinement}), which infers a more specific type for
+local variables and uses them during type-checking but does not insert them
+in your source code.  Type qualifier refinement is always enabled, no
+matter how annotations on signatures got inserted in your source code.)
+
+Your choice of tool depends on what default annotation (see
+Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
+
+\begin{itemize}
+
+\item
+  Inference of \refqualclass{checker/nullness/qual}{Nullable}:
+  %
+  If your code uses the standard CLIMB-to-top default (Section~\ref{climb-to-top}) or
+  the NonNull default, then use the
+  \href{http://plse.cs.washington.edu/daikon/download/doc/daikon.html#AnnotateNullable}{AnnotateNullable}
+  tool of the \href{http://plse.cs.washington.edu/daikon/}{Daikon invariant
+    detector}.
+
+\item
+  Inference of \refqualclass{checker/nullness/qual}{NonNull}:
+  %
+  If your code uses the Nullable default (this is unusual), use one of these tools:
+\begin{itemize}
+% Julia is no longer publicly available.
+% \item
+%   \href{https://juliasoft.com/solutions/}{Julia analyzer},
+% This URL no longer works.  As of June 2022, the last Wayback Machine crawl
+% was August 2019.
+% \item
+%   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
+\item
+  \href{https://jastadd.cs.lth.se/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
+    checker and inferencer} of the \href{https://jastadd.cs.lth.se/}{JastAdd
+    Extensible Compiler}.
+\end{itemize}
+
+\end{itemize}
+
+
+
+\sectionAndLabel{Suppressing nullness warnings}{suppressing-warnings-nullness}
+
+When the Nullness Checker reports a warning, it's best to change the code
+or its annotations, to eliminate the warning.  Alternately, you can
+suppress the warning, which does not change the code but prevents the
+Nullness Checker from reporting this particular warning to you.
+
+\begin{sloppypar}
+The Checker Framework supplies several ways to suppress warnings, most
+notably the \<@SuppressWarnings("nullness")> annotation (see
+Chapter~\ref{suppressing-warnings}).  An example use is
+\end{sloppypar}
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+    // might return null
+    @Nullable Object getObject(...) { ... }
+
+    void myMethod() {
+      @SuppressWarnings("nullness") // with argument x, getObject always returns a non-null value
+      @NonNull Object o2 = getObject(x);
+    }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+
+The Nullness Checker supports an additional warning suppression string,
+\<nullness:generic.argument>.
+Use of \<@SuppressWarnings("nullness:generic.argument")> causes the Nullness
+Checker to suppress warnings related to misuse of generic type
+arguments.  One use for this key is when a class is declared to take only
+\<@NonNull> type arguments, but you want to instantiate the class with a
+\<@Nullable> type argument, as in \code{List<@Nullable Object>}.
+
+To suppress warnings from the Nullness, Initialization, and KeyFor Checkers,
+use the \<@SuppressWarnings("nullness")> annotation.
+
+To suppress warnings from the Nullness and Initialization Checkers without suppressing warnings
+from the KeyFor Checker (see Section~\ref{map-key-checker}),
+use the \<@SuppressWarnings("nullnessinitialization")> annotation.
+
+To suppress warnings from the Nullness and KeyFor Checkers without suppressing warnings
+from the Initialization Checker (see Section~\ref{initialization-checker}),
+use the \<@SuppressWarnings("nullnesskeyfor")> annotation.
+\<@SuppressWarnings("nullnessnoinit")> has the same effect as \<@SuppressWarnings("nullnesskeyfor")>.
+
+To suppress warnings only from the Nullness Checker, use the \<@SuppressWarnings("nullnessonly")> annotation.
+
+To suppress warnings only from the Initialization Checker, use the \<@SuppressWarnings("initialization")> annotation.
+
+To suppress warnings only from the KeyFor Checker, use the \<@SuppressWarnings("keyfor")> annotation.
+
+The Nullness Checker also permits you to use assertions or method calls to
+suppress warnings; see below.
+
+\subsectionAndLabel{Suppressing warnings with assertions and method calls}{suppressing-warnings-with-assertions}
+
+Occasionally, it is inconvenient or
+verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
+not permit annotations such as \<@SuppressWarnings> to appear on
+statements, expressions, static initializers, etc.
+Here are three ways to suppress a warning in such cases:
+\begin{itemize}
+\item
+  Create a local variable to hold a subexpression, and
+  suppress a warning on the local variable declaration.
+\item
+  Use the \<@AssumeAssertion> string in
+  an \<assert> message (see Section~\ref{assumeassertion}).
+\item
+  Write a call to the
+  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)} method.
+\end{itemize}
+
+The rest of this section discusses the \<castNonNull> method.
+It is useful if you wish to suppress a warning within an expression.
+
+The Nullness Checker considers both the return value, and also the
+argument, to be non-null after the \<castNonNull> method call.
+The Nullness Checker issues no warnings in any of the following
+code:
+
+\begin{Verbatim}
+  // One way to use castNonNull as a cast:
+  @NonNull String s = castNonNull(possiblyNull1);
+
+  // Another way to use castNonNull as a cast:
+  castNonNull(possiblyNull2).toString();
+
+  // It is possible, but not recommmended, to use castNonNull as a statement:
+  // (It would be better to write an assert statement with @AssumeAssertion
+  // in its message, instead.)
+  castNonNull(possiblyNull3);
+  possiblyNull3.toString();
+\end{Verbatim}
+
+  The \<castNonNull> method throws \<AssertionError> if Java assertions are enabled and
+  the argument is \<null>.  However, it is not intended for general defensive
+  programming; see Section~\ref{defensive-programming}.
+
+  To use the \<castNonNull> method, the \<checker-util.jar> file
+  must be on the classpath at run time.
+
+\begin{sloppypar}
+The Nullness Checker introduces a new method, rather than re-using an
+existing method such as \<org.junit.Assert.assertNotNull(Object)> or
+\<com.google.common.base.Preconditions.checkNotNull(Object)>.  Those
+methods are commonly used for defensive programming, so it is impossible to
+know the programmer's intent when writing them.  Therefore, it is important to
+have a method call that is used only for warning suppression.  See
+Section~\ref{defensive-programming} for a discussion of
+the distinction between warning suppression and defensive programming.
+% Also, different checking tools issue different false warnings that
+% need to be suppressed, so warning suppression needs to be customized for
+% each tool.
+\end{sloppypar}
+
+
+\subsectionAndLabel{Null arguments to collection classes}{nullness-collection-arguments}
+
+For collection methods with \<Object> formal parameter type, such as
+\sunjavadoc{java.base/java/util/Collection.html\#contains(java.lang.Object)}{contains},
+\sunjavadoc{java.base/java/util/AbstractList.html\#indexOf(java.lang.Object)}{indexOf}, and
+\sunjavadoc{java.base/java/util/Collection.html\#remove(java.lang.Object)}{remove},
+the annotated JDK forbids null as an argument.
+
+The reason is that some implementations (like \<ConcurrentHashMap>) throw
+\<NullPointerException> if \<null> is passed.  It would be unsound to
+permit \<null>, because it could lead to a false negative:  the Checker
+Framework issuing no warning even though a NullPointerException can occur
+at run time.
+
+However, many other common implementations permit such calls, so some users
+may wish to sacrifice soundness for a reduced number of false positive
+warnings.  To permit \<null> as an argument to these methods, pass the
+command-line argument
+\<-Astubs=collection-object-parameters-may-be-null.astub>.
+
+
+\subsectionAndLabel{Conservative nullness annotations on the JDK}{nullness-jdk-conservative}
+
+The JDK contains nullness annotations that preserve the Nullness Checker's
+guarantee (see Section~\ref{nullness-checks}) that your program will not
+crash with a \<NullPointerException>.  In some cases, a formal parameter
+may be null in some circumstances, but must be non-null in other
+circumstances, and those circumstances are not expressible using the
+Nullness Checker's annotations.
+
+An example is restrictions on collection arguments (see
+Section~\ref{nullness-collection-arguments}).
+
+Another example is this \<WeakReference> constructor:
+
+\begin{Verbatim}
+     ...
+     * @param q the queue with which the reference is to be registered,
+     *          or {@code null} if registration is not required
+     */
+    public WeakReference(@Nullable T referent, ReferenceQueue<? super T> q) {
+      ...
+\end{Verbatim}
+
+For some calls, \<q> must be non-null.  Therefore, \<q> is annotated as
+\<@NonNull> (which is the default and need not be explicitly written).
+
+These JDK annotations reflect a verification philosophy:  a verification
+tool finds all possible errors, but it sometimes issues a false positive warning.
+An alternate philosophy is a bug-finding philosophy:  permit all calls that
+\emph{might} be correct at run time, but sometimes miss a real error.  If
+you wish to use the Checker Framework with the bug-finding philosophy
+(though the Checker Framework is still much more thorough than other
+bug-finders), you can do so by passing the command-line argument
+\<-Astubs=sometimes-nullable.astub>.
+
+
+\sectionAndLabel{Examples}{nullness-example}
+
+\subsectionAndLabel{Tiny examples}{nullness-tiny-examples}
+
+To try the Nullness Checker on a source file that uses the \refqualclass{checker/nullness/qual}{NonNull} qualifier,
+use the following command (where \code{javac} is the Checker Framework compiler that
+is distributed with the Checker Framework, see Section~\ref{javac-wrapper}
+for details):
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.nullness.NullnessChecker docs/examples/NullnessExample.java
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+Compilation will complete without warnings.
+
+To see the checker warn about incorrect usage of annotations (and therefore the
+possibility of a null pointer exception at run time), use the following command:
+
+\begin{mysmall}
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.nullness.NullnessChecker docs/examples/NullnessExampleWithWarnings.java
+\end{Verbatim}
+\end{mysmall}
+
+
+\noindent
+The compiler will issue two warnings regarding violation of the semantics of
+\refqualclass{checker/nullness/qual}{NonNull}.
+% in the \code{NonNullExampleWithWarnings.java} file.
+
+
+\subsectionAndLabel{Example annotated source code}{nullness-annotated-library}
+
+Some libraries that are annotated with nullness qualifiers are:
+
+\begin{itemize}
+\item
+The Nullness Checker itself.
+
+\item
+The Java projects in the \href{https://github.com/plume-lib/}
+{plume-lib GitHub organization}.
+Type-checking occurs on each build.
+
+\item
+The
+\href{http://plse.cs.washington.edu/daikon/}{Daikon invariant detector}.
+Run the command \code{make check-nullness}.
+
+\end{itemize}
+
+
+\subsectionAndLabel{Publications}{nullness-publications}
+
+The papers ``Practical pluggable types for Java''~\cite{PapiACPE2008}
+(ISSTA 2008,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
+and ``Building and using pluggable type-checkers''~\cite{DietlDEMS2011}
+(ICSE 2011,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
+describe case studies in which the Nullness Checker found
+previously-unknown errors in real software.
+
+
+\sectionAndLabel{Tips for getting started}{nullness-getting-started}
+
+Here are some tips about getting started using the Nullness Checker on a
+legacy codebase.  For more generic advice (not specific to the Nullness
+Checker), see Section~\ref{get-started-with-legacy-code}.  Also see the
+\ahreforurl{https://eisop.github.io/cf/tutorial/}{Checker
+Framework tutorial}, which includes an example of using the Nullness Checker.
+
+Your goal is to add \refqualclass{checker/nullness/qual}{Nullable} annotations
+to the types of any variables that can be null.  (The default is to assume
+that a variable is non-null unless it has a \code{@Nullable} annotation.)
+Then, you will run the Nullness Checker.  Each of its errors indicates
+either a possible null pointer exception, or a wrong/missing annotation.
+When there are no more warnings from the checker, you are done!
+
+We recommend that you start by searching the code for occurrences of
+\code{null} in the following locations; when you find one, write the
+corresponding annotation:
+
+\begin{itemize}
+\item
+  in Javadoc:  add \code{@Nullable} annotations to method signatures (parameters and return types).
+% Search for "\*.*\bnull\b"
+\item
+  \code{return null}:  add a \code{@Nullable} annotation to the return type
+  of the given method.
+% Search for "return null" and "return.*? null" and "return.*: null"
+\item
+  \code{\emph{param} == null}:  when a formal parameter is compared to
+  \code{null}, then in most cases you can add a \code{@Nullable} annotation
+  to the formal parameter's type
+\item
+  \code{\emph{TypeName} \emph{field} = null;}:  when a field is initialized to
+  \code{null} in its declaration, then it needs either a
+  \refqualclass{checker/nullness/qual}{Nullable} or a
+  \refqualclass{checker/nullness/qual}{MonotonicNonNull} annotation.  If the field
+  is always set to a non-null value in the constructor, then you can just
+  change the declaration to \code{\emph{Type} \emph{field};}, without an
+  initializer, and write no type annotation (because the default is
+  \<@NonNull>).
+\item
+  declarations of \<contains>, \<containsKey>, \<containsValue>, \<equals>,
+  \<get>, \<indexOf>, \<lastIndexOf>, and \<remove> (with \<Object> as the
+  argument type):
+  change the argument type to \<@Nullable Object>; for \<remove>, also change
+  the return type to \<@Nullable Object>.
+% Emacs code that adds annotations to the argument types:
+% ;;NOT: (tags-query-replace " apply(Object " " apply(@Nullable Object ")
+% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(@Nullable Object ")
+
+\end{itemize}
+
+\noindent
+You should ignore all other occurrences of \code{null} within a method
+body.  In particular, you rarely need to annotate local variables
+(except their type arguments or array element types).
+
+Only after this step should you run
+the Nullness Checker.  The reason is that it is quicker to search for
+places to change than to repeatedly run the checker and fix the errors it
+tells you about, one at a time.
+
+Here are some other tips:
+\begin{itemize}
+\item
+    \begin{sloppypar}
+    In any file where you write an annotation such as \code{@Nullable},
+    don't forget to add \code{import org.checkerframework.checker.nullness.qual.*;}.
+    \end{sloppypar}
+\item
+    To indicate an array that can be null, write, for example: \code{int
+      @Nullable []}. \\
+    By contrast, \code{@Nullable Object []} means a non-null array that
+    contains possibly-null objects.
+\item
+    If you know that a particular variable is definitely not null, but the
+    Nullness Checker estimates that the variable might be null, then you can
+    make the Nullness Checker trust your judgment by writing
+    an assertion (see Section~\ref{assumeassertion}):
+\begin{Verbatim}
+assert var != null : "@AssumeAssertion(nullness)";
+\end{Verbatim}
+\item
+    To indicate that a routine returns the same value every time it is
+    called, use \refqualclass{dataflow/qual}{Pure} (see Section~\ref{type-refinement-purity}).
+\item
+    To indicate a method precondition (a contract stating the conditions
+    under which a client is allowed to call it), you can use annotations
+    such as \refqualclass{checker/nullness/qual}{RequiresNonNull} (see Section~\ref{nullness-method-annotations}).
+\end{itemize}
+
+
+
+\sectionAndLabel{Other tools for nullness checking}{nullness-related-work}
+
+\newcommand{\linktoNonNull}{\refclass{checker/nullness/qual}{NonNull}}
+\newcommand{\linktoNullable}{\refclass{checker/nullness/qual}{Nullable}}
+
+The Checker Framework's nullness annotations are similar to annotations used
+in other
+tools.
+You might prefer to use the Checker Framework because it has a more
+powerful analysis that can warn you about more null pointer errors in your
+code.
+Most of the other tools are bug-finding tools rather than verification tools, since they
+give up precision, soundness, or both in favor of being fast and
+easy to use.  Also
+see Section~\ref{faq-type-checking-vs-bug-detectors} for a comparison to other tools.
+
+If your code is already annotated with a different nullness
+annotation, the Checker Framework can type-check your code.
+It treats annotations from other tools
+as if you had written the corresponding annotation from the
+Nullness Checker, as described in Figures~\ref{fig-nullness-refactoring-nonnull},
+\ref{fig-nullness-refactoring-nullable}, and
+\ref{fig-nullness-refactoring-polynull}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
+
+
+% These lists should be kept in sync with
+% ../../checker/src/main/java/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.java
+% and with variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
+% https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java .
+
+\begin{figure}
+\begin{center}
+% The ~ around the text makes things look better in Hevea (and not terrible
+% in LaTeX).
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~android.annotation.NonNull~ \\ \hline
+ ~android.support.annotation.NonNull~ \\ \hline
+ ~android.support.annotation.RecentlyNonNull~ \\ \hline
+ ~androidx.annotation.NonNull~ \\ \hline
+ ~androidx.annotation.RecentlyNonNull~ \\ \hline
+ ~com.android.annotations.NonNull~ \\ \hline
+ ~com.google.firebase.database.annotations.NotNull~ \\ \hline
+ ~com.google.firebase.internal.NonNull~ \\ \hline
+ ~com.mongodb.lang.NonNull~ \\ \hline
+ ~com.sun.istack.NotNull~ \\ \hline
+ ~com.sun.istack.internal.NotNull~ \\ \hline
+ ~com.unboundid.util.NotNull~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
+ ~io.micrometer.core.lang.NonNull~ \\ \hline
+ ~io.micronaut.core.annotation.NonNull~ \\ \hline
+ ~io.reactivex.annotations.NonNull~ \\ \hline
+ ~io.reactivex.rxjava3.annotations.NonNull~ \\ \hline
+ ~jakarta.annotation.Nonnull~ \\ \hline
+ ~javax.annotation.Nonnull~ \\ \hline
+ % javax.validation.constraints.NotNull: The field might contain a null value until it is persisted.
+ ~javax.validation.constraints.NotNull~ \\ \hline
+ ~libcore.util.NonNull~ \\ \hline
+ ~lombok.NonNull~ \\ \hline
+ ~net.bytebuddy.agent.utility.nullability.NeverNull~ \\ \hline
+ ~net.bytebuddy.utility.nullability.NeverNull~ \\ \hline
+ ~org.antlr.v4.runtime.misc.NotNull~ \\ \hline
+ ~org.checkerframework.checker.nullness.compatqual.NonNullDecl~ \\ \hline
+ ~org.checkerframework.checker.nullness.compatqual.NonNullType~ \\ \hline
+ ~org.chromium.build.annotations.OptimizeAsNonNull~ \\ \hline
+ ~org.codehaus.commons.nullanalysis.NotNull~ \\ \hline
+ ~org.eclipse.jdt.annotation.NonNull~ \\ \hline
+ ~org.eclipse.jgit.annotations.NonNull~ \\ \hline
+ ~org.eclipse.lsp4j.jsonrpc.validation.NonNull~ \\ \hline
+ ~org.jetbrains.annotations.NotNull~ \\ \hline
+ ~org.jmlspecs.annotation.NonNull~ \\ \hline
+ ~org.jspecify.annotations.NonNull~ \\ \hline
+ ~org.jspecify.nullness.NonNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
+ ~org.springframework.lang.NonNull~ \\ \hline
+ ~reactor.util.annotation.NonNull~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.nullness.qual.NonNull~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other nullness annotations and the
+  Checker Framework's \<NonNull> annotation.}
+\label{fig-nullness-refactoring-nonnull}
+\end{figure}
+
+% See comments above previous table.
+\begin{figure}
+\begin{center}
+\begin{tabular}{ll}
+\begin{tabular}{|l|l|}
+\hline
+ ~android.annotation.Nullable~ \\ \hline
+ ~android.support.annotation.Nullable~ \\ \hline
+ ~android.support.annotation.RecentlyNullable~ \\ \hline
+ ~androidx.annotation.Nullable~ \\ \hline
+ ~androidx.annotation.RecentlyNullable~ \\ \hline
+ ~com.android.annotations.Nullable~ \\ \hline
+ ~com.beust.jcommander.internal.Nullable~ \\ \hline
+ ~com.google.api.server.spi.config.Nullable~ \\ \hline
+ ~com.google.firebase.database.annotations.Nullable~ \\ \hline
+ ~com.google.firebase.internal.Nullable~ \\ \hline
+ ~com.google.gerrit.common.Nullable~ \\ \hline
+ ~com.google.protobuf.Internal.ProtoMethodAcceptsNullParameter~ \\ \hline
+ ~com.google.protobuf.Internal.ProtoMethodMayReturnNull~ \\ \hline
+ ~com.mongodb.lang.Nullable~ \\ \hline
+ ~com.sun.istack.Nullable~ \\ \hline
+ ~com.sun.istack.internal.Nullable~ \\ \hline
+ ~com.unboundid.util.Nullable~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
+ ~io.micrometer.core.lang.Nullable~ \\ \hline
+ ~io.micronaut.core.annotation.Nullable~ \\ \hline
+ ~io.reactivex.annotations.Nullable~ \\ \hline
+ ~io.reactivex.rxjava3.annotations.Nullable~ \\ \hline
+ ~io.vertx.codegen.annotations.Nullable~ \\ \hline
+ ~jakarta.annotation.Nullable~ \\ \hline
+ ~javax.annotation.CheckForNull~ \\ \hline
+ ~javax.annotation.Nullable~ \\ \hline
+ ~junitparams.converters.Nullable~ \\ \hline
+ ~libcore.util.Nullable~ \\ \hline
+ ~net.bytebuddy.agent.utility.nullability.AlwaysNull~ \\ \hline
+ ~net.bytebuddy.agent.utility.nullability.MaybeNull~ \\ \hline
+ ~net.bytebuddy.agent.utility.nullability.UnknownNull~ \\ \hline
+ ~net.bytebuddy.utility.nullability.AlwaysNull~ \\ \hline
+ ~net.bytebuddy.utility.nullability.MaybeNull~ \\ \hline
+ ~net.bytebuddy.utility.nullability.UnknownNull~ \\ \hline
+ ~org.apache.avro.reflect.Nullable~ \\ \hline
+ ~org.apache.cxf.jaxrs.ext.Nullable~ \\ \hline
+ ~org.apache.shindig.common.Nullable~ \\ \hline
+ ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
+ ~org.checkerframework.checker.nullness.compatqual.NullableType~ \\ \hline
+ ~org.chromium.build.annotations.Nullable~ \\ \hline
+ ~org.codehaus.commons.nullanalysis.Nullable~ \\ \hline
+ ~org.eclipse.jdt.annotation.Nullable~ \\ \hline
+ ~org.eclipse.jgit.annotations.Nullable~ \\ \hline
+ ~org.jetbrains.annotations.Nullable~ \\ \hline
+ ~org.jetbrains.annotations.UnknownNullability~ \\ \hline
+ ~org.jmlspecs.annotation.Nullable~ \\ \hline
+ ~org.jspecify.annotations.Nullable~ \\ \hline
+ ~org.jspecify.nullness.Nullable~ \\ \hline
+ ~org.jspecify.nullness.NullnessUnspecified~ \\ \hline
+ ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
+ ~org.springframework.lang.Nullable~ \\ \hline
+ ~reactor.util.annotation.Nullable~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.nullness.qual.Nullable~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other nullness annotations and the
+  Checker Framework's \<Nullable> annotation.}
+\label{fig-nullness-refactoring-nullable}
+\end{figure}
+
+% See comments above previous table.
+\begin{figure}
+\begin{center}
+\begin{tabular}{ll}
+\begin{tabular}{|l|l|}
+\hline
+ ~com.google.protobuf.Internal.ProtoPassThroughNullness~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.nullness.qual.PolyNull~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other nullness annotations and the
+  Checker Framework's \<PolyNull> annotation.}
+\label{fig-nullness-refactoring-polynull}
+\end{figure}
+
+%% Removed, because it's tedious and should be obvious to a decent programmer.
+% Your IDE may be able to do that for you.  Alternately, do the following:
+% \begin{enumerate}
+% \item
+%   replace \<@Nonnull> by \<@NonNull> (note capitalization difference)
+% \item
+%   replace \<@CheckForNull> by \<@Nullable>
+% \item
+%   replace \<@UnknownNullness> by \<@Nullable>
+% \item
+%   convert each single-type import statement (without a ``\<*>'' character)
+%    according to the table above.
+% \item
+%   convert each on-demand import statements, such as ``\<import
+%    edu.umd.cs.findbugs.annotations.*;>''.
+% \begin{itemize}
+%    \item
+%   One approach is to change it into a set of single-type imports,
+%       then convert the relevant ones.
+%    \item
+%   Another approach is to change it according to the table above, then
+%       try to compile and re-introduce the single-type imports as necessary.
+% \end{itemize}
+%    These approaches let you continue to use other annotations in the
+%    \<edu.umd.cs.findbugs.annotations> package, even though you are not using
+%    its nullness annotations.
+% \end{enumerate}
+
+
+The Checker Framework may issue more or fewer errors than another tool.
+This is expected, since each tool uses a different analysis.  Remember that
+the Checker Framework aims at soundness:  it aims to never miss a possible
+null dereference, while at the same time limiting false reports.  Also,
+note SpotBugs's non-standard meaning for \<@Nullable>
+(Section~\ref{findbugs-nullable}).
+
+Java permits you to import at most one annotation of a given name.  For
+example, if you use both \<android.annotation.NonNull> and
+\<lombok.NonNull> in your source code, then you must write at least one of
+them in fully-qualified form, as \<@android.annotation.NonNull> rather than
+as \<@NonNull>.
+
+
+\subsectionAndLabel{Which tool is right for you?}{choosing-nullness-tool}
+
+Different tools are appropriate in different circumstances.
+Section~\ref{faq-type-checking-vs-bug-detectors} compares verification
+tools like the Checker Framework with bug detectors like SpotBugs and Error
+Prone.  In brief, a bug detector is easier to use because it requires fewer
+annotations, but it misses lots of real bugs that a verifier finds.  You
+should use whichever tool is appropriate for the importance of your code.
+
+You may also choose to use multiple tools, especially since each tool
+focuses on different types of errors.  If you know that you will eventually
+want to do verification for some particular task (say, nullness checking),
+there is little point using the nullness analysis of bug detector such as
+SpotBugs first.  It is easier to go straight to using the
+Checker Framework.
+
+If some other tool discovers a nullness error that the Checker
+Framework does not, please report it to us (see
+Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
+For example, SpotBugs might detect an error that the Nullness Checker does
+not, if you are using an unannotated library (including an unannotated
+part of the JDK) and running the Checker Framework in an unsound mode (see
+Section~\ref{checker-options}).
+
+
+\subsectionAndLabel{Incompatibility note about FindBugs and SpotBugs \tt{@Nullable}}{findbugs-nullable}
+
+FindBugs and SpotBugs have a non-standard definition of
+\<@Nullable>.  This treatment is not documented in its own
+% \href{https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
+\href{https://www.javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/latest/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
+it is different from the definition of \<@Nullable> in every other tool for
+nullness analysis; it means the same thing as \<@NonNull> when applied to a
+formal parameter; and it invariably surprises programmers.  Thus, SpotBugs's
+\<@Nullable> is detrimental rather than useful as documentation.
+In practice, your best bet is to not rely on SpotBugs for nullness analysis,
+even if you find SpotBugs useful for other purposes.
+
+You can skip the rest of this section unless you wish to learn more details.
+
+SpotBugs suppresses all warnings at uses of a \<@Nullable> variable.
+(You have to use \<@CheckForNull> to
+indicate a nullable variable that SpotBugs should check.)  For example:
+
+\begin{Verbatim}
+     // declare getObject() to possibly return null
+     @Nullable Object getObject() { ... }
+
+     void myMethod() {
+       @Nullable Object o = getObject();
+       // SpotBugs issues no warning about calling toString on a possibly-null reference!
+       o.toString();
+     }
+\end{Verbatim}
+
+\noindent
+The Checker Framework does not emulate this non-standard behavior of
+SpotBugs, even if the code uses FindBugs/SpotBugs annotations.
+
+With SpotBugs, you annotate a declaration, which suppresses checking at
+\emph{all} client uses, even the places that you want to check.
+It is better to suppress warnings at only the specific client uses
+where the value is known to be non-null; the Checker Framework supports
+this, if you write \<@SuppressWarnings> at the client uses.
+The Checker Framework also supports suppressing checking at all client uses,
+by writing a \<@SuppressWarnings> annotation at the declaration site.
+Thus, the Checker Framework supports both use cases, whereas SpotBugs
+supports only one and gives the programmer less flexibility.
+
+In general, the Checker Framework will issue more warnings than SpotBugs,
+and some of them may be about real bugs in your program.
+See Section~\ref{suppressing-warnings-nullness} for information about
+suppressing nullness warnings.
+
+FindBugs and SpotBugs made a poor choice of names.  The choice of names should make a
+clear distinction between annotations that specify whether a reference is
+null, and annotations that suppress false warnings.  The choice of names
+should also have been consistent for other tools, and intuitively clear to
+programmers.  The FindBugs/SpotBugs choices make the SpotBugs annotations less
+helpful to people, and much less useful for other tools.
+
+Another problem is that the SpotBugs \<@Nullable> annotation is a
+declaration annotation rather than a type annotation.  This means that it
+cannot be written in important locations such as type arguments, and it is
+misleading when written on a field of array type or a method that returns
+an array.
+
+Overall, it is best to stay away from the SpotBugs nullness annotations and
+analysis, and use a tool with a more principled design.
+
+
+% As background, here is an explanation of the (sometimes surprising)
+% semantics of the FindBugs nullness annotations.
+%
+%  * edu.umd.cs.findbugs.annotations.NonNull     javax.annotation.Nonnull
+%    These mean the obvious thing:   the reference is never null.
+%
+%  * edu.umd.cs.findbugs.annotations.Nullable     javax.annotation.Nullable
+%    This means that the value may be null, but that *all warnings should be
+%    suppressed* regarding its use.  In other words, the value is really
+%    nullable, but clients should treat it as non-null.  For example:
+%
+%      // declare getObject() to possibly return null
+%      @Nullable Object getObject() { ... }
+%
+%      // FindBugs issues no warning about calling toString on a possibly-null reference
+%      getObject().toString();
+%
+%    In the Checker Framework, this corresponds to declaring the method
+%    return value as @Nullable, then suppressing warnings at client uses
+%    that are known to be non-null.  An easy way to suppress the warning
+%    is by adding an assert statement about the return value.
+%
+%    (Alternately, you could declare the method return value as @NonNull, and
+%    suppress warnings within the method definition where it returns null,
+%    but this approach is not recommended because the @NonNull annotation on
+%    the return value would be misleading, and warnings should be suppressed
+%    at particular sites where they are known to be unnecessary, not at all
+%    call sites whatsoever.)
+%
+%  * edu.umd.cs.findbugs.annotations.CheckForNull      javax.annotation.CheckForNull
+%    This means that the value may be null.  To avoid a NullPointerException,
+%    every client should check nullness before dereferencing the value.
+%    In the Checker Framework, this corresponds to @Nullable.
+
+
+\subsectionAndLabel{Relationship to \tt{Optional<T>}}{nullness-vs-optional}
+
+Many null pointer exceptions occur because the programmer forgets to check
+whether a reference is null before dereferencing it.  Java 8's
+\sunjavadoc{java.base/java/util/Optional.html}{\code{Optional<T>}}
+class provides a partial solution:  a programmer must call the \<get> method to
+access the value, and the designers of \<Optional> hope that the syntactic
+occurrence of the \<get> method will remind programmers to first check that
+the value is present.  This is still easy to forget, however.
+
+The Checker Framework contains an Optional Checker (see
+Chapter~\ref{optional-checker}) that guarantees that programmers use
+\<Optional> correctly, such as calling \<isPresent> before calling \<get>.
+
+There are some limitations to the utility of \code{Optional}, which might
+lead to you choose to use regular Java references rather than \<Optional>.
+(For more details, see the article
+\href{https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
+  is better than the \<Optional> type''}.)
+
+\begin{itemize}
+\item
+  It is still possible to call \<get> on a non-present \<Optional>, leading
+  to a \code{NoSuchElementException}.  In other words, \code{Optional}
+  doesn't solve the underlying problem --- it merely converts a
+  \code{NullPointerException} into a \code{NoSuchElementException}
+  exception, and in either case your code crashes.
+\item
+  \code{NullPointerException} is still possible in code that uses \code{Optional}.
+\item
+  \code{Optional} adds syntactic complexity, making your code longer and harder to
+  read.
+\item
+  \code{Optional} adds time and space overhead.
+\item
+  \code{Optional} does not address important sources of null pointer
+  exceptions, such as partially-initialized objects and calls to \<Map.get>.
+\end{itemize}
+
+The Nullness Checker does not suffer these limitations.  Furthermore, it
+works with existing code and types, it ensures that you check for null
+wherever necessary, and it infers when the check for null is not necessary
+based on previous statements in the method.
+
+Java's \<Optional> class provides utility routines to reduce clutter when
+using \<Optional>.  The Nullness Checker provides an
+\refclass{checker/nullness/util}{Opt} class that provides all the same methods,
+but written for regular possibly-null Java references.
+To use the \refclass{checker/nullness/util}{Opt} class, the
+\<checker-util.jar> file must be on the classpath at run time.
+
+
+\sectionAndLabel{Initialization Checker}{initialization-checker}
+
+The Initialization Checker determines whether an object is initialized or
+not.  For any object that is not fully initialized, the Nullness Checker
+treats its fields as possibly-null --- even fields annotated as
+\<@NonNull>.
+(The Initialization Checker focuses on \<@NonNull> fields, to detect null
+pointer exceptions when using them.  It does not
+currently ensure that primitives or \<@Nullable> fields are initialized.
+Use the Initialized Fields Checker
+(\chapterpageref{initialized-fields-checker}) to check initialization with
+respect to properties other than nullness.)
+
+Every object's fields start out as null.  By the time the constructor
+finishes executing, the \<@NonNull> fields have been set to a different
+value.  Your code can suffer a NullPointerException when using a
+\<@NonNull> field, if your code uses the field during initialization.
+The Nullness Checker prevents this problem by warning you anytime that you
+may be accessing an uninitialized field.  This check is useful because it
+prevents errors in your code.  However, the analysis can be confusing to
+understand.  If you wish to disable the initialization checks, use
+the \code{-AassumeInitialized} command-line option.
+
+An object is partially initialized from the time that its constructor starts until its constructor
+finishes.  This is relevant to the Nullness Checker because while the
+constructor is executing --- that is, before initialization completes ---
+a \<@NonNull>
+field may be observed to be null, until that field is set.  In
+particular, the Nullness Checker issues a warning for code like this:
+
+\begin{Verbatim}
+  public class MyClass {
+    private @NonNull Object f;
+    public MyClass(int x) {
+      // Error because constructor contains no assignment to this.f.
+      // By the time the constructor exits, f must be initialized to a non-null value.
+    }
+    public MyClass(int x, int y) {
+      // Error because this.f is accessed before f is initialized.
+      // At the beginning of the constructor's execution, accessing this.f
+      // yields null, even though field f has a non-null type.
+      this.f.toString();
+      f = new Object();
+    }
+    public MyClass(int x, int y, int z) {
+      m();
+      f = new Object();
+    }
+    public void m() {
+      // Error because this.f is accessed before f is initialized,
+      // even though the access is not in a constructor.
+      // When m is called from the constructor, accessing f yields null,
+      // even though field f has a non-null type.
+      this.f.toString();
+    }
+\end{Verbatim}
+
+\noindent
+When a field \<f> is declared with a \refqualclass{checker/nullness/qual}{NonNull}
+type, then code can depend on the fact that the field is not \<null>.
+However, this guarantee does not hold for a partially-initialized object.
+
+The Initialization Checker uses three annotations to indicate whether an object
+is initialized (all its \<@NonNull> fields have been assigned), under
+initialization (its constructor is currently executing), or its
+initialization state is unknown.
+
+These distinctions are mostly relevant within the constructor, or for
+references to \code{this} that escape the constructor (say, by being stored
+in a field or passed to a method before initialization is complete).
+Use of initialization annotations is rare in most code.
+
+
+\subsectionAndLabel{Initialization qualifiers}{initialization-qualifiers}
+
+\begin{figure}
+\includeimage{initialization}{4cm}
+\caption{Partial type hierarchy for the Initialization type system.
+  \<@UnknownInitialization> and \<@UnderInitialization> each take an
+  optional parameter indicating how far initialization has proceeded, and
+  the right side of the figure illustrates its type hierarchy in more detail.}
+\label{fig-initialization-hierarchy}
+\end{figure}
+
+The initialization hierarchy is shown in Figure~\ref{fig-initialization-hierarchy}.
+The initialization hierarchy contains these qualifiers:
+
+\begin{description}
+
+\item[\refqualclass{checker/initialization/qual}{Initialized}]
+  indicates a type that contains a fully-initialized object.  \code{Initialized}
+  is the default, so there is little need for a programmer to write this
+  explicitly.
+
+\item[\refqualclass{checker/initialization/qual}{UnknownInitialization}]
+  indicates a type that may contain a partially-initialized object.  In a
+  partially-initialized object, fields that are annotated as
+  \refqualclass{checker/nullness/qual}{NonNull} may be null because the field
+  has not yet been assigned.
+
+  \<@UnknownInitialization> takes a parameter that is the class the object
+  is definitely initialized up to.  For instance, the type
+  \<@UnknownInitialization(Foo.class)> denotes an object in which every
+  fields declared in \<Foo> or its superclasses is initialized, but other
+  fields might not be.
+  Just \<@UnknownInitialization> is equivalent to
+  \<@UnknownInitialization(Object.class)>.
+
+\item[\refqualclass{checker/initialization/qual}{UnderInitialization}]
+  indicates a type that contains a partially-initialized object that is
+  under initialization --- that is, its constructor is currently executing.
+  It is otherwise the same as \<@UnknownInitialization>.  Within the
+  constructor, \code{this} has
+  \refqualclass{checker/initialization/qual}{UnderInitialization} type until
+  all the \code{@NonNull} fields have been assigned.
+
+\item[\refqualclass{checker/initialization/qual}{PolyInitialized}]
+indicates qualifier polymorphism.
+For a description of qualifier polymorphism, see
+Section~\ref{method-qualifier-polymorphism}.
+
+\end{description}
+
+  A partially-initialized object (\code{this} in a constructor) may be
+  passed to a helper method or stored in a variable; if so, the method
+  receiver, or the field, would have to be annotated as
+  \<@UnknownInitialization> or as \<@UnderInitialization>.
+
+% However, if the constructor makes
+% a method call (passing \code{this} as a parameter or the receiver), then
+% the called method could observe the object in an illegal state.
+
+If a reference has
+\code{@UnknownInitialization} or \code{@UnderInitialization} type, then all of its \code{@NonNull} fields are treated as
+\refqualclass{checker/nullness/qual}{MonotonicNonNull}:  when read, they are
+treated as being \refqualclass{checker/nullness/qual}{Nullable}, but when
+written, they are treated as being
+\refqualclass{checker/nullness/qual}{NonNull}.
+
+\begin{sloppypar}
+The initialization hierarchy is orthogonal to the nullness hierarchy.  It
+is legal for a reference to be \<@NonNull @UnderInitialization>, \<@Nullable @UnderInitialization>,
+\<@NonNull @Initialized>, or \<@Nullable @Initialized>.  The nullness hierarchy tells
+you about the reference itself:  might the reference be null?  The initialization
+hierarchy tells you about the \<@NonNull> fields in the referred-to object:
+might those fields be temporarily null in contravention of their
+type annotation?
+% It's a figure rather than appearing inline so as not to span page breaks
+% in the printed manual.
+Figure~\ref{fig-initialization-examples} contains some examples.
+\end{sloppypar}
+
+\begin{figure}
+\begin{tabular}{l|l|l}
+Declarations & Expression & Expression's nullness type, or checker error \\ \hline
+\begin{minipage}{1.5in}
+\begin{Verbatim}
+class C {
+  @NonNull Object f;
+  @Nullable Object g;
+  ...
+}
+\end{Verbatim}
+\end{minipage} & & \\ \cline{2-3}
+\<@NonNull @Initialized C a;>
+& \<a> & \<@NonNull> \\
+& \<a.f> & \<@NonNull> \\
+& \<a.g> & \<@Nullable> \\ \cline{2-3}
+\<@NonNull @UnderInitialization C b;>
+& \<b> & \<@NonNull> \\
+& \<b.f> & \<@MonotonicNonNull> \\
+& \<b.g> & \<@Nullable> \\ \cline{2-3}
+\<@Nullable @Initialized C c;>
+& \<c> & \<@Nullable> \\
+& \<c.f> & error: deref of nullable \\
+& \<c.g> & error: deref of nullable \\ \cline{2-3}
+\<@Nullable @UnderInitialization C d;>
+& \<d> & \<@Nullable> \\
+& \<d.f> & error: deref of nullable \\
+& \<d.g> & error: deref of nullable \\
+\end{tabular}
+\caption{Examples of the interaction between nullness and initialization.
+  Declarations are shown at the left for reference, but the focus of the
+  table is the expressions and their nullness type or error.}
+\label{fig-initialization-examples}
+\end{figure}
+
+
+
+\subsectionAndLabel{How an object becomes initialized}{becoming-initialized}
+
+Within the constructor,
+\code{this} starts out with \refqualclass{checker/initialization/qual}{UnderInitialization} type.
+As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
+in class $C$ have been initialized, then \code{this} is treated as
+\refqualclass{checker/initialization/qual}{UnderInitialization}\code{(\emph{C})}.
+This means that \code{this} is still being initialized, but all
+initialization of $C$'s fields is complete, including all fields of supertypes.
+Eventually, when all constructors complete, the type is
+\refqualclass{checker/initialization/qual}{Initialized}.
+
+The Initialization Checker issues an error if the constructor fails to initialize
+any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
+state by the time that the constructor exits.
+This is different than Java's test for definite assignment (see
+\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-16.html}{JLS ch.16}),
+% , which requires that local
+% variables (and blank \code{final} fields) must be assigned.  Java does not
+% require that non-\code{final} fields be assigned, since
+which does not apply to fields (except blank final ones, defined in
+\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
+have a default value of null.
+
+
+All \code{@NonNull} fields must either have a
+default in the field declaration, or be assigned in the constructor or in a
+helper method that the constructor calls.  If
+your code initializes (some) fields in a helper method, you will need to
+annotate the helper method with an annotation such as
+\refqualclass{checker/nullness/qual}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
+for all the fields that the helper method assigns.
+
+% TODO:
+% We need an
+%   @EnsuresInitialized("b")
+% that is analogous to
+%   @EnsuresNonNull("b")
+% when we are dealing with a field of primitive type.
+% But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
+
+
+\subsectionAndLabel{\code{@UnderInitialization} examples}{underinitialization-examples}
+
+The most common use for the \<@UnderInitialization> annotation is for a
+helper routine that is called by constructor.  For example:
+
+\begin{Verbatim}
+  class MyClass {
+    Object field1;
+    Object field2;
+    Object field3;
+
+    public MyClass(String arg1) {
+      this.field1 = arg1;
+      init_other_fields();
+    }
+
+    // A helper routine that initializes all the fields other than field1.
+    @EnsuresNonNull({"field2", "field3"})
+    private void init_other_fields(@UnderInitialization(Object.class) MyClass this) {
+      field2 = new Object();
+      field3 = new Object();
+    }
+
+    public MyClass(String arg1, String arg2, String arg3) {
+      this.field1 = arg1;
+      this.field2 = arg2;
+      this.field3 = arg3;
+      checkRep();
+    }
+
+    // Verify that the representation invariants are satisfied.
+    // Works as long as the MyClass fields are initialized, even if the receiver's
+    // class is a subclass of MyClass and not all of the subclass fields are initialized.
+    private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
+      ...
+    }
+
+
+  }
+\end{Verbatim}
+
+% Most readers can
+% skip this section on first reading; you can return to it once you have
+% mastered the rest of the Nullness Checker.
+
+At the end of the constructor, \<this> is not fully initialized. Rather,
+it is \<@UnderInitialization(\emph{CurrentClass.class})>.
+The reason is that there might be subclasses with uninitialized fields.
+The following example illustrates this:
+
+\begin{Verbatim}
+class A {
+   @NonNull String a;
+   public A() {
+       a = "";
+       // Now, all fields of A are initialized.
+       // However, if this constructor is invoked as part of 'new B()', then
+       // the fields of B are not yet initialized.
+       // If we would type 'this' as @Initialized, then the following call is valid:
+       doSomething();
+   }
+   void doSomething() {}
+}
+
+class B extends A {
+   @NonNull String b;
+   @Override
+   void doSomething() {
+       // Dereferencing 'b' is ok, because 'this' is @Initialized and 'b' @NonNull.
+       // However, when executing 'new B()', this line throws a null-pointer exception.
+       b.toString();
+   }
+}
+\end{Verbatim}
+
+
+\subsectionAndLabel{Partial initialization}{partial-initialization}
+
+So far, we have discussed initialization as if it is an all-or-nothing property:
+an object is non-initialized until initialization completes, and then it is initialized.  The full truth is a bit more complex:  during the
+initialization process an object can be partially initialized, and as the
+object's superclass constructors complete, its initialization status is updated.  The
+Initialization Checker lets you express such properties when necessary.
+
+Consider a simple example:
+
+\begin{Verbatim}
+class A {
+  Object aField;
+  A() {
+    aField = new Object();
+  }
+}
+class B extends A {
+  Object bField;
+  B() {
+    super();
+    bField = new Object();
+  }
+}
+\end{Verbatim}
+
+Consider what happens during execution of \<new B()>.
+
+\begin{enumerate}
+\item \<B>'s constructor begins to execute.  At this point, neither the
+  fields of \<A> nor those of \<B> have been initialized yet.
+\item \<B>'s constructor calls \<A>'s constructor, which begins to execute.
+  No fields of \<A> nor of \<B> have been initialized yet.
+\item \<A>'s constructor completes.  Now, all the fields of \<A> have been
+  initialized, and their invariants (such as that field \<a> is non-null) can be
+  depended on.  However, because \<B>'s constructor has not yet completed
+  executing, the object being constructed is not yet fully initialized.
+\item \<B>'s constructor completes.  The fields declared in \<A> and \<B>
+  are initialized.  However, the type system cannot assume that the object
+  is fully initialized --- there might be a \<class C extends B \{...\}>,
+  and \<B>'s constructor might have been invoked from that.
+\end{enumerate}
+
+At any moment during initialization, the superclasses of a given class
+can be divided into those that have completed initialization and those that
+have not yet completed initialization.  More precisely, at any moment there
+is a point in the class hierarchy such that all the classes above that
+point are fully initialized, and all those below it are not yet
+initialized.  As initialization proceeds, this dividing line between the
+initialized and uninitialized classes moves down the type hierarchy.
+
+The Nullness Checker lets you indicate where the dividing line is between
+the initialized and non-initialized classes.
+The \<@UnderInitialization(\emph{classliteral})>
+indicates the first class that is known to be fully initialized.
+When you write \refqualclass{checker/initialization/qual}{UnderInitialization}\code{(OtherClass.class) MyClass x;}, that
+means that variable \<x> is initialized for \<OtherClass> and its
+superclasses, and \<x> is (possibly) uninitialized for subclasses of \<OtherClass>.
+
+The example above lists 4 moments during construction.  At those moments,
+the type of the object being constructed is:
+
+\begin{enumerate}
+\item
+  \<@UnderInitialization B>
+\item
+  \<@UnderInitialization A>
+\item
+  \<@UnderInitialization(A.class) A>
+  %% Not quite equivalent because the Java (non-qualified) type differs
+  % ; equivalently, \<@UnderInitialization B>
+\item
+  \<@UnderInitialization(B.class) B>
+\end{enumerate}
+
+Note that neither \<@UnderInitialization(A.class) A> nor
+\<@UnderInitialization(A.class) B> may be used where <@Initialized A> is
+required.  Permitting that would be unsound.  For example, consider this
+code, where all types are \<@NonNull> because \<@NonNull> is the default annotation:
+
+\begin{Verbatim}
+class A {
+  Object aField;
+  A() {
+    aField = new Object();
+  }
+  Object get() {
+    return aField;
+  }
+}
+class B extends A {
+  Object bField;
+  B() {
+    super();
+    bField = new Object();
+  }
+  @Override
+  Object get() {
+    return bField;
+  }
+}
+\end{Verbatim}
+
+Given these declarations:
+
+\begin{Verbatim}
+@Initialized A w;
+@Initialized B x;
+@UnderInitialization(A.class) A y;
+@UnderInitialization(A.class) B z;
+\end{Verbatim}
+
+\noindent
+the expressions \<w.get()> and \<x.get()> evaluate to a non-null value, but
+\<y.get()> and \<z.get()> might evaluate to \<null>.
+(\<y.get()> might evaluate to \<null> because the run-time type of \<y>
+might be \<B>.  That is, \<y> and \<z> might refer to the same value, just
+as \<w> and \<x> might refer to the same value.)
+
+
+\subsectionAndLabel{Method calls from the constructor}{initialization-constructor}
+
+Consider the following incorrect program.
+
+\begin{Verbatim}
+class A {
+  Object aField;
+  A() {
+    aField = new Object();
+    process(5);  // illegal call
+  }
+  public void process(int arg) { ... }
+}
+\end{Verbatim}
+
+The call to \<process()> is not legal.
+\<process()> is declared to be called on a fully-initialized receiver, which is
+the default if you do not write a different initialization annotation.
+At the call to \<process()>, all the fields of \<A> have been set,
+but \<this> is not fully initialized because fields in subclasses of \<A> have
+not yet been set.  The type of \<this> is \<@UnderInitialization(A.class)>,
+meaning that \<this> is partially-initialized, with the \<A> part of
+initialization done but the initialization of subclasses not yet complete.
+
+The Initialization Checker output indicates this problem:
+
+\begin{Verbatim}
+Client.java:7: error: [method.invocation.invalid] call to process(int) not allowed on the given receiver.
+    process(5);  // illegal call
+           ^
+  found   : @UnderInitialization(A.class) A
+  required: @Initialized A
+\end{Verbatim}
+
+Here is a subclass and client code that crashes with a \<NullPointerException>.
+
+\begin{Verbatim}
+class B extends A {
+  List<Integer> processed;
+  B() {
+    super();
+    processed = new ArrayList<Integer>();
+  }
+  @Override
+  public void process(int arg) {
+    processed.add(arg);
+  }
+}
+class Client {
+  public static void main(String[] args) {
+    new B();
+  }
+}
+\end{Verbatim}
+
+You can correct the problem in multiple ways.
+
+One solution is to not call methods that can be overridden from the
+constructor:  move the call to \<process()> to after the constructor has
+completed.
+
+Another solution is to change the declaration of \<process()>:
+
+\begin{Verbatim}
+  public void process(@UnderInitialization(A.class) A this, int arg) { ... }
+\end{Verbatim}
+
+If you choose this solution, you will need to rewrite the definition of
+\<B.process()> so that it is consistent with the declared receiver type.
+
+A non-solution is to prevent subclasses from overriding \<process()> by
+using \<final> on the method.  This doesn't work because even if
+\<process()> is not overridden, it might call other methods that are
+overridden.
+
+As final classes cannot have subclasses, they can be handled more
+flexibly: once all fields of the final class have been
+initialized, \<this> is fully initialized.
+
+% TODO: One could imagine having an annotation indicating that the routine
+% is "truly final":  it is final and it never calls, directly, or
+% indirectly, any routine that might be overridden.  I'm not sure how you
+% would confirm that, given the existence of callbacks from other code.
+
+
+
+\subsectionAndLabel{Initialization of circular data structures}{circular-initialization}
+
+There is one final aspect of the initialization type system to be
+considered:  the rules governing reading and writing to objects that are
+currently under initialization (both reading from fields of objects under
+initialization, as well as writing objects under initialization to fields).
+By default, only fully-initialized objects can be stored in a field of
+another object.  If this was the only option, then it would not be possible
+to create circular data structures (such as a doubly-linked list) where
+fields have a \refqualclass{checker/nullness/qual}{NonNull} type.  However,
+the annotation
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} can be used to
+indicate that a field can store objects that are currently under initialization.
+In this case, the rules for reading and writing to that field become a little
+bit more interesting, to soundly support circular structures.
+
+The rules for reading from a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field
+are summarized in Figure~\ref{fig-init-read-field}.  Essentially, nothing is
+known about the initialization status of the value returned unless the receiver
+was \refqualclass{checker/initialization/qual}{Initialized}.
+
+\begin{figure}
+\centering
+\begin{tabular}{l|l|l}
+  \<x.f>&\<f> is \<@NonNull>& \<f> is \<@Nullable>\\ \hline
+  \<x> is \<@Initialized> & \<@Initialized @NonNull> & \<@Initialized @Nullable> \\
+  \<x> is \<@UnderInitialization> & \<@UnknownInitialization @Nullable> & \<@UnknownInitialization @Nullable> \\
+  \<x> is \<@UnknownInitialization> & \<@UnknownInitialization @Nullable> & \<@UnknownInitialization @Nullable> \\
+\end{tabular}
+\caption{Initialization rules for reading a \refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.}
+\label{fig-init-read-field}
+\end{figure}
+
+Similarly, Figure~\ref{fig-init-write-field} shows under which conditions
+an assignment \<x.f = y> is allowed for a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.
+If the receiver \<x> is
+\refqualclass{checker/initialization/qual}{UnderInitialization}, then any
+\<y> can be of any initialization state.  If \<y> is known to be
+fully initialized, then any receiver is allowed.  All other assignments
+are disallowed.
+
+\begin{figure}
+\centering
+\begin{tabular}{l|ccc}
+  \<x.f = y>&\<y> is \<@Initialized>& \<y> is \<@UnderInitialization>& \<y> is \<@UnknownInitialization>\\ \hline
+  \<x> is \<@Initialized> & yes & no & no \\
+  \<x> is \<@UnderInitialization> & yes & yes & yes \\
+  \<x> is \<@UnknownInitialization> & yes & no & no \\
+\end{tabular}
+\caption{Rules for deciding when an assignment \<x.f = y> is allowed for a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.}
+\label{fig-init-write-field}
+\end{figure}
+
+These rules allow for the safe initialization of circular structures.  For instance,
+consider a doubly linked list:
+
+\begin{Verbatim}
+  class List<T> {
+    @NotOnlyInitialized
+    Node<T> sentinel;
+
+    public List() {
+      this.sentinel = new Node<>(this);
+    }
+
+    void insert(@Nullable T data) {
+      this.sentinel.insertAfter(data);
+    }
+
+    public static void main() {
+      List<Integer> l = new List<>();
+      l.insert(1);
+      l.insert(2);
+    }
+  }
+
+  class Node<T> {
+    @NotOnlyInitialized
+    Node<T> prev;
+
+    @NotOnlyInitialized
+    Node<T> next;
+
+    @NotOnlyInitialized
+    List parent;
+
+    @Nullable
+    T data;
+
+    // for sentinel construction
+    Node(@UnderInitialization List parent) {
+      this.parent = parent;
+      this.prev = this;
+      this.next = this;
+    }
+
+    // for data node construction
+    Node(Node<T> prev, Node<T> next, @Nullable T data) {
+      this.parent = prev.parent;
+      this.prev = prev;
+      this.next = next;
+      this.data = data;
+    }
+
+    void insertAfter(@Nullable T data) {
+      Node<T> n = new Node<>(this, this.next, data);
+      this.next.prev = n;
+      this.next = n;
+    }
+  }
+\end{Verbatim}
+
+% \paragraphAndLabel{Example}{initialization-example}
+%
+% As another example, consider the following 12 declarations, where class A
+% extends Object and class B extends A:
+%
+% \begin{Verbatim}
+%     @UnderInitialization(Object.class) Object uOo;
+%     @Initialized Object o;
+%
+%     @UnderInitialization(Object.class) A uOa;
+%     @UnderInitialization(A.class) A uAa;
+%     @Initialized A nraA;
+%
+%     @UnderInitialization(Object.class) B uOb;
+%     @UnderInitialization(A.class) B uAb;
+%     @UnderInitialization(B.class) B uBb;
+%     @Initialized B b;
+% \end{Verbatim}
+%
+% In the following table, the type in cell C1 is a supertype of the type in
+% cell C2 if:  C1 is at least as high and at least as far left in the table
+% as C2 is.  For example, \<nraA>'s type is a supertype of those of \<rB>,
+% \<nraB>, \<nrbB>, \<a>, and \<b>.  (The empty cells on the top row are real
+% types, but are not expressible.  The other empty cells are not interesting
+% types.)
+%
+% \noindent
+% \begin{tabular}{|c|c|c|}
+%
+% \hline
+%     \<@UnderInitialization Object rO;>
+% &
+% &
+% \\
+% \hline
+%
+%     \<@Initialized(Object.class) Object nroO;>
+% &
+% \begin{minipage}{2in}
+% \begin{Verbatim}
+% @UnderInitialization A rA;
+% @Initialized(Object.class) A nroA;
+% \end{Verbatim}
+% \end{minipage}
+% &
+%     \<@Initialized(Object.class) B nroB;>
+% \\
+% \hline
+%
+% &
+%     \<@Initialized(A.class) A nraA;>
+% &
+% \begin{minipage}{1.75in}
+% \begin{Verbatim}
+% @UnderInitialization B rB;
+% @Initialized(A.class) B nraB;
+% \end{Verbatim}
+% \end{minipage}
+% \\
+% \hline
+%
+% &
+% &
+%     \<@Initialized(B.class) B nrbB;>
+% \\
+% \hline
+%
+%     \<Object o;>
+% &
+%     \<A a;>
+% &
+%     \<B b;>
+% \\
+% \hline
+% \end{tabular}
+
+
+
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.8.7}
+% (Recall that the superclass constructor is called on the first line, or is
+% inserted automatically by the compiler before the first line, see
+% \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
+
+
+
+\subsectionAndLabel{How to handle warnings}{initialization-warnings}
+
+
+\subsubsectionAndLabel{``error:  the constructor does not initialize fields: \ldots''}{initialization-warnings-constructor}
+
+Like any warning, ``error:  the constructor does not initialize fields:
+\ldots'' indicates that either your annotations are incorrect or your code
+is buggy.  You can fix either the annotations or the code.
+
+\begin{itemize}
+\item
+  Declare the field as \refqualclass{checker/nullness/qual}{Nullable}.  Recall
+  that if you did not write an annotation, the field defaults to
+  \refqualclass{checker/nullness/qual}{NonNull}.
+\item
+  Declare the field as \refqualclass{checker/nullness/qual}{MonotonicNonNull}.
+  This is appropriate if the field starts out as \<null> but is later set
+  to a non-null value.  You may then wish to use the
+  \refqualclass{checker/nullness/qual}{EnsuresNonNull} annotation to indicate
+  which methods set the field, and the
+  \refqualclass{checker/nullness/qual}{RequiresNonNull} annotation to indicate
+  which methods require the field to be non-null.
+\item
+  Initialize the field in the constructor or in the field's initializer, if
+  the field should be initialized.  (In this case, the Initialization
+  Checker has found a bug!)
+
+  Do \emph{not} initialize the field to an arbitrary non-null value just to
+  eliminate the warning.  Doing so degrades your code:  it introduces a
+  value that will confuse other programmers, and it converts a clear
+  NullPointerException into a more obscure error.
+\end{itemize}
+
+\subsubsectionAndLabel{``call to \ldots\ is not allowed on the given receiver''}{initialization-warnings-receiver}
+
+If your code calls an instance method from a constructor, you may see a
+message such as the following:
+
+\begin{Verbatim}
+MyFile.java:123: error: call to initHelper() not allowed on the given receiver.
+    initHelper();
+              ^
+  found   : @UnderInitialization(com.google.Bar.class) MyClass
+  required: @Initialized MyClass
+\end{Verbatim}
+
+The problem is that the current object (\<this>) is under initialization,
+but the receiver formal parameter (Section~\ref{faq-receiver}) of method
+\<initHelper()> is implicitly annotated as
+\refqualclass{checker/initialization/qual}{Initialized}.  If
+\<initHelper()> doesn't depend on its receiver being initialized --- that
+is, it's OK to call \<x.initHelper> even if \<x> is not initialized ---
+then you can indicate that by using
+\refqualclass{checker/initialization/qual}{UnderInitialization} or
+\refqualclass{checker/initialization/qual}{UnknownInitialization}.
+
+\begin{Verbatim}
+class MyClass {
+  void initHelper(@UnknownInitialization MyClass this, String param1) { ... }
+}
+\end{Verbatim}
+
+\noindent
+You are likely to want to annotate \<initHelper()> with
+\refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
+Section~\ref{nullness-method-annotations}.
+
+You may get the ``call to \ldots\ is not allowed on the given receiver''
+error even if your constructor has already initialized all the fields.
+For this code:
+
+\begin{Verbatim}
+public class MyClass {
+  @NonNull Object field;
+  public MyClass() {
+    field = new Object();
+    helperMethod();
+  }
+  private void helperMethod() {
+  }
+}
+\end{Verbatim}
+
+\noindent
+the Nullness Checker issues the following warning:
+
+\begin{Verbatim}
+MyClass.java:7: error: call to helperMethod() not allowed on the given receiver.
+    helperMethod();
+                ^
+  found   : @UnderInitialization(MyClass.class) MyClass
+  required: @Initialized MyClass
+1 error
+\end{Verbatim}
+
+\begin{sloppypar}
+The reason is that even though the object under construction has had all
+the fields declared in \<MyClass> initialized, there might be a subclass of
+\<MyClass>.  Thus, the receiver of \<helperMethod> should be declared as
+\<@UnderInitialization(MyClass.class)>, which says that initialization has
+completed for all the \<MyClass> fields but may not have been completed
+overall.  If \<helperMethod> had been a public method that could also be called after
+initialization was actually complete, then the receiver should have type
+\<@UnknownInitialization>, which is the supertype of
+\<@UnknownInitialization> and \<@UnderInitialization>.
+\end{sloppypar}
+
+\subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
+
+To suppress both warnings related to nullness and warnings related to initialization,
+see Section~\ref{suppressing-warnings-nullness}.
+For more about suppressing warnings in general, see
+\chapterpageref{suppressing-warnings}.
+
+To suppress only warnings related to initialization, use the
+warning suppression string ``initialization''.
+You can write \<@SuppressWarnings("initialization")>
+on a field, constructor, or
+class, or pass the command-line argument
+\<-AsuppressWarnings=initialization> when
+running the Nullness Checker.
+You will no longer get a guarantee
+of no null pointer exceptions, but you can still use the Nullness Checker
+to find most of the null-pointer problems in your code.
+
+This suppresses warnings that are specific to the Initialization Checker,
+but does not suppress warnings issued by the Checker Framework itself, such
+as about assignments or method overriding.
+
+You can also disable initialization checking completely while retaining
+nullness checking by running the Nullness Checker with the
+\code{-AassumeInitialized} command-line option.
+
+\subsectionAndLabel{More details about initialization checking}{initialization-checking}
+
+
+\paragraphAndLabel{Use of method annotations}{initialization-checking-method-annotations}
+
+A method with a non-initialized receiver may assume that a few fields (but not all
+of them) are non-null, and it sometimes sets some more fields to non-null
+values.  To express these concepts, use the
+\refqualclass{checker/nullness/qual}{RequiresNonNull},
+\refqualclass{checker/nullness/qual}{EnsuresNonNull}, and
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf} method annotations;
+see Section~\ref{nullness-method-annotations}.
+
+
+\paragraphAndLabel{Source of the type system}{initialization-checking-type-system}
+
+The type system enforced by the Initialization Checker is based on
+``Freedom Before Commitment''~\cite{SummersM2011}.  Our implementation
+changes its initialization modifiers (``committed'', ``free'', and
+``unclassified'') to ``initialized'', ``unknown initialization'', and
+``under initialization''.  Our implementation also has several
+enhancements.  For example, it supports partial initialization (the
+argument to the \<@UnknownInitialization> and \<@UnderInitialization>
+annotations).  The benefit (in terms of reduced false positive
+initialization warnings) from supporting partial initialization is
+greater than the benefit from adopting the Freedom Before Commitment system.
+
+
+
+% LocalWords:  NonNull plugin quals un NonNullExampleWithWarnings java ahndrich
+% LocalWords:  NotNull IntelliJ FindBugs Nullable TODO Alint nullable NNEL JSR
+% LocalWords:  DefaultLocation Nullness PolyNull nullness AnnotateNullable JLS
+% LocalWords:  Daikon JastAdd javac DefaultQualifier boolean MyEnumType NonRaw
+% LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor MonotonicNonNull
+% LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes de ch
+% LocalWords:  castNonNull NullnessUtil assertNotNull codebases checkNotNull
+% LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
+% LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
+% LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
+% LocalWords:  nonnull EnsuresNonNull arg orElse isPresent bField qual ccc
+% LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
+% LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
+% LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
+% LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw type''
+% LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
+% LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray jdk
+% LocalWords:  UnderInitialization getComponentType AsuppressWarnings util
+% LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
+% LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''
+% LocalWords:  dereferenced dereference Dereferencing initializers astub
+% LocalWords:  initHelper helperMethod NoSuchElementException classpath
+% LocalWords:  soundArrayCreationNullness lombok findbugs CurrentClass
+% LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
+% LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray Java''
+% LocalWords:  ConcurrentHashMap permitClearProperty setProperties
+% LocalWords:  clearProperty AassumeKeyFor AassumeInitialized WeakReference checkers''
+% LocalWords:  AinvocationPreservesArgumentNullness SpotBugs's

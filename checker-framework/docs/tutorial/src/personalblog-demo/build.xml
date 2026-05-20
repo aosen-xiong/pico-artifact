@@ -1,0 +1,72 @@
+<project name="personalblog-demo" default="check-tainting">
+
+  <property environment="env"/>
+
+  <property name="checker-framework" value="../../../.."/>
+
+  <condition property="cfJavac" value="javac.bat" else="javac">
+    <os family="windows" />
+  </condition>
+
+
+  <presetdef name="cf.javac">
+    <javac fork="yes" executable="${checker-framework}/checker/bin/${cfJavac}" encoding="UTF-8">
+      <compilerarg value="-version"/>
+      <compilerarg value="-implicit:class"/>
+      <compilerarg value="-AnoJreVersionCheck"/>
+
+      <classpath>
+        <pathelement location="${checker-framework}/checker/dist/checker.jar"/>
+        <pathelement location="lib/personalblog.jar"/>
+        <pathelement location="lib/hibernate2.jar"/>
+        <pathelement location="lib/commons-logging.jar"/>
+        <pathelement location="lib/struts.jar"/>
+        <pathelement location="lib/servlet-api.jar"/>
+        <pathelement location="lib/commons-lang.jar"/>
+      </classpath>
+    </javac>
+  </presetdef>
+
+  <target name="check-tainting"
+          description="Check for tainting errors as they come up"
+          depends="clean">
+    <mkdir dir="bin"/>
+    <cf.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+      <compilerarg value="-processor"/>
+      <compilerarg value="org.checkerframework.checker.tainting.TaintingChecker"/>
+    </cf.javac>
+  </target>
+
+  <target name="check-tainting-all"
+          description="Check for tainting errors in all files"
+          depends="clean">
+    <mkdir dir="bin"/>
+    <cf.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+      <compilerarg value="-processor"/>
+      <compilerarg value="org.checkerframework.checker.tainting.TaintingChecker"/>
+      <compilerarg value="-Awarns"/>
+    </cf.javac>
+  </target>
+
+  <target name="clean">
+    <delete dir="bin"/>
+  </target>
+
+  <target name="compile"
+          description="Compile without typechecking"
+          depends="clean">
+    <mkdir dir="bin"/>
+    <javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+      <classpath>
+        <pathelement location="${checker-framework}/checker/dist/checker.jar"/>
+        <pathelement location="lib/personalblog.jar"/>
+        <pathelement location="lib/hibernate2.jar"/>
+        <pathelement location="lib/commons-logging.jar"/>
+        <pathelement location="lib/struts.jar"/>
+        <pathelement location="lib/servlet-api.jar"/>
+        <pathelement location="lib/commons-lang.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+</project>

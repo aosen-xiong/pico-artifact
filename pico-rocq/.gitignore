@@ -1,0 +1,16 @@
+*.glob
+*.aux
+*.cache
+*.vo
+*.vok
+*.vos
+.d
+CoqMakefile
+CoqMakefile.conf
+.CoqMakefile.d
+.Makefile.d
+_build/
+alectryon/
+doc/
+copilot-instructions.md
+rocq-ai-style.instructions.md

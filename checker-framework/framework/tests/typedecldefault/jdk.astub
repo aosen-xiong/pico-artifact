@@ -1,0 +1,6 @@
+import org.checkerframework.framework.testchecker.typedecldefault.quals.*;
+
+package java.lang;
+class Object{
+  @TypeDeclDefaultBottom Object();
+}

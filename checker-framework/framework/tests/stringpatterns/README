@@ -1,0 +1,8 @@
+To add a new file to the test suite, see
+  ../README
+
+To run the tests, do
+  (cd $CHECKERFRAMEWORK && ./gradlew SubtypingStringPatternsFullTest)
+
+These cannot be in the same directory as subtyping-tests because some of the
+expected errors in that directory are specific to the Encrypted type system.

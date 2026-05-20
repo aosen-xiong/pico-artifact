@@ -1,0 +1,11 @@
+import org.checkerframework.framework.testchecker.reflection.qual.*;
+
+package java.lang.reflect;
+
+class Method {
+   @TestReflectTop Object invoke(@TestReflectTop Method this, @TestReflectBottom Object obj, @TestReflectBottom Object @TestReflectTop [] args);
+}
+
+class Constructor<T> {
+  @TestReflectTop Object newInstance(@TestReflectTop Constructor<T> this, @TestReflectBottom Object @TestReflectTop [] args);
+}

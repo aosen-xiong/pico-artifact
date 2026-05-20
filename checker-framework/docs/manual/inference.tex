@@ -1,0 +1,661 @@
+\htmlhr
+\chapterAndLabel{Type inference}{type-inference}
+
+This chapter is about tools that infer annotations for your
+program's method signatures and fields, before you run a type-checker.
+To learn about local type inference within a method body,
+see Section~\ref{type-refinement}.
+
+A typical workflow (Section~\ref{tips-about-writing-annotations}) is for a
+programmer to first write annotations on method signatures and fields, then
+run a type-checker.  Type inference performs the first step automatically
+for you.  This saves time for programmers who would otherwise have to
+understand the code, then write annotations manually.
+
+Type inference outputs type qualifiers that are consistent with your
+program's source code.  Your program still might not type-check if your
+program contains a bug or contains tricky code that is beyond the
+capabilities of the type checker.
+
+The qualifiers are output into an annotation file.  They can be viewed and
+adjusted by the programmer, can be used by tools such as the type-checker,
+and can be inserted into the source code or the class file.
+
+Inserting the inferred annotations into the program source code creates documentation in the form of type
+qualifiers, which can aid programmer understanding and may make
+type-checking warnings more comprehensible.
+Storing annotations in side-files is more desirable if the program's source code cannot
+be modified for some reason, if the typechecking is "one-off" (typechecking will
+be done once and its results will be evaluated, but it will not be done
+repeatedly), or if the set of annotations is extremely voluminous and would
+clutter the code.
+
+
+Type inference is most effective when you run it on a program rather than
+on a library --- unless you also run it on an extensive test suite for the
+library.  See Section~\ref{whole-program-inference-non-representative-uses}
+for an explanation.
+
+
+Type inference is costly:  it takes several times longer than
+type-checking does.  However, it only needs to be run once, after which
+you can use and possibly modify the results.
+
+
+\sectionAndLabel{Type inference tools}{type-inference-tools}
+
+This section lists tools that take a program and output a set of
+annotations for it.
+It first lists tools that work only for a single type system (but may do a
+more accurate job for that type system)
+then lists general tools that work for any type system.
+
+\begin{description}
+  \item[For the Nullness Checker:]
+Section~\ref{nullness-inference} lists several tools that infer
+annotations for the Nullness Checker.
+
+\item[For the Purity Checker:]
+If you run the Checker Framework with the \<-AsuggestPureMethods>
+command-line option, it will suggest methods that can be marked as
+\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>; see
+Section~\ref{type-refinement-purity}.
+
+\item[WPI, for any type system:]
+``Whole program inference'', or WPI, is distributed with the Checker
+  Framework.  See Section~\ref{whole-program-inference}.
+
+\item[CFI, for any type system:]
+\href{https://github.com/opprop/checker-framework-inference}{``Checker
+  Framework Inference''}, or CFI, is a type inference framework built on
+a variant of the Checker Framework.  You need to slightly rewrite your type system to
+work with CFI\@.  The
+\ahreforurl{https://github.com/opprop/checker-framework-inference}{CFI
+  repository} contains rewritten versions of some of
+the type systems that are distributed with the Checker Framework.
+
+\item[Cascade, for any type system:]
+\href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2015}
+is an Eclipse plugin that implements interactive type qualifier inference.
+Cascade is interactive rather than fully-automated:  it makes it easier for
+a developer to insert annotations.
+Cascade starts with an unannotated program and runs a type-checker.  For each
+warning it suggests multiple fixes, the developer chooses a fix, and
+Cascade applies it.  Cascade works with any checker built on the Checker
+Framework.
+You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
+% See last commit at https://github.com/reprogrammer/cascade/commits/master .
+Cascade was last updated in November 2014, so it might or might not work for you.
+
+\end{description}
+
+Except for one of the nullness inference tools, all these
+type inference tools are static analyses.  They analyze your program's
+source code, but they do not run your program.
+
+
+\sectionAndLabel{Whole-program inference}{whole-program-inference}
+
+Whole-program inference
+infers types for fields, method parameters, and method return types that do not
+have a user-written qualifier (for the given type system).
+The inferred type qualifiers are output into annotation files.
+The inferred type is the most specific type that is compatible with all the
+uses in the program.  For example, the inferred type for a field is the
+least upper bound of the types of all the expressions that are assigned
+into the field.
+
+There are three scripts that you can use to run whole-program inference.
+Each has advantages and disadvantages, discussed below:
+
+\begin{itemize}
+    \item
+    To run whole-program inference on a single project without modifying its source code,
+    use the \<wpi.sh> script (Section~\ref{wpi-one}). This script can automatically understand
+    many Ant, Maven, and Gradle build files, so it requires little manual configuration.
+
+    \item
+    To run whole-program inference on many projects without modifying their source code
+    (say, when running it on projects from GitHub), use the \<wpi-many.sh> script (Section~\ref{wpi-many}).
+    This script can understand the same build files as \<wpi.sh>.
+
+    \item
+    If you want to insert the inferred annotations directly into a single
+    project's source code, use the \<infer-and-annotate.sh> script (Section~\ref{wpi-insert}).
+\end{itemize}
+
+These type inference scripts appear in the \<checker/bin/> directory.
+The remainder of this chapter describes them
+(Sections~\ref{wpi-one}--\ref{wpi-insert}), then concludes with discussion
+that applies to all of them.
+
+
+\sectionAndLabel{Running whole-program inference on a single project}{wpi-one}
+
+A typical invocation of \<wpi.sh> is
+
+\begin{Verbatim}
+  $CHECKERFRAMEWORK/bin/wpi.sh -- --checker nullness
+\end{Verbatim}
+
+The result is a set of log files placed in the \<dljc-out/> folder of the
+target project.
+See Section~\ref{wpi-results} for an explanation of the log files generated by
+an invocation of \<wpi.sh>.
+The inferred annotations appear in \<.ajava> files in a
+temporary directory whose name appears in the \<dlcj-out/wpi-stdout.log> file;
+you can find their location by examining the \<-Aajava> argument
+to the last \<javac> command that was run. The annotation files generated in
+each round of inference appear in directories labeled \<iteration0>, \<iteration1>, etc.
+
+The \<wpi.sh> script is most useful when analyzing projects that follow the standard
+conventions of their build system for single-module projects. When analyzing a project
+that requires non-standard build system commands, use the \<-c> and \<-b> options to
+override the defaults used by \<wpi.sh>. For example, suppose that you wanted to use
+\<wpi.sh> to infer annotations for the Resource Leak Checker on
+\href{https://github.com/apache/zookeeper}{Apache Zookeeper's}
+\<zookeeper-server> module only. Without \<wpi.sh>, one might use the following command:
+\<mvn -B --projects zookeeper-server --also-make install -DskipTests>. To use this command via
+\<wpi.sh>, use the following:
+\<sh wpi.sh -b "-B --projects zookeeper-server --also-make" -c "install -DskipTests" -- --checker resourceleak>.
+
+The full syntax for invoking \<wpi.sh> is
+
+\begin{Verbatim}
+  wpi.sh [-d PROJECTDIR] [-t TIMEOUT] [-c COMPILATION_TARGET] [-b EXTRA_BUILD_ARGS] [-g GRADLECACHEDIR] -- [DLJC-ARGS]
+\end{Verbatim}
+
+Arguments in square brackets are optional.
+Here is an explanation of the arguments:
+
+\begin{description}
+\item[-d PROJECTDIR]
+  The top-level directory of the project.  It must contain an Ant, Gradle,
+  or Maven buildfile. The default is the current working directory.
+
+\item[-t TIMEOUT]
+  The timeout for running the checker, in seconds.
+
+\item[-c COMPILATION\_TARGET]
+  The name(s) of the build system target(s) used to compile
+  the target project. The default is chosen based on the build
+  system (e.g., \<compileJava> for Gradle, \<compile> for Maven, etc.).
+  This argument is passed directly to the build system when compiling the
+  target project, so it can also include command-line arguments that only
+  apply to the compilation targets (and not other targets like \<clean>);
+  for general command-line arguments that apply to all targets, use the
+  \<-b> option instead.
+  When running WPI on a single module of a multi-module project,
+  you might want to use this option (possibly in combination with \<-b>, below),
+  depending on the setup of the target project.
+  The argument may contain spaces and is re-tokenized by the shell.
+
+\item[-b EXTRA\_BUILD\_ARGS]
+  Extra arguments to pass to the build script invocation. This argument
+  will be passed to compilation tasks, such as
+  \<ant compile>, \<gradle compileJava>, or \<mvn compile>.
+  The main difference between this option and \<-c> is that the values
+  of the \<-b> option are also passed to other, non-compilation build system commands, such as
+  \<ant clean>, \<gradle clean>, or \<mvn clean>.
+  % An alternative would be to permit it to be passed multiple times, and
+  % not re-tokenize it.
+  The argument may contain spaces and is re-tokenized by the shell.
+
+\item[-g GRADLECACHEDIR]
+  The directory to use for the \<-g> option to Gradle (the Gradle home
+  directory). This option is ignored if the target project does not
+  build with Gradle. The default is \<.gradle> relative to the target
+  project (i.e., each target project has its own Gradle home). This default
+  is motivated by
+  \href{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
+
+\label{DLJC-ARGS}
+\item[DLJC-ARGS]
+  Arguments that are passed directly to
+  \href{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s
+  \<dljc> program without
+  modification.  One argument is required: \<-\relax-checker>, which indicates
+  what type-checker(s) to run (in the format described in Section~\ref{shorthand-for-checkers}).
+
+  The \ahreforurl{https://github.com/kelloggm/do-like-javac}{documentation of do-like-javac}
+  describes the other commands that its WPI tool supports. Notably, to pass checker-specific
+  arguments to invocations of \<javac>,
+  use the \<-\relax-extraJavacArgs> argument to \<dljc>. For example, to use the \<-AignoreRangeOverflow>
+  option for the Constant Value Checker (\chapterpageref{constant-value-checker}) when running
+  inference, you would add \<-\relax-extraJavacArgs='-AignoreRangeOverflow'> anywhere after the \<-\relax->
+  argument to \<wpi.sh>.
+\end{description}
+
+You may need to wait a few minutes for the command to complete.
+
+\subsectionAndLabel{Whole-program inference results}{wpi-results}
+
+The result of invoking \<wpi.sh> are log files stored in the \<dljc-out/> folder
+of the target project.
+The \<dljc-out/> folder contains:
+
+\begin{itemize}
+\item \<typecheck.out>: The final error messages produced by \<javac>,
+  comprising the results of type-checking obtained with the
+  latest iteration of WPI (i.e., using the most precise, consistent set of
+  annotations).
+\item \<build\_output.txt>: Logs collected from compiling the target project
+  without the Checker Framework, using the build file found at the
+  top-level directory.
+\item \<wpi-stdout.log>: The results of type-checking with each candidate set of
+  annotations, concatenated together in the order in which the annotations
+  were inferred.
+  The final results (i.e., those obtained using the most precise, consistent
+  set of annotations) will appear at the end of this file.
+\item \<wpi-stdout-*>: These files are separate from the logs in \<wpi-stdout.log>.
+  They may be useful in the case where \<dljc> is not working as expected.
+\item \<toplevel.log>: The log of the command executed at the top-level of the
+  target directory to invoke whole-program inference.
+\item \<javac.json>: The list of all \<.java> files for which inference was
+  attempted by \<wpi.sh>, and the options passed to \<javac>.
+\item \<stats.json>: Statistics from the invocation of \<wpi.sh> on the target
+  project, including build time, the number of built \<.jar> files, the number of
+  executable \<.jar> files, the number of \<javac> invocations, and the number of
+  source files.
+\end{itemize}
+
+\subsectionAndLabel{Requirements for whole-program inference scripts}{wpi-shared-requirements}
+
+The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
+
+\begin{itemize}
+\item The project on which inference is run must contain an Ant, Gradle,
+  or Maven buildfile that compiles the project.
+\item At least one of the \verb|JAVA_HOME|,
+  \verb|JAVA8_HOME|, \verb|JAVA11_HOME|, \verb|JAVA17_HOME|, or \verb|JAVA21_HOME|
+  environment variables must be set.
+\item If set, the \verb|JAVA_HOME| environment variable must point to a
+  Java 8, 11, 17, 21, or 22 JDK.
+\item If set, the \verb|JAVA8_HOME| environment variable must point to a Java 8 JDK.
+\item If set, the \verb|JAVA11_HOME| environment variable must point to a Java 11 JDK.
+\item If set, the \verb|JAVA17_HOME| environment variable must point to a Java 17 JDK.
+\item If set, the \verb|JAVA21_HOME| environment variable must point to a Java 21 JDK.
+\item If set, the \verb|JAVA22_HOME| environment variable must point to a Java 22 JDK.
+\item \<CHECKERFRAMEWORK> environment variable must point to a built copy of the Checker Framework.
+\item If set, the \verb|DLJC| environment variable must point to a copy of the \<dljc> script
+from \ahreforurl{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this variable is not
+set, the WPI scripts will download this dependency automatically.)
+\item Other dependencies:
+  ant,
+  awk,
+  curl,
+  git,
+  gradle,
+  mvn,
+  python3 (for dljc),
+  wget.
+
+  Python2.7 modules:
+  subprocess32.
+\end{itemize}
+
+
+
+\sectionAndLabel{Running whole-program inference on many projects}{wpi-many}
+
+The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same. See Section~\ref{wpi-shared-requirements}
+for the list of requirements.
+
+To run an experiment on many projects:
+\begin{enumerate}
+\item Use \<query-github.sh> to search GitHub for candidate repositories.
+File \<docs/examples/wpi-many/securerandom.query> is an example query, and file
+\<docs/manual/securerandom.list> is the standard output
+created by running \<query-github.sh securerandom.query 100>. If you do
+not want to use GitHub, construct a file yourself that matches the format of
+the file \<securerandom.list>.
+
+\item Use \<wpi-many.sh> to run whole-program inference on multiple
+Ant, Gradle, or Maven projects.  You provide it a file in which each line
+is ``GitHub repository URL'' ``git hash'' (with no quotes, and with
+whitespace between them).
+\begin{itemize}
+\item If you are using a checker that is distributed with the Checker
+Framework, use \<wpi-many.sh> directly.
+\item If you are using a checker that is not distributed with the Checker
+Framework (also known as a "custom checker"), file
+\<docs/examples/wpi-many/wpi-many-custom-checker-example.sh> is a no-arguments
+script that serves as an example of how to use \<wpi-many.sh>.
+\end{itemize}
+
+Log files are copied into a results directory.
+For a failed run, the log file indicates the reason that WPI could not
+be run to completion on the project.
+For a successful run, the log file indicates whether the project was verified
+(i.e., no errors were reported), or whether the checker issued warnings
+(which might be true positive or false positive warnings).
+
+\item Use \<wpi-summary.sh> to summarize the logs in the output results directory.
+Use its output to guide your analysis of the results of running \<wpi-many.sh>:
+you should manually examine the log files for the projects that appear in the
+"results available" list it produces. This list is the list of every project
+that the script was able to successfully run WPI on.  (This does not mean
+that the project type-checks without errors afterward, or even typechecks at
+all --- just that the Checker Framework attempted to typecheck the project and
+some output was produced.)
+
+\item (Optional) Add annotations that WPI does not infer, to eliminate
+  false positive warnings. There are two ways you can add annotations to a target
+  program:
+  \begin{itemize}
+  \item
+    Fork the project and add the annotations directly to the project's
+    source code, and add a dependency on
+    \<org.checkerframework:checker-qual> to the project's build
+    system. This approach is the most difficult, but has the advantage that
+    the checker will attempt to verify any annotations you add.
+  \item Add the annotations in a stub file, creating the \<.astub> file as
+    a copy of the \<.java> file.  When you run the checker, supply the
+    \<-AmergeStubsWithSource> and \<-Astubs=...> command-line arguments.
+  \end{itemize}
+
+\end{enumerate}
+
+A typical invocation is
+
+\begin{Verbatim}
+wpi-many.sh -o outdir -i /path/to/repo.list -t 7200 -- --checker optional
+\end{Verbatim}
+
+The \<wpi-many.sh> script takes the following command-line arguments.
+The \<-o> and \<-i> arguments are mandatory.
+An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
+\emph{DLJC-ARGS} is documented in Section~\ref{DLJC-ARGS}.
+
+
+\begin{description}
+\item[-o outdir]
+  run the experiment in the \<\emph{outdir}> directory, and place the results in
+  the \<\emph{outdir}-results> directory. Both will be created if they do not
+  exist.  The directory may be specified as an absolute or relative path.
+
+\item[-i infile]
+  Read the list of repositories to use from the file infile.
+  % The need to be an absolute pathname is a bug in wpi-many.sh that should be fixed.
+  The file must be specified as an absolute, not relative, path.
+  Each line
+  should have 2 elements, separated by whitespace:
+  \begin{enumerate}
+  \item
+    The URL of the git repository on GitHub. The URL must be of the form
+    https://github.com/username/repository .  The script is reliant on the
+    number of slashes, so excluding ``https://'' is an error.
+  \item The commit hash to use.
+  \end{enumerate}
+
+\item[-t timeout]
+  The timeout for running the checker on each project, in seconds.
+
+\item[-g GRADLECACHEDIR]
+  The directory to use for the \<-g> option to Gradle (the Gradle home
+  directory). This option is ignored if the target project does not
+  build with Gradle. The default is \<.gradle> relative to the target
+  project (i.e., each target project has its own Gradle home). This default
+  is motivated by
+  \href{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
+
+\item[-s]
+  If this flag is present, then projects which are not buildable --- for which
+  no supported build file is present or for which running the standard build
+  commands fail --- are skipped on future runs but are \emph{not} deleted immediately
+  (such projects are deleted immediately if this flag is not present). This flag is useful
+  if you intend to run \<wpi-many.sh> several times on the same set of repositories
+  (for example, during checker development), to avoid re-downloading unusable projects.
+
+\end{description}
+
+To obtain the locations of the annotation files generated by an invocation of
+\<wpi-many.sh>, you can run \<wpi-annotation-paths.sh> on the result directory,
+e.g., \<\emph{outdir}-results>.
+
+A typical invocation is
+
+\begin{Verbatim}
+wpi-annotation-paths.sh outdir-results
+\end{Verbatim}
+
+Here, the results of \<wpi-many.sh> are located in \<\emph{outdir}-results>.
+
+\sectionAndLabel{Whole-program inference that inserts annotations into source code}{wpi-insert}
+
+\begin{sloppypar}
+To use this version of whole-program inference, make sure that
+\<insert-annotations-to-source>, from the Annotation File Utilities project,
+is on your path (for example, its directory is in the \<\$PATH> environment variable).
+Then, run the script \<checker-framework/checker/bin/infer-and-annotate.sh>.
+Its command-line arguments are:
+\end{sloppypar}
+
+\begin{enumerate}
+\item Optional: Command-line arguments to
+  \href{https://eisop.github.io/afu/#insert-annotations-to-source}{\<insert-annotations-to-source>}.
+\item Processor's name.
+\item Target program's classpath.  This argument is required; pass "" if it
+  is empty.
+\item Optional: Extra processor arguments which will be passed to the checker, if any.
+  You may supply any number of such arguments, or none.  Each such argument
+  must start with a hyphen.
+\item Optional: Paths to \<.jaif> files used as input in the inference
+    process.
+\item Paths to \<.java> files in the program.
+\end{enumerate}
+
+% TODO: Change the example project that is being annotated, since plume-lib is now deprecated.
+For example, to add annotations to the \<plume-lib> project:
+\begin{Verbatim}
+git clone https://github.com/mernst/plume-lib.git
+cd plume-lib
+make jar
+$CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
+    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar:$JAVA_HOME/lib/tools.jar \
+    $(find java/src/plume/ -name "*.java")
+# View the results
+git diff
+\end{Verbatim}
+
+You may need to wait a few minutes for the command to complete.
+You can ignore warnings that the command outputs while it tries different
+annotations in your code.
+
+It is recommended that you run \<infer-and-annotate.sh> on a copy of your
+code, so that you can see what changes it made and so that it does not
+change your only copy.  One way to do this is to work in a clone of your
+repository that has no uncommitted changes.
+
+
+\sectionAndLabel{Inference results depend on uses in your program or test suite}{whole-program-inference-non-representative-uses}
+
+Type inference outputs the most specific type qualifiers that are
+consistent with all the source code it is given.
+(Section~\ref{whole-program-inference-ignores-some-code}
+explains when type inference ignores some code.)
+This may be different than the specification the programmer had in mind
+when writing tho code.
+If the program uses a method or field in a limited way, then the inferred
+annotations will be legal for the program as
+currently written but may not be as general as possible and may not
+accommodate future program changes.
+
+Here are some examples:
+
+\begin{itemize}
+\item
+Suppose that your program (or test suite) currently calls
+method \<m1> only with non-null
+arguments.  The tool will infer that \<m1>'s parameter has
+\<@NonNull> type.  If you had intended the method to be able to
+take \<null> as an argument and you later add such a call, the type-checker
+will issue a warning because the inferred \<@NonNull>
+annotation is inconsistent with the new call.
+
+\item
+If your program (or test suite) passes only \<null> as an argument, the
+inferred type will be the bottom type, such as \<@GuardedByBottom>.
+
+\item
+Suppose that method \<m2> has no body, because it is defined in an interface or
+abstract class.
+Type inference can still infer types for its signature, based on the
+overriding implementations.
+If all the methods that override \<m2> return a non-null value, type
+inference will infer that \<m2>'s return type has \<@NonNull> type, even if
+some other overriding method is allowed to return
+\<null>.
+
+\end{itemize}
+
+If the program contains erroneous calls, the
+inferred annotations may reflect those errors.
+Suppose you intend method \<m3> to be called with
+non-null arguments, but your program contains an error and one of the calls
+to \<m3> passes \<null> as the argument.  Then the tool will infer that
+\<m3>'s parameter has \<@Nullable> type.
+
+If you run whole-program inference on a library that contains mutually
+recursive routines, and there are no non-recursive calls to the routines,
+then whole-program inference may run a long time and eventually produce
+incorrect results.  In this case, write type annotations on the formal
+parameters of one of the routines.
+
+Whole-program inference is a ``forward analysis''.
+% This might change in the future.
+It determines a method parameter's type
+annotation based on what arguments are passed to the method but not on how the
+parameter is used within the method body.
+It determines a method's return type based on code in the method body but
+not on uses of the method return value in client code.
+
+
+\subsectionAndLabel{Whole-program inference ignores some code}{whole-program-inference-ignores-some-code}
+
+Whole-program inference ignores code within the scope of a
+\<@SuppressWarnings> annotation with an appropriate key
+(Section~\ref{suppresswarnings-annotation}).  In particular, uses within
+the scope do not contribute to the inferred type, and declarations within
+the scope are not changed.  You should remove \<@SuppressWarnings> annotations
+from the class declaration of any class you wish to infer types for.
+
+As noted above, whole-program inference generalizes from invocations of methods and
+assignments to fields.  If a field is set via
+reflection (such as via injection), there are no explicit assignments to it
+for type inference to generalize from, and type inference will produce
+an inaccurate result.  There are two ways to make whole-program inference
+ignore such a field.
+%
+(1)
+You probably have an annotation such as
+\javaeejavadocanno{javax/inject/Inject.html}{Inject}
+or
+\href{https://types.cs.washington.edu/plume-lib/api/plume/Option.html}{\<@Option>}
+that indicates such fields.  Meta-annotate the declaration of the \<Inject>
+or \<Option> annotation with
+\refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
+%
+(2)
+Annotate the field to be ignored with
+\refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
+
+Whole-program inference, for a type-checker other than the Nullness Checker,
+ignores assignments and pseudo-assignments where the right-hand-side is the \<null> literal.
+
+
+\subsectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}
+
+With any type inference tool, it is a good idea to manually examine the
+results.  This can help you find bugs in your code or places where type
+inference inferred an overly-precise result.
+You can correct the inferred results manually, or you can
+add tests that pass additional values and then re-run inference.
+
+When arguments or assignments are literals, whole-program inference
+commonly infers overly precise type annotations, such as \<@Interned> and
+\<@Regex> annotations when the analyzed code only uses a constant string.
+
+When an annotation is inferred for a \emph{use} of a type variable,
+you may wish to move the annotation
+to the corresponding upper bounds of the type variable \emph{declaration}.
+
+
+\sectionAndLabel{How whole-program inference works}{how-whole-program-inference-works}
+
+This section explains how the \<wpi.sh> and \<infer-and-annotate.sh> scripts work.  If you
+merely want to run the scripts and you are not encountering trouble, you can
+skip this section.
+
+Each script repeatedly runs the checker with an \<-Ainfer=> command-line option to infer
+types for fields and method signatures.  The output of this step
+is a \<.jaif> (for \<infer-and-annotate.sh>) or \<.ajava> (for \<wpi.sh>) file that records the inferred types.
+Each script adds the inferred annotation to the next run, so that the checker takes them into
+account (and checks them). \<wpi.sh> does this by updating the set of \<.ajava> files that are passed
+to the checker via the \<-Aajava> command-line argument;
+\<infer-and-annotate.sh> inserts the inferred annotations in the program using the
+\ahreforurl{https://eisop.github.io/afu/}{Annotation File Utilities}.
+
+On each
+iteration through the process, there may be new annotations in the \<.jaif> or \<.ajava>
+files, and some type-checking errors may be eliminated (though others might
+be introduced).
+The process halts when there are no more changes to the inference results,
+that is, the \<.jaif> or \<.ajava> files are unchanged between two runs.
+
+When the type-checker is run on the program with the final annotations
+inserted, there might still be errors.  This may be because the tool did
+not infer enough annotations, or because your program cannot typecheck
+(either because contains a defect, or because it contains subtle code that
+is beyond the capabilities of the type system).
+However, each of the inferred annotations is sound, and this reduces your
+manual effort in annotating the program.
+
+The iterative process is required because type-checking is modular:  it
+processes each class and each method only once, independently.  Modularity
+enables you to run type-checking on only part of your program, and it makes
+type-checking fast.  However, it has some disadvantages:
+\begin{itemize}
+\item
+  The first run of the type-checker cannot take advantage of whole-program
+  inference results because whole-program inference is only complete at the
+  end of type-checking, and modular type-checking does not revisit any
+  already-processed classes.
+\item
+  Revisiting an
+  already-processed class may result in a better estimate.
+\end{itemize}
+
+
+\sectionAndLabel{Type inference compared to other whole-program analyses}{type-inference-vs-whole-program-analysis}
+
+There exist monolithic whole-program analyses that run without requiring any
+annotations in the source code.  An advantage of such a tool is that the
+programmer never needs to write any type annotations.
+
+Running a whole-program inference tool, then running a type-checker, has
+some benefits:
+\begin{itemize}
+\item
+  The type qualifiers act as machine-checked documentation,
+  which can aid programmer understanding.
+\item
+  Error messages may be more comprehensible.  With a monolithic
+  whole-program analysis, error messages can be obscure, because the
+  analysis has already inferred (possibly incorrect) types for a number of
+  variables.
+\item
+  Errors are localized.  A change to one part of the program does not lead
+  to an error message in a far-removed part of the program.
+\item
+  Type-checking is modular, which can be faster than re-doing a
+  whole-program analysis every time the program changes.
+\end{itemize}
+
+
+
+%%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi javax CFI
+%%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK GuardedByBottom dljc
+%%  LocalWords:  IgnoreInWholeProgramInference typechecking Inference'' m3
+% LocalWords:  PROJECTDIR awk gradle mvn python3 wget subprocess32 github
+% LocalWords:  securerandom astub typecheck
