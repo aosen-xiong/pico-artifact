@@ -6,6 +6,7 @@ RESULTS_DIR="${RESULTS_DIR:-${WORKSPACE}/results}"
 CHECKER_RESULTS_DIR="${RESULTS_DIR}/checker"
 ROCQ_RESULTS_DIR="${RESULTS_DIR}/rocq"
 COUNTS_RESULTS_DIR="${RESULTS_DIR}/counts"
+ROCQ_ALECTRYON_DIR="${ROCQ_RESULTS_DIR}/alectryon"
 TIMINGS_FILE="${RESULTS_DIR}/timings.tsv"
 TIMINGS_MD="${RESULTS_DIR}/timings.md"
 JDK_UTIL_DIR="${WORKSPACE}/jdk/src/java.base/share/classes/java/util"
@@ -130,6 +131,8 @@ rm -f ./*.vo ./*.vos ./*.vok ./*.glob ./*.aux ./.*.aux
 
 run_logged "rocq-make" "${ROCQ_RESULTS_DIR}/make.log" opam exec -- make
 run_logged "rocq-make-check" "${ROCQ_RESULTS_DIR}/make-check.log" opam exec -- make check
+run_logged "rocq-alectryon-doc" "${ROCQ_RESULTS_DIR}/alectryon-doc.log" \
+  opam exec -- make ALECTRYON_DIR="${ROCQ_ALECTRYON_DIR}" alectryon-doc
 
 {
   printf '| Step | Time |\n'
@@ -159,6 +162,8 @@ Annotation counts:
 Rocq:
   make log: ${ROCQ_RESULTS_DIR}/make.log
   make check log: ${ROCQ_RESULTS_DIR}/make-check.log
+  Alectryon HTML: ${ROCQ_ALECTRYON_DIR}/index.html
+  Alectryon log: ${ROCQ_RESULTS_DIR}/alectryon-doc.log
 
 Timings:
   TSV: ${TIMINGS_FILE}

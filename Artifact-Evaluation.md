@@ -56,7 +56,7 @@ which invokes:
 /workspace/scripts/evaluate.sh
 ```
 
-The evaluation writes logs and generated tables to:
+The evaluation writes logs, generated tables, and rendered Rocq/Alectryon proof documentation to:
 
 ```text
 ./results
@@ -70,6 +70,14 @@ On the authors' Docker Desktop run, a warm full evaluation after the image was a
 ./results/timings.tsv
 ./results/timings.md
 ```
+
+The rendered Rocq proof documentation is available at:
+
+```text
+./results/rocq/alectryon/index.html
+```
+
+Open this file from the host system in a browser after the Docker run completes.
 
 ## Manual Evaluation
 
