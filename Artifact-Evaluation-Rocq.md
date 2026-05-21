@@ -61,6 +61,8 @@ Run:
 cd /workspace/pico-rocq
 rm -f CoqMakefile CoqMakefile.conf .CoqMakefile.d .Makefile.d
 rm -f ./*.vo ./*.vos ./*.vok ./*.glob ./*.aux ./.*.aux
+find . -maxdepth 1 \( -name '*.v' -o -name '_RocqProject' -o -name 'Makefile' \) \
+  -exec touch -c {} +
 opam exec -- make
 ```
 
@@ -138,4 +140,5 @@ The rendered pages include proof states. Use the proof-toggle button added by th
 - **Rocq command not found**: run Rocq commands through `opam exec -- ...`.
 - **OPAM switch appears unavailable**: rebuild the Docker image and inspect the `scripts/install-rocq.sh` step in the Docker log.
 - **Build fails after a partial run**: from `/workspace/pico-rocq`, run `opam exec -- make clean`, then rerun `opam exec -- make`.
+- **`make` repeatedly regenerates `CoqMakefile` and warns that files are in the future**: the host/archive timestamps are ahead of the container clock. Run the cleanup and `find ... touch -c` commands in Section 3 before rerunning `opam exec -- make`.
 - **Alectryon command not found**: rebuild the Docker image. The Dockerfile installs Alectryon during image construction.

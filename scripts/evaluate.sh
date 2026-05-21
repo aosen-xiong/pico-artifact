@@ -129,6 +129,12 @@ cd "${WORKSPACE}/pico-rocq"
 rm -f CoqMakefile CoqMakefile.conf .CoqMakefile.d .Makefile.d
 rm -f ./*.vo ./*.vos ./*.vok ./*.glob ./*.aux ./.*.aux
 
+# Some archive hosts preserve upload timestamps that are ahead of the Docker
+# container clock. Normalize source mtimes so make does not repeatedly
+# regenerate CoqMakefile because _RocqProject appears to be in the future.
+find . -maxdepth 1 \( -name '*.v' -o -name '_RocqProject' -o -name 'Makefile' \) \
+  -exec touch -c {} +
+
 run_logged "rocq-make" "${ROCQ_RESULTS_DIR}/make.log" opam exec -- make
 run_logged "rocq-make-check" "${ROCQ_RESULTS_DIR}/make-check.log" opam exec -- make check
 run_logged "rocq-alectryon-doc" "${ROCQ_RESULTS_DIR}/alectryon-doc.log" \
