@@ -30,6 +30,7 @@ fi
 mkdir -p "${COQ_RECORD_UPDATE_DIR}"
 cp -a "${COQ_RECORD_UPDATE_SRC}/." "${COQ_RECORD_UPDATE_DIR}/"
 pushd "${COQ_RECORD_UPDATE_DIR}" >/dev/null
+find . -type f -exec touch -c {} +
 make -j"$(nproc)"
 make install
 popd >/dev/null

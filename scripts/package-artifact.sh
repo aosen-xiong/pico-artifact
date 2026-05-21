@@ -26,6 +26,8 @@ EXCLUDES=(
   --exclude "${REPO_NAME}/**/.idea/*"
   --exclude "${REPO_NAME}/**/.vscode"
   --exclude "${REPO_NAME}/**/.vscode/*"
+  --exclude "${REPO_NAME}/results"
+  --exclude "${REPO_NAME}/results/*"
 )
 
 case "${OUTPUT_ABS}" in

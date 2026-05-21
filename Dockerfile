@@ -6,6 +6,7 @@ ARG OPAM_OCAML_COMPILER=5.2.1
 ARG COQ_CORE_VERSION=9.1.1
 ARG ROCQ_CORE_VERSION=9.1.1
 ARG ROCQ_STDLIB_VERSION=9.0.0
+ARG ALECTRYON_VERSION=2.0.0
 ARG APT_INSECURE=false
 
 SHELL ["/bin/bash", "-lc"]
@@ -52,7 +53,7 @@ RUN rm -rf /var/lib/apt/lists/* \
 ENV CHECKERFRAMEWORK_HOME=/opt/checker-framework
 ENV PATH=/root/.local/bin:${CHECKERFRAMEWORK_HOME}/checker/bin:${PATH}
 
-RUN python3 -m pip install --no-cache-dir --break-system-packages alectryon \
+RUN python3 -m pip install --no-cache-dir --break-system-packages "alectryon==${ALECTRYON_VERSION}" \
   && alectryon --version
 
 COPY scripts/count_java_annotations.pl /root/.local/bin/count_java_annotations.pl
