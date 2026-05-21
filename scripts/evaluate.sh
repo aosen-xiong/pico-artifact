@@ -85,6 +85,11 @@ echo "JDK checker exit status: ${JDK_CHECKER_STATUS}"
 echo "JDK checker log: ${CHECKER_RESULTS_DIR}/compile.log"
 echo "Completed JDK checker in $(format_seconds "${JDK_CHECKER_SECONDS}")"
 
+if [[ "${JDK_CHECKER_STATUS}" -ne 0 ]]; then
+  echo "JDK checker failed; see ${CHECKER_RESULTS_DIR}/compile.log"
+  exit "${JDK_CHECKER_STATUS}"
+fi
+
 run_logged "PICOConstrictorTest" "${CHECKER_RESULTS_DIR}/PICOConstrictorTest.log" bash ./gradlew PICOConstrictorTest
 run_logged "PICOMutableDefaultTest" "${CHECKER_RESULTS_DIR}/PICOMutableDefaultTest.log" bash ./gradlew PICOMutableDefaultTest
 

@@ -6,7 +6,6 @@ ARG OPAM_OCAML_COMPILER=5.2.1
 ARG COQ_CORE_VERSION=9.1.1
 ARG ROCQ_CORE_VERSION=9.1.1
 ARG ROCQ_STDLIB_VERSION=9.0.0
-ARG COQ_RECORD_UPDATE_REPO=https://github.com/tchajed/coq-record-update.git
 ARG APT_INSECURE=false
 
 SHELL ["/bin/bash", "-lc"]
@@ -60,9 +59,10 @@ COPY scripts/count_java_annotations.pl /root/.local/bin/count_java_annotations.p
 RUN chmod +x /root/.local/bin/count_java_annotations.pl
 
 COPY scripts/install-rocq.sh /tmp/install-rocq.sh
+COPY coq-record-update /tmp/coq-record-update-src
 RUN chmod +x /tmp/install-rocq.sh \
-  && OPAM_SWITCH_NAME=${OPAM_SWITCH_NAME} OPAM_OCAML_COMPILER=${OPAM_OCAML_COMPILER} COQ_CORE_VERSION=${COQ_CORE_VERSION} ROCQ_CORE_VERSION=${ROCQ_CORE_VERSION} ROCQ_STDLIB_VERSION=${ROCQ_STDLIB_VERSION} COQ_RECORD_UPDATE_REPO=${COQ_RECORD_UPDATE_REPO} /tmp/install-rocq.sh \
-  && rm -f /tmp/install-rocq.sh
+  && OPAM_SWITCH_NAME=${OPAM_SWITCH_NAME} OPAM_OCAML_COMPILER=${OPAM_OCAML_COMPILER} COQ_CORE_VERSION=${COQ_CORE_VERSION} ROCQ_CORE_VERSION=${ROCQ_CORE_VERSION} ROCQ_STDLIB_VERSION=${ROCQ_STDLIB_VERSION} /tmp/install-rocq.sh \
+  && rm -rf /tmp/install-rocq.sh /tmp/coq-record-update-src
 
 WORKDIR /workspace
 COPY . /workspace
