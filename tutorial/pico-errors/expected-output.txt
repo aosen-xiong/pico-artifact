@@ -1,0 +1,63 @@
+== ArrayWriteError.java ==
+../tutorial/pico-errors/ArrayWriteError.java:7: error: [illegal.array.write] Cannot write array via receiver: @Immutable String @Immutable []
+        array[0] = "updated";
+        ^
+../tutorial/pico-errors/ArrayWriteError.java:12: error: [array.new.invalid] Invalid new array type: @Immutable int @Readonly []
+        int[] values = new int @Readonly [] {1, 2, 3};
+                       ^
+2 errors
+== AssignabilityError.java ==
+../tutorial/pico-errors/AssignabilityError.java:5: error: [assignability.declaration.invalid] Only one assignability qualifier is allowed on rejected
+    final @Assignable int rejected = 0;
+                          ^
+1 error
+== AssignmentArgumentError.java ==
+../tutorial/pico-errors/AssignmentArgumentError.java:11: error: [assignment.type.incompatible] incompatible types in assignment.
+        @Mutable Object mutable = immutable;
+                                  ^
+  found   : @Immutable Object
+  required: @Mutable Object
+../tutorial/pico-errors/AssignmentArgumentError.java:15: error: [argument.type.incompatible] incompatible argument for parameter value of AssignmentArgumentError.needsMutable.
+        needsMutable(readonly);
+                     ^
+  found   : @Readonly Object
+  required: @Mutable Object
+2 errors
+== FieldWriteError.java ==
+../tutorial/pico-errors/FieldWriteError.java:11: error: [illegal.field.write] Cannot write field via receiver: @Readonly Box
+            this.value = 1;
+            ^
+1 error
+== ImplicitShallowImmutableError.java ==
+../tutorial/pico-errors/ImplicitShallowImmutableError.java:8: error: [implicit.shallow.immutable] Write an explicit mutable qualifier if wants to exclude the field from the abstract state! Otherwise change the class mutability of this object !
+    MutableBox implicit = new MutableBox();
+               ^
+1 error
+== InvalidAnnotationError.java ==
+../tutorial/pico-errors/InvalidAnnotationError.java:7: error: [type.invalid.conflicting.annos] invalid type: conflicting annotations [@Immutable, @Readonly] in type "@Immutable @Readonly Object"
+    @Readonly @Immutable Object conflicting;
+                                ^
+../tutorial/pico-errors/InvalidAnnotationError.java:10: error: [type.invalid.annotations.on.use] invalid type: annotations [@Mutable] conflict with declaration of type int
+    @Mutable int primitive;
+                 ^
+2 errors
+== InvocationError.java ==
+../tutorial/pico-errors/InvocationError.java:18: error: [method.invocation.invalid] call to mutableOnly() not allowed on the given receiver.
+        immutable.mutableOnly();
+                             ^
+  found   : @Immutable InvocationError
+  required: @Mutable InvocationError
+../tutorial/pico-errors/InvocationError.java:21: error: [constructor.invocation.invalid] creation of @Immutable InvocationError <init>(@Immutable int p0) not allowed with given receiver.
+        InvocationError wrongConstructor = new @Mutable InvocationError(1);
+                                           ^
+  found   : @Mutable
+  required: @Immutable
+2 errors
+== StaticRDMError.java ==
+../tutorial/pico-errors/StaticRDMError.java:5: error: [static.receiverdependentmutable.forbidden] [@ReceiverDependentMutable] is forbidden in static context
+    static @ReceiverDependentMutable Object rejected =
+                                            ^
+../tutorial/pico-errors/StaticRDMError.java:6: error: [static.receiverdependentmutable.forbidden] [@ReceiverDependentMutable] is forbidden in static context
+            new @ReceiverDependentMutable Object();
+            ^
+2 errors

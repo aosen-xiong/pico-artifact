@@ -11,6 +11,8 @@ The artifact has two evaluation tracks:
 - [Rocq formalization](Artifact-Evaluation-Rocq.md): mechanized model and proofs in `pico-rocq/`.
 - [PICO implementation in a modified Checker Framework](Artifact-Evaluation-Checker.md): PICO checker, tests, benchmarks, and annotated JDK case study.
 
+For a short guide to PICO type-check errors, see [PICO-Error-Message-Tutorial.md](PICO-Error-Message-Tutorial.md). It includes focused files under `tutorial/pico-errors/` that reviewers can compile directly.
+
 Quick start:
 
 ```bash

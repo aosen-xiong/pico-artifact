@@ -68,6 +68,6 @@ WORKDIR /workspace
 COPY . /workspace
 RUN test -d /workspace/checker-framework \
   && test -d /workspace/jdk
-RUN chmod +x /workspace/scripts/run-artifact.sh /workspace/scripts/evaluate.sh /workspace/checker-framework/gradlew || true
+RUN chmod +x /workspace/scripts/*.sh /workspace/checker-framework/gradlew /workspace/checker-framework/checker/bin/javac || true
 
 ENTRYPOINT ["/workspace/scripts/run-artifact.sh"]
