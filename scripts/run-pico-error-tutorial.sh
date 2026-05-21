@@ -11,6 +11,22 @@ mkdir -p "${CLASSES_DIR}" "$(dirname "${OUTPUT_FILE}")"
 
 cd "${CHECKER_DIR}"
 
+if [[ ! -f checker/dist/checker.jar ]]; then
+  cat >&2 <<EOF
+Missing ${CHECKER_DIR}/checker/dist/checker.jar.
+
+Build the Checker Framework javac wrapper first:
+
+  cd ${CHECKER_DIR}
+  bash ./gradlew assembleforjavac
+
+Then rerun:
+
+  bash ${WORKSPACE}/scripts/run-pico-error-tutorial.sh ${OUTPUT_FILE}
+EOF
+  exit 1
+fi
+
 : > "${OUTPUT_FILE}"
 for file in "${TUTORIAL_DIR}"/*.java; do
   {
