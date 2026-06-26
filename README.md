@@ -6,6 +6,10 @@ Start with the artifact evaluation guide:
 
 - [Artifact-Evaluation.md](Artifact-Evaluation.md)
 
+The submitted artifact package includes all source trees needed for evaluation,
+including the Rocq sources under `pico-rocq/`. Reviewers should not need to
+clone any additional repositories.
+
 The artifact has two evaluation tracks:
 
 - [Rocq formalization](Artifact-Evaluation-Rocq.md): mechanized model and proofs in `pico-rocq/`.

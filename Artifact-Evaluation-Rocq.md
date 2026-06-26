@@ -10,7 +10,11 @@ The Rocq artifact is in:
 pico-rocq/
 ```
 
-It contains the mechanized formal model and proofs. The main validation task is to build the Rocq development and, optionally, run the stronger no-axioms/no-admits check. Reviewers can use the claim map below to connect paper-level claims to the corresponding Rocq theorem statements.
+The submitted artifact archive includes the Rocq source files directly under
+this directory. Reviewers should not need to clone another repository or
+initialize a submodule.
+
+It contains the mechanized formal model and proofs. The main validation task is to build the Rocq development and run the no-axioms/no-admits check. Reviewers can use the claim map below to connect paper-level claims to the corresponding Rocq theorem statements.
 
 Build and start the Docker container as described in [Artifact-Evaluation.md](Artifact-Evaluation.md). Then run the commands below inside the container. The Rocq development is at:
 
@@ -37,23 +41,59 @@ Build and start the Docker container as described in [Artifact-Evaluation.md](Ar
 | Theorem 5 | Concrete immutability | Method call occurs in `ConcreteImm` scope; receiver has static `RO` type; all parameters are safe | Entire reachable argument/object graph remains unchanged for protected fields | `ConcreteImmutability` in [ConcreteImmutability.v](pico-rocq/ConcreteImmutability.v) |
 | Proof integrity | No axioms/admitted proof gaps in submitted sources | Artifact sources exclude forbidden `Axiom`, `Admitted`, and `admit`, except bundled `LibTactics.v` support library | Mechanical checker passes | [scripts/check-no-axioms-admits.py](pico-rocq/scripts/check-no-axioms-admits.py) via `make check` |
 
-## 2. Smoke Test
+## 2. Proof Organization
+
+The Rocq development is intentionally flat: each `.v` file is listed in `_RocqProject`, and the generated `CoqMakefile` checks them in dependency order.
+
+| File | Role |
+|---|---|
+| `Syntax.v`, `Notations.v`, `Helpers.v`, `Tactics.v`, `LibTactics.v` | Core syntax, notation, small helper lemmas, and proof automation support. |
+| `ViewpointAdaptation.v`, `Subtyping.v`, `Typing.v` | Static semantics: viewpoint adaptation, subtype relation, statement/expression typing, method signatures, and parameter-safety predicates. |
+| `Reachability.v`, `Bigstep.v` | Runtime reachability and big-step evaluation semantics. |
+| `Properties.v`, `Preservation.v`, `WFNOMutationEXP.v` | Preservation support lemmas, top-level preservation theorem, and mutation-exception safety. |
+| `DeepImmutability.v` | Shallow and transitive abstract immutability results. |
+| `ReadonlyHelper.v`, `ReadonlyConfinement.v`, `ReadonlyNoMutation.v`, `ReadonlySafety.v` | Readonly reachability, confinement, no-mutation support, and safe-readonly theorem. |
+| `ConcreteImmutability.v` | Concrete immutability theorem for safe method calls. |
+| `ObjectCreationExamples.v` | Small mechanized examples for object creation cases. |
+
+The optional Alectryon output described below gives a browsable view of these files and their proof states.
+
+## 3. Frameworks and Libraries
+
+The proof is a direct Rocq/Coq mechanization of the Pico formal model. It does not use a semantic framework such as Iris, Metalib, Autosubst, or a locally-nameless library. Finite maps/environments, heaps, reachability, typing, and evaluation relations are defined directly in the submitted sources.
+
+The artifact depends on:
+
+- Rocq/Coq, as installed by the Docker image and reported by `opam exec -- rocq -v`.
+- OCaml and OPAM for the isolated switch.
+- `coq-record-update`, vendored at the repository root and installed into the OPAM switch by `scripts/install-rocq.sh`.
+- `LibTactics.v`, a bundled proof-engineering support file used for tactics. The proof-hygiene script excludes this support library when scanning for forbidden proof gaps.
+
+## 4. Paper/Formalization Notes
+
+- The paper presents judgments and heaps mathematically; the Rocq development encodes them as inductive relations and finite association lists.
+- The method-call immutability theorems use explicit mechanized premises for receiver and parameter safety, such as `all_params_safe`, so the theorem statements expose the exact conditions consumed by the proofs.
+- The safe-readonly and concrete-immutability statements are proved over the mechanized big-step semantics and the static typing relation. Some support lemmas are split out into field-write, reachability, and preservation components rather than appearing as single paper-level proof steps.
+- The artifact has no intended unfinished proof obligations in the submitted sources. The `make check` command below is the reviewer-facing check for forbidden `Axiom`, `Admitted`, and `admit` usage outside the bundled tactic support file.
+
+## 5. Smoke Test
 
 Inside the container, run:
 
 ```bash
 opam --version
 opam exec -- rocq -v
-ls -d /workspace/pico-rocq
+test -f /workspace/pico-rocq/Makefile
+test -f /workspace/pico-rocq/_RocqProject
 ```
 
 Expected results:
 
 - OPAM is available.
 - Rocq is available through `opam exec -- ...`.
-- `/workspace/pico-rocq` exists.
+- `/workspace/pico-rocq` contains the Rocq source tree.
 
-## 3. Build the Formalization
+## 6. Build the Formalization
 
 Run:
 
@@ -74,7 +114,7 @@ The cleanup commands force a real rebuild. Without removing the compiled `.vo` f
 
 Recommended budget for a clean Rocq build: 3-5 minutes on a 4-core Docker Desktop VM.
 
-## 4. Proof Hygiene Check
+## 7. Proof Hygiene Check
 
 For the stronger check, run:
 
@@ -87,7 +127,7 @@ Expected result: the Rocq development builds successfully, and `scripts/check-no
 
 Observed warm-run time: effectively instantaneous after `opam exec -- make` has completed. Recommended budget: less than 1 minute.
 
-## 5. Optional Alectryon Inspection
+## 8. Optional Alectryon Inspection
 
 The commands above are the required validation steps. Reviewers who want to browse proof states can also render Alectryon HTML pages. The Docker image includes Alectryon for this optional inspection step.
 
@@ -135,8 +175,9 @@ The index groups files by role:
 
 The rendered pages include proof states. Use the proof-toggle button added by the artifact's Alectryon theme to expand or hide proof scripts while browsing theorem statements.
 
-## 6. Troubleshooting
+## 9. Troubleshooting
 
+- **`/workspace/pico-rocq` is empty or lacks `Makefile`**: the artifact archive was packaged without the Rocq sources. Recreate the archive from an author checkout where `pico-rocq/Makefile` and `pico-rocq/_RocqProject` are present.
 - **Rocq command not found**: run Rocq commands through `opam exec -- ...`.
 - **OPAM switch appears unavailable**: rebuild the Docker image and inspect the `scripts/install-rocq.sh` step in the Docker log.
 - **Build fails after a partial run**: from `/workspace/pico-rocq`, run `opam exec -- make clean`, then rerun `opam exec -- make`.

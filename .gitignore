@@ -6,9 +6,12 @@
 
 # Local scratch outputs
 /alectryon/
+/pico-artifact-anonymous.tar.gz
 /*.log
 /*.exit-status
 *.class
+*.fdb_latexmk
+*.fls
 
 # Rocq generated files
 pico-rocq/CoqMakefile

@@ -9,6 +9,20 @@ The artifact has two independent evaluation tracks:
 - **Rocq formalization**: `pico-rocq/` contains the mechanized formal model and proofs.
 - **PICO implementation in a modified Checker Framework**: `checker-framework/` contains the PICO checker implementation and benchmark tests. This track also uses `jdk/`, which contains the annotated OpenJDK sources for the Java Collections Framework case study.
 
+## Getting the Sources
+
+Reviewers should start from the submitted artifact archive. The archive includes
+all source trees used by the evaluation, including `pico-rocq/`,
+`checker-framework/`, `jdk/`, and `coq-record-update/`. No additional Git clone
+or submodule initialization step is required for evaluation.
+
+Sanity check:
+
+```bash
+test -f pico-rocq/Makefile
+test -f pico-rocq/_RocqProject
+```
+
 ## Common Docker Setup
 
 The authors evaluated the artifact on macOS with Docker Desktop. The artifact should also run on a Linux host with Docker.

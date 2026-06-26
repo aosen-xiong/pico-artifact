@@ -68,7 +68,9 @@ RUN chmod +x /tmp/install-rocq.sh \
 WORKDIR /workspace
 COPY . /workspace
 RUN test -d /workspace/checker-framework \
-  && test -d /workspace/jdk
+  && test -d /workspace/jdk \
+  && test -f /workspace/pico-rocq/Makefile \
+  && test -f /workspace/pico-rocq/_RocqProject
 RUN chmod +x /workspace/scripts/*.sh /workspace/checker-framework/gradlew /workspace/checker-framework/checker/bin/javac || true
 
 ENTRYPOINT ["/workspace/scripts/run-artifact.sh"]
