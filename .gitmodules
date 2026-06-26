@@ -1,0 +1,3 @@
+[submodule "pico-rocq"]
+	path = pico-rocq
+	url = git@github.com:aosen-xiong/pico-rocq.git
