@@ -18,7 +18,7 @@ Inductive q : Type :=
   | RO
   (* q_h *)
   | Lost
-  | Bot.  
+  | Bot.
 
 (** User-facing Mutability Qualifier  *)
 Inductive q_f : Type :=
@@ -88,6 +88,7 @@ Record constructor_sig := {
 
 Record constructor_def := {
   csignature : constructor_sig; (* Constructor signature *)
+  (* cbody : constructor_body; Constructor body AOSEN: I get rid of constructor body by directly enforcing the assignment in the wellformdness rule *)
 }.
 
 Record method_body := {
