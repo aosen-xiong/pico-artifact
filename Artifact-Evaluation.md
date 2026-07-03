@@ -33,7 +33,79 @@ Recommended resources:
 - 8 GB RAM
 - 15-20 GB free disk space
 
-Build the image from the repository root:
+## Prebuilt Docker Images
+
+The artifact submission may include Docker image archives next to the source
+archive:
+
+```text
+pico-artifact-image-linux-amd64.docker.tar
+pico-artifact-image-linux-arm64.docker.tar
+pico-artifact-image-oci.tar
+```
+
+Use the platform-specific Docker archive for ordinary Docker workflows:
+
+```bash
+# x86_64 / Intel / AMD hosts
+docker load -i pico-artifact-image-linux-amd64.docker.tar
+rm -rf results
+mkdir -p results
+docker run --rm -it \
+  -v "$PWD/results:/workspace/results" \
+  pico-artifact:ae-2026-amd64
+```
+
+```bash
+# Apple Silicon / ARM64 hosts
+docker load -i pico-artifact-image-linux-arm64.docker.tar
+rm -rf results
+mkdir -p results
+docker run --rm -it \
+  -v "$PWD/results:/workspace/results" \
+  pico-artifact:ae-2026-arm64
+```
+
+The `pico-artifact-image-oci.tar` file is a multi-platform OCI image archive
+containing both `linux/amd64` and `linux/arm64` image manifests. It is included
+as the build artifact corresponding to Docker's multi-platform image format.
+Plain `docker load` expects Docker archive format, so the two
+`*.docker.tar` files are provided for direct reviewer use.
+
+The multi-platform image was built with:
+
+```bash
+docker buildx create --name pico-ae-builder --driver docker-container --use --bootstrap
+docker buildx build \
+  --builder pico-ae-builder \
+  --platform linux/amd64,linux/arm64 \
+  -t pico-artifact:ae-2026 \
+  --output type=oci,dest=pico-artifact-image-oci.tar \
+  .
+```
+
+The platform-specific Docker-loadable archives were exported with:
+
+```bash
+docker buildx build \
+  --builder pico-ae-builder \
+  --platform linux/amd64 \
+  -t pico-artifact:ae-2026-amd64 \
+  --output type=docker,dest=pico-artifact-image-linux-amd64.docker.tar \
+  .
+
+docker buildx build \
+  --builder pico-ae-builder \
+  --platform linux/arm64 \
+  -t pico-artifact:ae-2026-arm64 \
+  --output type=docker,dest=pico-artifact-image-linux-arm64.docker.tar \
+  .
+```
+
+## Build Docker Locally
+
+If the prebuilt image archives are unavailable, build the image from the
+repository root:
 
 ```bash
 docker build -t pico-artifact:latest .

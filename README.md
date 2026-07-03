@@ -19,6 +19,25 @@ For a short guide to PICO type-check errors, see [PICO-Error-Message-Tutorial.md
 
 Quick start:
 
+If the prebuilt Docker image archives are included with the submission, load the
+archive for your host platform first:
+
+```bash
+# x86_64 / Intel / AMD hosts
+docker load -i pico-artifact-image-linux-amd64.docker.tar
+docker run --rm -it \
+  -v "$PWD/results:/workspace/results" \
+  pico-artifact:ae-2026-amd64
+
+# Apple Silicon / ARM64 hosts
+docker load -i pico-artifact-image-linux-arm64.docker.tar
+docker run --rm -it \
+  -v "$PWD/results:/workspace/results" \
+  pico-artifact:ae-2026-arm64
+```
+
+Otherwise, build the image locally from the packaged sources:
+
 ```bash
 docker build -t pico-artifact:latest .
 rm -rf results

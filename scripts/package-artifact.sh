@@ -34,6 +34,7 @@ EXCLUDES=(
   --exclude "${REPO_NAME}/**/.vscode/*"
   --exclude "${REPO_NAME}/results"
   --exclude "${REPO_NAME}/results/*"
+  --exclude "${REPO_NAME}/pico-artifact-image-*"
   --exclude "${REPO_NAME}/pico-rocq/CoqMakefile"
   --exclude "${REPO_NAME}/pico-rocq/CoqMakefile.conf"
   --exclude "${REPO_NAME}/pico-rocq/.CoqMakefile.d"
