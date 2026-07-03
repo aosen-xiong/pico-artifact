@@ -66,7 +66,6 @@ The artifact depends on:
 
 - Rocq/Coq, as installed by the Docker image and reported by `opam exec -- rocq -v`.
 - OCaml and OPAM for the isolated switch.
-- `coq-record-update`, vendored at the repository root and installed into the OPAM switch by `scripts/install-rocq.sh`.
 - `LibTactics.v`, a bundled proof-engineering support file used for tactics. The proof-hygiene script excludes this support library when scanning for forbidden proof gaps.
 
 ## 4. Paper/Formalization Notes

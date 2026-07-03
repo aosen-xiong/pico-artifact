@@ -13,7 +13,7 @@ The artifact has two independent evaluation tracks:
 
 Reviewers should start from the submitted artifact archive. The archive includes
 all source trees used by the evaluation, including `pico-rocq/`,
-`checker-framework/`, `jdk/`, and `coq-record-update/`. No additional Git clone
+`checker-framework/`, and `jdk/`. No additional Git clone
 or submodule initialization step is required for evaluation.
 
 Sanity check:
