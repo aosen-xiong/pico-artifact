@@ -433,6 +433,32 @@ public class PICONoInitVisitor extends BaseTypeVisitor<PICONoInitAnnotatedTypeFa
     }
 
     @Override
+    protected boolean skipReceiverSubtypeCheck(
+            MethodInvocationTree tree,
+            AnnotatedTypeMirror methodDefinitionReceiver,
+            AnnotatedTypeMirror methodCallReceiver) {
+        ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
+        AnnotatedExecutableType declaredMethod = atypeFactory.getAnnotatedType(methodElement);
+        AnnotatedDeclaredType declaredReceiver = declaredMethod.getReceiverType();
+        if (declaredReceiver == null
+                || !declaredReceiver.hasAnnotation(atypeFactory.RECEIVER_DEPENDENT_MUTABLE)) {
+            return false;
+        }
+
+        AnnotationMirror callReceiver =
+                methodCallReceiver.getAnnotationInHierarchy(atypeFactory.READONLY);
+        AnnotationMirror declared =
+                declaredReceiver.getAnnotationInHierarchy(atypeFactory.READONLY);
+        AnnotationMirror adapted =
+                atypeFactory
+                        .getViewpointAdapter()
+                        .combineReceiverAnnotationWithAnnotation(callReceiver, declared);
+        return atypeFactory
+                .getQualifierHierarchy()
+                .isSubtypeQualifiersOnly(callReceiver, adapted);
+    }
+
+    @Override
     public void processClassTree(ClassTree tree) {
         TypeElement typeElement = TreeUtils.elementFromDeclaration(tree);
         // TODO Don't process anonymous class. I'm not even sure if whether

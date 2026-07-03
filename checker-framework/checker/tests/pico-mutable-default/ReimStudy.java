@@ -45,11 +45,8 @@ public @ReceiverDependentMutable class ReimStudy {
 
     @SuppressWarnings({"deprecation"})
     void cellGetHours(@Readonly ReimStudy this) {
-        // In receiver viewpoint adaptation:
-        // q(this-cellGetHours) |> @PolyImmutable <: @Readonly => q(this-cellGetHours) <: @Readonly
-        // So cellGetHours is invocable on any types of receiver.
-        // In inference, if we prefer top(@Readonly), it still infers current "this" to @Readonly.
-        // :: error: (method.invocation.invalid)
+        // RDM receiver parameters use receiver-specific viewpoint adaptation, so a readonly
+        // receiver can invoke getDate. The RDM return still uses value adaptation.
         @Readonly Date rd = this.getDate();
         int hour = rd.getHours();
     }

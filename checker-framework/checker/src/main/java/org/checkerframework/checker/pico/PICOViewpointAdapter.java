@@ -55,4 +55,23 @@ public class PICOViewpointAdapter extends AbstractViewpointAdapter {
             throw new BugInCF("Unknown declared modifier: " + declaredAnnotation);
         }
     }
+
+    /**
+     * Viewpoint adaptation for a method invocation receiver parameter.
+     *
+     * <p>Unlike ordinary value adaptation, an RDM receiver declaration adapts to the caller's
+     * receiver qualifier. The method's ordinary parameters and return type still use value adaptation
+     * through {@link #combineAnnotationWithAnnotation(AnnotationMirror, AnnotationMirror)}.
+     *
+     * @param receiverAnnotation qualifier on the call-site receiver
+     * @param declaredAnnotation qualifier on the declared method receiver
+     * @return the receiver-adapted qualifier
+     */
+    public AnnotationMirror combineReceiverAnnotationWithAnnotation(
+            AnnotationMirror receiverAnnotation, AnnotationMirror declaredAnnotation) {
+        if (AnnotationUtils.areSame(declaredAnnotation, picoTypeFactory.RECEIVER_DEPENDENT_MUTABLE)) {
+            return receiverAnnotation;
+        }
+        return combineAnnotationWithAnnotation(receiverAnnotation, declaredAnnotation);
+    }
 }
