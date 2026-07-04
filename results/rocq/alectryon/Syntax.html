@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html class="alectryon-standalone"><head><title>Syntax.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.1
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.0
 compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require</span> List.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Stdlib.Sets.Ensembles.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> RecordUpdate <span class="kn">Require Import</span> RecordSet.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> RecordUpdate <span class="kn">Require Import</span> RecordUpdate.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 <span class="c">(* ------------------SYNTAX------------------*)</span>
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">var</span> : <span class="kt">Type</span> := nat.</span><span class="alectryon-wsp">
@@ -21,7 +19,7 @@ All Mutability Qualifer
   | RO
   <span class="c">(* q_h *)</span>
   | Lost
-  | Bot.</span><span class="alectryon-wsp">  </span></span></pre><div class="doc">
+  | Bot.</span></span></pre><div class="doc">
 User-facing Mutability Qualifier  
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q_f</span> : <span class="kt">Type</span> :=
   <span class="c">(* q_c *)</span>
@@ -89,6 +87,7 @@ Class Declaration Mutability Qualifier
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">constructor_def</span> := {
   csignature : constructor_sig; <span class="c">(* Constructor signature *)</span>
+  <span class="c">(* cbody : constructor_body; Constructor body removed by directly enforcing assignment in the well-formedness rule. *)</span>
 }.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">method_body</span> := {
@@ -161,13 +160,19 @@ Variable Mapping
 Runtime Environment 
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">r_env</span> := mkr_env {
   vars: var_mapping; <span class="c">(* Variable mapping *)</span>
-}.</span></span></pre><div class="doc">
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">set_vars</span> (<span class="nv">_</span> : r_env) (<span class="nv">vars&#39;</span> : var_mapping) : r_env :=
+  mkr_env vars&#39;.</span></span></pre><div class="doc">
 Field Mapping 
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">fields_mapping</span> := list value.</span><span class="alectryon-wsp"> </span></span></pre><div class="doc">
 Runtime Object 
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">Obj</span> := mkObj {
   rt_type: runtime_type; <span class="c">(* Runtime type *)</span>
   fields_map: fields_mapping; <span class="c">(* Field mapping *)</span>
-}.</span></span></pre><div class="doc">
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">set_fields_map</span> (<span class="nv">o</span> : Obj) (<span class="nv">fields&#39;</span> : fields_mapping) : Obj :=
+  mkObj (rt_type o) fields&#39;.</span></span></pre><div class="doc">
 Heap 
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">heap</span>          := list Obj.</span></span></pre></article></body></html>

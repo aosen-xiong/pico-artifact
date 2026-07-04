@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html class="alectryon-standalone"><head><title>DeepImmutability.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.1
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.0
 compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require Import</span> List.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require</span> String.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Import</span> ListNotations.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> RecordUpdate <span class="kn">Require Import</span> RecordUpdate.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax Notations Helpers Typing Subtyping Bigstep ViewpointAdaptation Properties Reachability Preservation.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
@@ -40,7 +39,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> mt.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> vals.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> vals&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> Heval; <span class="kp">try</span> <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Skip *)</span></span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Skip *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">   </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">   </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">match goal with</span>
    | Htyping : stmt_typing _ _ _ SSkip _ |- _ =&gt; <span class="nb">inversion</span> Htyping; <span class="nb">subst</span>
@@ -52,7 +51,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
    <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">   </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> H_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">   </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Local *)</span></span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Local *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">match goal with</span>
   | Htyping : stmt_typing _ _ _ (SLocal _ _) _ |- _ =&gt; <span class="nb">inversion</span> Htyping; <span class="nb">subst</span>
@@ -64,7 +63,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
   <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> H_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* VarAss *)</span></span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* VarAss *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">match goal with</span>
   | Htyping : stmt_typing _ _ _ (SVarAss _ _) _ |- _ =&gt; <span class="nb">inversion</span> Htyping; <span class="nb">subst</span>
@@ -76,7 +75,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
   <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> H_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* FldWrite *)</span></span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* FldWrite *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (Nat.eq_dec l loc_x) <span class="k">as</span> [Heq_l | Hneq_l].</span><span class="alectryon-wsp">
@@ -100,16 +99,16 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Heq : RDA = a) <span class="bp">by</span> (<span class="nb">eapply</span> sf_assignability_deterministic_rel; <span class="nb">eauto</span>).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Heq <span class="k">in</span> Hruntime_assignable.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hvals_eq : vals&#39; = [f0 ↦ val_y] (vals)).</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">          <span class="c">(* Use the definition of update_field and the fact that h&#39; contains the updated object *)</span>
 </span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> update_field <span class="k">in</span> Hupdate.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj_start <span class="k">in</span> Hupdate.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hupdate <span class="k">in</span> Hobj_end.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> runtime_getObj <span class="k">in</span> Hobj_end.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">          <span class="c">(* Apply update_same to get the updated object *)</span>
-</span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hget_same : nth_error (update loc_x {| rt_type := {| rqtype := Imm_r; rctype := C |}; fields_map := [f0 ↦ val_y] (vals) |} h) loc_x = 
+</span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hget_same : nth_error (update loc_x {| rt_type := {| rqtype := Imm_r; rctype := C |}; fields_map := [f0 ↦ val_y] (vals) |} h) loc_x =
                               Some {| rt_type := {| rqtype := Imm_r; rctype := C |}; fields_map := [f0 ↦ val_y] (vals) |}).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> update_same.</span><span class="alectryon-wsp">
@@ -150,10 +149,10 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj_start <span class="k">in</span> Hobj_end.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">injection</span> Hobj_end; <span class="nb">intros</span>; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Call *)</span> <span class="c">(* Similar to other non-mutating cases *)</span></span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Call *)</span> <span class="c">(* Similar to other non-mutating cases *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Htyping.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">--</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">--</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">revert</span> Hget_y.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intro</span> Hget_y.</span><span class="alectryon-wsp">
@@ -173,7 +172,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span> Hinnerthis.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span> Hbase.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hwf_method_frame : wf_r_config CT sΓmethodinit 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hwf_method_frame : wf_r_config CT sΓmethodinit
                                     rΓmethodinit h ).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hwf_copy := Hwf.</span><span class="alectryon-wsp">
@@ -332,7 +331,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
     <span class="c">(* Typable! *)</span>
-</span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> lInnerRecevier qinner HgetInnerReceiverAddr HgetInnerReceiverMutability i Hi sqt Hnth.</span><span class="alectryon-wsp"> 
+</span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> lInnerRecevier qinner HgetInnerReceiverAddr HgetInnerReceiverMutability i Hi sqt Hnth.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> HeqsΓmethodinit <span class="k">in</span> Hnth, Hi.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> HeqrΓmethodinit.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> *.</span><span class="alectryon-wsp">
@@ -391,11 +390,11 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hrcv_sub <span class="k">as</span> [Hrcv_sub | Hrcv_sub].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Hrcv_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutabilty_tt_sctype_abs_imm Ty (mreceiver (msignature mdef0))) <span class="k">in</span> Hrcv_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutability_tt_sctype_abs_imm Ty (mreceiver (msignature mdef0))) <span class="k">in</span> Hrcv_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hsigeq <span class="k">in</span> Hret_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hsigeq <span class="k">in</span> Hrcv_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hsigeq <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
@@ -409,7 +408,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hsigeq <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> objy.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hrcv_sub <span class="k">as</span> [Hrcv_sub | Hrcv_sub].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp">
@@ -578,7 +577,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutabilty_tt_sctype_abs_imm Ty sqt) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutability_tt_sctype_abs_imm Ty sqt) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
@@ -704,7 +703,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutabilty_tt_sctype_abs_imm Ty sqt) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutability_tt_sctype_abs_imm Ty sqt) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
@@ -805,7 +804,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span> Hinnerthis.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span> Hbase.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hwf_method_frame : wf_r_config CT sΓmethodinit 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hwf_method_frame : wf_r_config CT sΓmethodinit
                                     rΓmethodinit h ).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hwf_copy := Hwf.</span><span class="alectryon-wsp">
@@ -964,7 +963,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
     <span class="c">(* Typable! *)</span>
-</span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> lInnerRecevier qinner HgetInnerReceiverAddr HgetInnerReceiverMutability i Hi sqt Hnth.</span><span class="alectryon-wsp"> 
+</span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> lInnerRecevier qinner HgetInnerReceiverAddr HgetInnerReceiverMutability i Hi sqt Hnth.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> HeqsΓmethodinit <span class="k">in</span> Hnth, Hi.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> HeqrΓmethodinit.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> *.</span><span class="alectryon-wsp">
@@ -1023,11 +1022,11 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hrcv_sub <span class="k">as</span> [Hrcv_sub | Hrcv_sub].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Hrcv_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutabilty_tt_sctype_safe_ro Ty (mreceiver (msignature mdef0))) <span class="k">in</span> Hrcv_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutability_tt_sctype_safe_ro Ty (mreceiver (msignature mdef0))) <span class="k">in</span> Hrcv_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hsigeq <span class="k">in</span> Hret_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hsigeq <span class="k">in</span> Hrcv_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hsigeq <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
@@ -1041,7 +1040,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hsigeq <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> objy.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hrcv_sub <span class="k">as</span> [Hrcv_sub | Hrcv_sub].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp">
@@ -1210,7 +1209,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutabilty_tt_sctype_safe_ro Ty sqt) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutability_tt_sctype_safe_ro Ty sqt) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
@@ -1336,7 +1335,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutabilty_tt_sctype_safe_ro Ty sqt) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> (vpa_mutability_tt_sctype_safe_ro Ty sqt) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
@@ -1418,29 +1417,29 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hwf_rtypeuse.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">contradiction</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-  <span class="c">(* Seq *)</span> <span class="c">(* Apply IH transitively *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Htyping; <span class="nb">subst</span>.</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Htyping; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (eval_stmt_preserves_heap_domain_simple CT rΓ h s1 rΓ&#39; h&#39; Heval1) <span class="k">as</span> Hh&#39;.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hloc_h&#39; : l &lt; dom h&#39;) <span class="bp">by</span> <span class="bp">lia</span>.</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hloc_h&#39; : l &lt; dom h&#39;) <span class="bp">by</span> <span class="bp">lia</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (runtime_getObj_Some h&#39; l Hloc_h&#39;) <span class="k">as</span> [C&#39; [values&#39; Hh&#39;some]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (runtime_preserves_r_type_heap CT rΓ h l ({| rqtype := Imm_r; rctype := C |})
-  h&#39; vals s1 rΓ&#39; Hobj_start Heval1) <span class="k">as</span> [vals1 Hrtype].</span><span class="alectryon-wsp"> 
+  h&#39; vals s1 rΓ&#39; Hobj_start Heval1) <span class="k">as</span> [vals1 Hrtype].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hrtype <span class="k">in</span> Hh&#39;some; <span class="nb">inversion</span> Hh&#39;some; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (IHHeval1 Hloc Heqok Hfield_imm values&#39; Hrtype vals Hobj_start mt sΓ&#39;0 sΓ Hwf Htype1).</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (IHHeval1 Hloc Heqok Hfield_imm values&#39; Hrtype vals Hobj_start mt sΓ&#39;0 sΓ Hwf Htype1).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (preservation_pico CT sΓ mt rΓ h s1 rΓ&#39; h&#39; sΓ&#39;0 Hwf Htype1 Heval1) <span class="k">as</span> Hwf&#39;.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (IHHeval2 Hloc_h&#39; Heqok Hfield_imm vals&#39; Hobj_end values&#39; Hrtype mt sΓ&#39; sΓ&#39;0 Hwf&#39; Htype2).</span><span class="alectryon-wsp"> 
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (IHHeval2 Hloc_h&#39; Heqok Hfield_imm vals&#39; Hobj_end values&#39; Hrtype mt sΓ&#39; sΓ&#39;0 Hwf&#39; Htype2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> IHHeval2 <span class="k">in</span> IHHeval1; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">imm_step_preserves_imm</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">l0</span> <span class="nv">C</span> <span class="nv">vals</span> <span class="nv">l1</span> <span class="nv">k</span>
-         (<span class="nv">Hwf</span>   : wf_r_config CT sΓ rΓ h)
-         (<span class="nv">HgetObj</span>  : runtime_getObj h l0 = Some (mkObj (mkruntime_type Imm_r C) vals))
-         (<span class="nv">Hl1dom</span>  : l1 &lt; dom h)
-         (<span class="nv">Hnth</span>  : nth_error vals k = Some (Iot l1))
-         (<span class="nv">HFieldmut</span>  : sf_mutability_rel CT C k RDM_f \/ sf_mutability_rel CT C k Imm_f),
-         <span class="k">exists</span> <span class="nv">C&#39;</span> <span class="nv">vals&#39;</span>,
-            runtime_getObj h l1 =
-              Some (mkObj (mkruntime_type Imm_r C&#39;) vals&#39;).</span><span class="alectryon-wsp">
+    (<span class="nv">Hwf</span>   : wf_r_config CT sΓ rΓ h)
+    (<span class="nv">HgetObj</span>  : runtime_getObj h l0 = Some (mkObj (mkruntime_type Imm_r C) vals))
+    (<span class="nv">Hl1dom</span>  : l1 &lt; dom h)
+    (<span class="nv">Hnth</span>  : nth_error vals k = Some (Iot l1))
+    (<span class="nv">HFieldmut</span>  : sf_mutability_rel CT C k RDM_f \/ sf_mutability_rel CT C k Imm_f),
+    <span class="k">exists</span> <span class="nv">C&#39;</span> <span class="nv">vals&#39;</span>,
+      runtime_getObj h l1 =
+        Some (mkObj (mkruntime_type Imm_r C&#39;) vals&#39;).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_config <span class="k">in</span> Hwf.</span><span class="alectryon-wsp">
@@ -1533,12 +1532,12 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">reachable_abs_from_imm_points_to_imm</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">l0</span> <span class="nv">C0</span> <span class="nv">vals0</span> <span class="nv">l1</span>
-         (<span class="nv">Hwf</span>   : wf_r_config CT sΓ rΓ h)
-         (<span class="nv">Himm</span>  : runtime_getObj h l0 = Some (mkObj (mkruntime_type Imm_r C0) vals0))
-         (<span class="nv">Hrch</span>  : reachable_abs CT h l0 l1),
-          <span class="k">exists</span> <span class="nv">C&#39;</span> <span class="nv">vals&#39;</span>,
-            runtime_getObj h l1 =
-              Some (mkObj (mkruntime_type Imm_r C&#39;) vals&#39;).</span><span class="alectryon-wsp">
+    (<span class="nv">Hwf</span>   : wf_r_config CT sΓ rΓ h)
+    (<span class="nv">Himm</span>  : runtime_getObj h l0 = Some (mkObj (mkruntime_type Imm_r C0) vals0))
+    (<span class="nv">Hrch</span>  : reachable_abs CT h l0 l1),
+    <span class="k">exists</span> <span class="nv">C&#39;</span> <span class="nv">vals&#39;</span>,
+      runtime_getObj h l1 =
+        Some (mkObj (mkruntime_type Imm_r C&#39;) vals&#39;).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">remember</span> l0 <span class="k">as</span> l_root <span class="nb">eqn</span>:Heq.</span><span class="alectryon-wsp">
@@ -1582,16 +1581,16 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Theorem</span> <span class="nf">deep_immutability_pico</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">root</span> <span class="nv">C0</span> <span class="nv">vals0</span> <span class="nv">l</span> <span class="nv">C</span> <span class="nv">qr</span> <span class="nv">vals</span> <span class="nv">vals&#39;</span> <span class="nv">f</span>
-         (<span class="nv">Hdom</span> : root &lt; dom h)
-         (<span class="nv">Himm_root</span> : runtime_getObj h root = Some (mkObj (mkruntime_type Imm_r C0) vals0))
-         (<span class="nv">Hreach</span> : reachable_abs CT h root l)
-         (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
-         (<span class="nv">Htyping</span> : stmt_typing CT sΓ mt stmt sΓ&#39;)
-         (<span class="nv">Heval</span> : eval_stmt OK (reachable_locations_from_initial_env CT h rΓ) CT rΓ h stmt OK (reachable_locations_from_initial_env CT h rΓ) rΓ&#39; h&#39;)
-         (<span class="nv">Hobj</span> : runtime_getObj h l = Some (mkObj (mkruntime_type qr C) vals))
-         (<span class="nv">Hobj&#39;</span> : runtime_getObj h&#39; l = Some (mkObj (mkruntime_type qr C) vals&#39;))
-         (<span class="nv">Hprotected</span> : sf_assignability_rel CT C f Final \/ 
-                       sf_assignability_rel CT C f RDA),
+    (<span class="nv">Hdom</span> : root &lt; dom h)
+    (<span class="nv">Himm_root</span> : runtime_getObj h root = Some (mkObj (mkruntime_type Imm_r C0) vals0))
+    (<span class="nv">Hreach</span> : reachable_abs CT h root l)
+    (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
+    (<span class="nv">Htyping</span> : stmt_typing CT sΓ mt stmt sΓ&#39;)
+    (<span class="nv">Heval</span> : eval_stmt OK (reachable_locations_from_initial_env CT h rΓ) CT rΓ h stmt OK (reachable_locations_from_initial_env CT h rΓ) rΓ&#39; h&#39;)
+    (<span class="nv">Hobj</span> : runtime_getObj h l = Some (mkObj (mkruntime_type qr C) vals))
+    (<span class="nv">Hobj&#39;</span> : runtime_getObj h&#39; l = Some (mkObj (mkruntime_type qr C) vals&#39;))
+    (<span class="nv">Hprotected</span> : sf_assignability_rel CT C f Final \/
+                  sf_assignability_rel CT C f RDA),
     nth_error vals f = nth_error vals&#39; f.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">

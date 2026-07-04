@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html class="alectryon-standalone"><head><title>Properties.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.1
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.0
 compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax Notations Helpers Typing Subtyping Bigstep ViewpointAdaptation.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require Import</span> List.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require</span> String.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Import</span> ListNotations.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> RecordUpdate <span class="kn">Require Import</span> RecordUpdate.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">solve_q_subtype_wrong</span> :=
   <span class="k">lazymatch goal with</span>
@@ -37,7 +36,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
   <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Local Ltac</span> <span class="nf">qtypable_contradiction</span> H :=
-  <span class="nb">exfalso</span>; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs <span class="k">in</span> H; <span class="nb">cbn</span> <span class="k">in</span> H; <span class="bp">contradiction</span> H.</span><span class="alectryon-wsp">
+  <span class="nb">exfalso</span>; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs <span class="k">in</span> H; <span class="nb">cbn</span> <span class="k">in</span> H; <span class="bp">contradiction</span> H.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">solve_qualifier_typable_wrong_concrete</span> :=
   <span class="k">lazymatch goal with</span>
@@ -70,20 +69,20 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">solve_qualifier_typable_correct_concrete</span> :=
   <span class="k">lazymatch goal with</span>
-  | |- qualifier_typable_context Imm_r Imm Mut_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Imm_r RO Mut_r   =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Imm_r Lost Mut_r =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Imm_r RO Imm_r   =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Imm_r Imm Imm_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Imm_r Lost Imm_r =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Imm_r RDM Imm_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Mut_r Mut Mut_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Mut_r RO Mut_r   =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Mut_r Lost Mut_r =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Mut_r RDM Mut_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Mut_r RO Imm_r   =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Mut_r Mut Imm_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
-  | |- qualifier_typable_context Mut_r Lost Imm_r =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutabilty_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Imm_r Imm Mut_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Imm_r RO Mut_r   =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Imm_r Lost Mut_r =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Imm_r RO Imm_r   =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Imm_r Imm Imm_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Imm_r Lost Imm_r =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Imm_r RDM Imm_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Mut_r Mut Mut_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Mut_r RO Mut_r   =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Mut_r Lost Mut_r =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Mut_r RDM Mut_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Mut_r RO Imm_r   =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Mut_r Mut Imm_r  =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
+  | |- qualifier_typable_context Mut_r Lost Imm_r =&gt; <span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs; <span class="nb">cbn</span>; <span class="bp">exact</span> I
   <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">collect_methods_exists</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">C</span>
@@ -765,24 +764,24 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">sq_vpa_tt_eq_qq_abs_imm</span> :
   <span class="k">forall</span> <span class="nv">T1</span> <span class="nv">T2</span>,
-    sqtype (vpa_mutabilty_tt_abs_imm T1 T2)
-    = vpa_mutabilty_qq_abs_imm (sqtype T1) (sqtype T2).</span><span class="alectryon-wsp">
+    sqtype (vpa_mutability_tt_abs_imm T1 T2)
+    = vpa_mutability_qq_abs_imm (sqtype T1) (sqtype T2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> T1 T2.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> T1 <span class="k">as</span> [q1 c1], T2 <span class="k">as</span> [q2 c2].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_tt_abs_imm, vpa_mutabilty_qq_abs_imm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_abs_imm, vpa_mutability_qq_abs_imm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> q1; <span class="nb">destruct</span> q2; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">sq_vpa_tt_eq_qq_safe_ro</span> :
   <span class="k">forall</span> <span class="nv">T1</span> <span class="nv">T2</span>,
-    sqtype (vpa_mutabilty_tt_safe_ro T1 T2)
-    = vpa_mutabilty_qq_safe_ro (sqtype T1) (sqtype T2).</span><span class="alectryon-wsp">
+    sqtype (vpa_mutability_tt_safe_ro T1 T2)
+    = vpa_mutability_qq_safe_ro (sqtype T1) (sqtype T2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> T1 T2.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> T1 <span class="k">as</span> [q1 c1], T2 <span class="k">as</span> [q2 c2].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_tt_safe_ro, vpa_mutabilty_qq_safe_ro.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_safe_ro, vpa_mutability_qq_safe_ro.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> q1; <span class="nb">destruct</span> q2; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
@@ -922,7 +921,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> rq <span class="k">as</span> [|]; <span class="nb">destruct</span> (sqtype Ty1); <span class="nb">destruct</span> (sqtype Ty2);
   <span class="nb">simpl</span> <span class="k">in</span> *; <span class="nb">auto</span>;
   <span class="kp">try</span> (<span class="nb">inversion</span> Hsubtype; <span class="nb">auto</span>);
-  <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutabilty_rs <span class="k">in</span> *;
+  <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_rs <span class="k">in</span> *;
   <span class="kp">try</span> <span class="nb">destruct</span> qcontext;
   <span class="kp">try</span> <span class="bp">reflexivity</span>;
   <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
@@ -1010,7 +1009,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">get_this_var_mapping_update_vars_nonzero</span> : <span class="k">forall</span> <span class="nv">rΓ</span> <span class="nv">x</span> <span class="nv">v</span>
   (<span class="nv">Hx</span> : x &lt;&gt; <span class="mi">0</span>),
-  get_this_var_mapping (vars (rΓ &lt;| vars := update x v (vars rΓ) |&gt;))
+  get_this_var_mapping (vars (set_vars rΓ (update x v (vars rΓ))))
   = get_this_var_mapping (vars rΓ).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> rΓ x v Hx.</span><span class="alectryon-wsp">
@@ -1034,7 +1033,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Skip *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">assumption</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Local: vars rΓ&#39; = vars rΓ ++ [Null_a] *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">    <span class="c">(* record-update on rΓ: vars-projection just adds at the tail *)</span>
+</span></span><span class="alectryon-txt">    <span class="c">(* Updating rΓ&#39;s vars projection just adds at the tail. *)</span>
 </span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> get_this_var_mapping <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (vars rΓ) <span class="k">as</span> [|v0 vs]; [<span class="bp">discriminate</span>|].</span><span class="alectryon-wsp">
@@ -1596,7 +1595,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">trivial</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">-- <span class="c">(* Case: v2 = Iot loc *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">          <span class="c">(* Use subtyping to convert from T to sqt *)</span>
-</span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hsubtype_preserved : wf_r_typable CT (rΓ &lt;| vars := update x (Iot loc) (vars rΓ) |&gt;) h&#39; loc sqt qcontext).</span><span class="alectryon-wsp">
+</span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hsubtype_preserved : wf_r_typable CT (set_vars rΓ (update x (Iot loc) (vars rΓ))) h&#39; loc sqt qcontext).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hsqt_eq : sqt = Tx).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
@@ -1671,7 +1670,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">rqtype_update_field_invariant</span> : <span class="k">forall</span> <span class="nv">o</span> <span class="nv">f</span> <span class="nv">v</span>,
-  rqtype (rt_type (o &lt;| fields_map := update f v (fields_map o) |&gt;))
+  rqtype (rt_type (set_fields_map o (update f v (fields_map o))))
   = rqtype (rt_type o).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> [rt fm] f v; <span class="nb">simpl</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
@@ -1912,7 +1911,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_heap.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hsub <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hqual_typable <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rec_fld; <span class="nb">unfold</span> vpa_mutabilty_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rec_fld; <span class="nb">unfold</span> vpa_mutability_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> rqt_x.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">clear</span> - Hsub Hqual_typable Hxyqualifer.</span><span class="alectryon-wsp">
@@ -1934,7 +1933,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp"> 
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (nth_error h loc_y) <span class="k">as</span> [obj_y|] <span class="nb">eqn</span>:Hnth_y.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* loc_y exists in original heap *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (o_x &lt;| fields_map := update f (Iot loc_y) (fields_map o_x) |&gt;) h) loc_y = Some obj_y).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (set_fields_map o_x (update f (Iot loc_y) (fields_map o_x))) h) loc_y = Some obj_y).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_update_neq; [<span class="nb">symmetry</span>; <span class="bp">exact</span> Hneq_loc2_lx | <span class="bp">exact</span> Hnth_y].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
@@ -1992,9 +1991,9 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj_lx <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcorr <span class="k">as</span> [_ Hqualifiertypablex].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hgetobj; <span class="nb">subst</span> o.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rec_fld.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rs <span class="k">in</span> Hqual_y.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rec_fld.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rs <span class="k">in</span> Hqual_y.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">clear</span> - Hqual_y Hsub Hqualifiertypablex.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>:
                 <span class="nb">destruct</span> (rqtype rqt_y) <span class="nb">eqn</span>: Hrqy;
@@ -2016,7 +2015,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* loc_y doesn&#39;t exist - contradiction *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (o_x &lt;| fields_map := update f (Iot loc_y) (fields_map o_x) |&gt;) h) loc_y = None).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (set_fields_map o_x (update f (Iot loc_y) (fields_map o_x))) h) loc_y = None).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_update_neq; [<span class="nb">symmetry</span>; <span class="bp">exact</span> Hneq_loc2_lx | <span class="bp">exact</span> Hnth_y].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
@@ -2410,7 +2409,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_heap.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hsub <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hqual_typable <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rec_fld; <span class="nb">unfold</span> vpa_mutabilty_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rec_fld; <span class="nb">unfold</span> vpa_mutability_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> rqt_x.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">clear</span> - Hsub Hqual_typable Hxyqualifer.</span><span class="alectryon-wsp">
@@ -2432,7 +2431,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (nth_error h loc_y) <span class="k">as</span> [obj_y|] <span class="nb">eqn</span>:Hnth_y.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* loc_y exists in original heap *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (o_x &lt;| fields_map := update f (Iot loc_y) (fields_map o_x) |&gt;) h) loc_y = Some obj_y).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (set_fields_map o_x (update f (Iot loc_y) (fields_map o_x))) h) loc_y = Some obj_y).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_update_neq; [<span class="nb">symmetry</span>; <span class="bp">exact</span> Hneq_loc2_lx | <span class="bp">exact</span> Hnth_y].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
@@ -2490,9 +2489,9 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj_lx <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcorr <span class="k">as</span> [_ Hqualifiertypablex].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hgetobj; <span class="nb">subst</span> o.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rec_fld.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rs <span class="k">in</span> Hqual_y.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rec_fld.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rs <span class="k">in</span> Hqual_y.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">clear</span> - Hqual_y Hsub Hqualifiertypablex.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>:
                 <span class="nb">destruct</span> (rqtype rqt_y) <span class="nb">eqn</span>: Hrqy;
@@ -2514,7 +2513,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* loc_y doesn&#39;t exist - contradiction *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (o_x &lt;| fields_map := update f (Iot loc_y) (fields_map o_x) |&gt;) h) loc_y = None).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (set_fields_map o_x (update f (Iot loc_y) (fields_map o_x))) h) loc_y = None).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_update_neq; [<span class="nb">symmetry</span>; <span class="bp">exact</span> Hneq_loc2_lx | <span class="bp">exact</span> Hnth_y].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
@@ -2908,7 +2907,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_heap.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hsub <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hqual_typable <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rec_fld; <span class="nb">unfold</span> vpa_mutabilty_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rec_fld; <span class="nb">unfold</span> vpa_mutability_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> rqt_x.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">                  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">clear</span> - Hsub Hqual_typable Hxyqualifer.</span><span class="alectryon-wsp">
@@ -2930,7 +2929,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp"> 
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (nth_error h loc_y) <span class="k">as</span> [obj_y|] <span class="nb">eqn</span>:Hnth_y.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* loc_y exists in original heap *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (o_x &lt;| fields_map := update f (Iot loc_y) (fields_map o_x) |&gt;) h) loc_y = Some obj_y).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (set_fields_map o_x (update f (Iot loc_y) (fields_map o_x))) h) loc_y = Some obj_y).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_update_neq; [<span class="nb">symmetry</span>; <span class="bp">exact</span> Hneq_loc2_lx | <span class="bp">exact</span> Hnth_y].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
@@ -2988,9 +2987,9 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj_lx <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcorr <span class="k">as</span> [_ Hqualifiertypablex].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hgetobj; <span class="nb">subst</span> o.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rec_fld.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rs <span class="k">in</span> Hqual_y.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_stype_fld_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rec_fld.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rs <span class="k">in</span> Hqual_y.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">clear</span> - Hqual_y Hsub Hqualifiertypablex.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>:
                 <span class="nb">destruct</span> (rqtype rqt_y) <span class="nb">eqn</span>: Hrqy;
@@ -3012,7 +3011,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* loc_y doesn&#39;t exist - contradiction *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (o_x &lt;| fields_map := update f (Iot loc_y) (fields_map o_x) |&gt;) h) loc_y = None).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hnth_updated : nth_error (update loc_x (set_fields_map o_x (update f (Iot loc_y) (fields_map o_x))) h) loc_y = None).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">                </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_update_neq; [<span class="nb">symmetry</span>; <span class="bp">exact</span> Hneq_loc2_lx | <span class="bp">exact</span> Hnth_y].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
@@ -3278,7 +3277,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">**</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> find_class_dom <span class="k">in</span> Hfind.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hfind.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_runtime_bound_agree.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_runtime_bound_agree.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hwf_ctor : wf_constructor CT c consig).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> constructor_lookup_wf; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
@@ -3287,8 +3286,11 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hwf_ctor <span class="k">as</span> [Hctor_bound [Hparamswf [field_defs [Hcollect_H1 [Hdom_eq Hfieldtypematch]]]]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hbound <span class="k">in</span> Hctor_bound.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hctor_bound; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_object_creation.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (cqualifier consig) <span class="nb">eqn</span>: Hcbound; <span class="nb">destruct</span> qthisr <span class="nb">eqn</span>: Hqthis;
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_object_creation.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_bound <span class="k">in</span> Hqc.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> q_c <span class="nb">eqn</span>:Hnewq;
+          <span class="nb">destruct</span> (cqualifier consig) <span class="nb">eqn</span>: Hcbound;
+          <span class="nb">destruct</span> qthisr <span class="nb">eqn</span>: Hqthis;
           <span class="nb">simpl</span> <span class="k">in</span> *; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">**</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">exfalso</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> bound <span class="k">in</span> Hbound.</span><span class="alectryon-wsp">
@@ -3329,10 +3331,11 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Forall2_length <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> runtime_lookup_list_preserves_length <span class="k">in</span> Hlookupvals.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> static_getType_list_preserves_length <span class="k">in</span> Hget_args.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hlookupvals.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hget_args.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> constructor_sig_lookup_implies_def <span class="k">in</span> Hconsig; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hlookupvals.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hget_args.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> length_map.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> constructor_sig_lookup_implies_def <span class="k">in</span> Hconsig; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hconsig <span class="k">as</span> [cdef Hcedflookup].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcedflookup <span class="k">as</span> [Hcedflookup Hcdefcsig].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> constructor_params_field_count; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
@@ -3361,9 +3364,10 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Show lengths are equal *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Forall2_length <span class="k">in</span> Hlookupvals.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hlookupvals.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Forall2_length <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (field_defs_exists = field_defs).</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Forall2_length <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> length_map.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (field_defs_exists = field_defs).</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> collect_fields_deterministic_rel; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> field_defs_exists.</span><span class="alectryon-wsp">
@@ -3419,17 +3423,28 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hdom_eq <span class="k">in</span> Hi_fdef.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Forall2_nth_error <span class="k">with</span> (i:=i) (b:=fdef) (a:=paramtype) <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Forall2_nth_error <span class="k">with</span> (i:=i) (b:=paramtype) (a:=argtype) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hargtype.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hparamtype.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hparamtype.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hfdef.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Forall2_nth_error <span class="k">with</span> (i:=i) (b:=fdef) (a:=paramtype) <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hadapted_paramtype :
+	            nth_error (map (vpa_mutability_constructor_param q_c) (cparams consig)) i =
+	            Some (vpa_mutability_constructor_param q_c paramtype)).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_map.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hparamtype.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Forall2_nth_error <span class="k">with</span>
+	            (i:=i) (b:=vpa_mutability_constructor_param q_c paramtype) (a:=argtype) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_constructor_param <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hargtype.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hadapted_paramtype.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hparamtype.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hfdef.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> 
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hlookupvals <span class="k">as</span> [Hrctype Hqctype].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (nth_error (cparams consig) i) <span class="k">as</span> [paramtype|] <span class="nb">eqn</span>: Hparamtype.</span><span class="alectryon-wsp">
@@ -3444,19 +3459,30 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- Hdom_eq <span class="k">in</span> Hi_fdef.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Forall2_nth_error <span class="k">with</span> (i:=i) (b:=fdef) (a:=paramtype) <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Forall2_nth_error <span class="k">with</span> (i:=i) (b:=paramtype) (a:=argtype) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hresult_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">          
-</span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>: <span class="bp">exact</span> Hargtype.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>: <span class="bp">exact</span> Hparamtype.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>: <span class="bp">exact</span> Hparamtype.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>: <span class="bp">exact</span> Hfdef.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hqctype <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hfieldtypematch <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Forall2_nth_error <span class="k">with</span> (i:=i) (b:=fdef) (a:=paramtype) <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hadapted_paramtype :
+	            nth_error (map (vpa_mutability_constructor_param q_c) (cparams consig)) i =
+	            Some (vpa_mutability_constructor_param q_c paramtype)).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_map.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hparamtype.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Forall2_nth_error <span class="k">with</span>
+	            (i:=i) (b:=vpa_mutability_constructor_param q_c paramtype) (a:=argtype) <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hresult_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>: <span class="bp">exact</span> Hargtype.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>: <span class="bp">exact</span> Hadapted_paramtype.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>: <span class="bp">exact</span> Hparamtype.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>: <span class="bp">exact</span> Hfdef.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_constructor_param <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Harg_sub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hqctype <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">move</span> Hfieldtypematch <span class="nb">at bottom</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_senv <span class="k">in</span> Hsenv;
           <span class="nb">destruct</span> Hsenv <span class="k">as</span> [Hsenvdom _];
           <span class="nb">destruct</span> (r_type h ι) <span class="k">as</span> [rqt_receiver|] <span class="nb">eqn</span>: Hrtype_receiver.</span><span class="alectryon-wsp">
@@ -3475,9 +3501,9 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span> Hrtype_receiver.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_heap.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rec_fld.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_constructor_fld <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_object_creation.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rec_fld.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_constructor_fld <span class="k">in</span> Hfieldtypematch.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_object_creation.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qc2q <span class="k">in</span> Hresult_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Hresult_sub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (l1 = ι).</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
@@ -3492,19 +3518,23 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> HgetthisRuntimeType; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> qthisr.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">clear</span> - Hfieldtypematch Hqctype Harg_sub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (rqtype rqt) <span class="nb">eqn</span>: Hrqtq;
-          <span class="nb">destruct</span> qcontext <span class="nb">eqn</span>: Hqthis;
-          <span class="nb">destruct</span> (cqualifier consig) <span class="nb">eqn</span>: Hconstructoreturnq;
-          <span class="nb">destruct</span> (mutability (ftype fdef)) <span class="nb">eqn</span>: Hfieldq; 
-          <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_bound <span class="k">in</span> Hqc.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">clear</span> - Hfieldtypematch Hqctype Harg_sub Hqc.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (rqtype rqt) <span class="nb">eqn</span>: Hrqtq;
+	          <span class="nb">destruct</span> qcontext <span class="nb">eqn</span>: Hqthis;
+	          <span class="nb">destruct</span> q_c <span class="nb">eqn</span>: Hnewq;
+	          <span class="nb">destruct</span> (cqualifier consig) <span class="nb">eqn</span>: Hconstructoreturnq;
+	          <span class="nb">destruct</span> (mutability (ftype fdef)) <span class="nb">eqn</span>: Hfieldq;
+	          <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="nb">destruct</span> (sqtype paramtype) <span class="nb">eqn</span>: Hparamq;
           <span class="kp">try</span> solve_q_subtype_wrong.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: 
-          <span class="nb">destruct</span> (sqtype argtype) <span class="nb">eqn</span>: Hargq;
-          <span class="kp">try</span> solve_q_subtype_wrong;
-          <span class="nb">destruct</span> qcontext <span class="nb">eqn</span>: Hqcontext;
-          <span class="kp">try</span> solve_qualifier_typable_wrong_concrete.</span><span class="alectryon-wsp">
+	          <span class="nb">destruct</span> (sqtype argtype) <span class="nb">eqn</span>: Hargq;
+	          <span class="kp">try</span> solve_q_subtype_wrong;
+	          <span class="nb">destruct</span> qcontext <span class="nb">eqn</span>: Hqcontext;
+	          <span class="kp">try</span> solve_qualifier_typable_wrong_concrete;
+	          <span class="kp">try</span> solve_qualifier_typable_correct_concrete;
+	          <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">* <span class="c">(* ι &lt; dom h (existing object) *)</span></span><span class="alectryon-wsp">
@@ -3601,8 +3631,8 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (dom h + <span class="mi">1</span> = S (dom h)) <span class="bp">by</span> <span class="bp">lia</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> runtime_getObj.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hlen_extended: dom (h ++ [{| rt_type := {| rqtype := vpa_mutabilty_object_creation
-qthisr (cqualifier consig); rctype := c |}; fields_map := vals |}]) = dom h + <span class="mi">1</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hlen_extended: dom (h ++ [{| rt_type := {| rqtype := vpa_mutability_object_creation
+qthisr q_c; rctype := c |}; fields_map := vals |}]) = dom h + <span class="mi">1</span>).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">--</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> length_app.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">--</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> nth_error_app2.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">**</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp">
@@ -3727,16 +3757,22 @@ qthisr (cqualifier consig); rctype := c |}; fields_map := vals |}]) = dom h + <s
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> qthisr.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context <span class="k">in</span> *.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_object_creation <span class="k">in</span> *.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_rs <span class="k">in</span> *;
-              <span class="nb">unfold</span> qc2q <span class="k">in</span> *;
-              <span class="nb">unfold</span> vpa_mutabilty_tt_abs_imm <span class="k">in</span> *.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (cqualifier consig) <span class="nb">eqn</span>: Hcbound;
-              <span class="nb">destruct</span> qcontext <span class="nb">eqn</span>: Hqcontext;
-              <span class="nb">destruct</span> (rqtype (rt_type o)) <span class="nb">eqn</span>: Hrqtq;
-              <span class="nb">destruct</span> (sqtype Tx) <span class="nb">eqn</span>: Htxq; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="nb">destruct</span> (sqtype Tthis) <span class="nb">eqn</span>: Hqthisr; <span class="kp">try</span> <span class="nb">rewrite</span> Htxq <span class="k">in</span> H14; <span class="nb">simpl</span> <span class="k">in</span> H14; <span class="kp">try</span> <span class="nb">inversion</span> H14; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_object_creation <span class="k">in</span> *.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rs <span class="k">in</span> *;
+	              <span class="nb">unfold</span> qc2q <span class="k">in</span> *;
+	              <span class="nb">unfold</span> vpa_mutability_tt_abs_imm <span class="k">in</span> *.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_bound <span class="k">in</span> Hqc.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> q_c <span class="nb">eqn</span>:Hnewq;
+	              <span class="nb">destruct</span> (cqualifier consig) <span class="nb">eqn</span>: Hcbound;
+	              <span class="nb">destruct</span> qcontext <span class="nb">eqn</span>: Hqcontext;
+	              <span class="nb">destruct</span> (rqtype (rt_type o)) <span class="nb">eqn</span>: Hrqtq;
+	              <span class="nb">destruct</span> (sqtype Tx) <span class="nb">eqn</span>: Htxq; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	              </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="nb">destruct</span> (sqtype Tthis) <span class="nb">eqn</span>: Hqthisr;
+	                <span class="kp">try</span> <span class="nb">rewrite</span> Htxq <span class="k">in</span> Hresult_sub;
+	                <span class="nb">simpl</span> <span class="k">in</span> Hresult_sub;
+	                <span class="kp">try</span> <span class="nb">inversion</span> Hresult_sub;
+	                <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Case: i ≠ x (existing variable) *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> runtime_getVal.</span><span class="alectryon-wsp">
@@ -3765,8 +3801,8 @@ qthisr (cqualifier consig); rctype := c |}; fields_map := vals |}]) = dom h + <s
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hval.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable <span class="k">in</span> Hcorr_orig |- *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (r_type h loc) <span class="k">as</span> [rqt|] <span class="nb">eqn</span>:Hrtype; [|<span class="bp">contradiction</span>].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hrtype_ext : r_type (h ++ [{| rt_type := {| rqtype := vpa_mutabilty_object_creation qthisr
-(cqualifier consig); rctype := c |}; fields_map := vals |}]) loc = Some rqt).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">	          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hrtype_ext : r_type (h ++ [{| rt_type := {| rqtype := vpa_mutability_object_creation qthisr
+q_c; rctype := c |}; fields_map := vals |}]) loc = Some rqt).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> r_type <span class="k">in</span> Hrtype |- *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">            </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> heap_extension_preserves_objects; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
@@ -3779,23 +3815,23 @@ qthisr (cqualifier consig); rctype := c |}; fields_map := vals |}]) = dom h + <s
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_mutabilty_tt_sctype_abs_imm</span> :
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_mutability_tt_sctype_abs_imm</span> :
   <span class="k">forall</span> <span class="nv">Tthis</span> <span class="nv">T</span> : qualified_type,
-    sctype (vpa_mutabilty_tt_abs_imm Tthis T) = sctype T.</span><span class="alectryon-wsp">
+    sctype (vpa_mutability_tt_abs_imm Tthis T) = sctype T.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> Tthis [q c].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_tt_abs_imm.</span><span class="alectryon-wsp">    
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_abs_imm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (sqtype Tthis); <span class="nb">simpl</span>; <span class="kp">try</span> <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="nb">destruct</span> q; <span class="nb">simpl</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_mutabilty_tt_sctype_safe_ro</span> :
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_mutability_tt_sctype_safe_ro</span> :
   <span class="k">forall</span> <span class="nv">Tthis</span> <span class="nv">T</span> : qualified_type,
-    sctype (vpa_mutabilty_tt_safe_ro Tthis T) = sctype T.</span><span class="alectryon-wsp">
+    sctype (vpa_mutability_tt_safe_ro Tthis T) = sctype T.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> Tthis [q c].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutabilty_tt_safe_ro.</span><span class="alectryon-wsp">    
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_safe_ro.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (sqtype Tthis); <span class="nb">simpl</span>; <span class="kp">try</span> <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="nb">destruct</span> q; <span class="nb">simpl</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
