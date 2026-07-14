@@ -1,9 +1,9 @@
 step	seconds
-assembleforjavac	106
-jdk-checker	23
-PICOConstrictorTest	25
-PICOMutableDefaultTest	8
-annotation-counts	1
-rocq-make	213
-rocq-make-check	0
-rocq-alectryon-doc	189
+assembleforjavac	60
+jdk-checker	35
+PICOConstrictorTest	14
+PICOMutableDefaultTest	14
+annotation-counts	0
+rocq-make	151
+rocq-make-check	1
+rocq-alectryon-doc	218

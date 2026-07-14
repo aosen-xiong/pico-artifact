@@ -1,17 +1,17 @@
-+ ./gradlew PICOConstrictorTest
++ bash ./gradlew PICOConstrictorTest
 > Task :buildSrc:compileJava NO-SOURCE
 > Task :buildSrc:compileGroovy UP-TO-DATE
 > Task :buildSrc:processResources NO-SOURCE
 > Task :buildSrc:classes UP-TO-DATE
 > Task :buildSrc:jar UP-TO-DATE
 > Task :setLocalRepo SKIPPED
-> Task :checker-qual:processResources NO-SOURCE
-> Task :installGitHooks SKIPPED
-> Task :dataflow:processResources NO-SOURCE
 > Task :javacutil:processResources NO-SOURCE
-> Task :framework-test:processResources NO-SOURCE
+> Task :installGitHooks SKIPPED
 > Task :checker-util:processResources NO-SOURCE
+> Task :checker-qual:processResources NO-SOURCE
 > Task :framework:processStubifierResources NO-SOURCE
+> Task :dataflow:processResources NO-SOURCE
+> Task :framework-test:processResources NO-SOURCE
 > Task :checker:processResources UP-TO-DATE
 > Task :checker:generateGitProperties SKIPPED
 > Task :checker:processTestannotationsResources NO-SOURCE
@@ -24,25 +24,25 @@
 > Task :checker-qual:classes
 > Task :checker-qual:jar UP-TO-DATE
 > Task :checker-util:compileJava UP-TO-DATE
-> Task :checker-util:classes UP-TO-DATE
 > Task :checker:compileTestannotationsJava UP-TO-DATE
 > Task :checker:testannotationsClasses UP-TO-DATE
-> Task :javacutil:compileJava UP-TO-DATE
+> Task :checker-util:classes UP-TO-DATE
 > Task :checker-util:jar UP-TO-DATE
+> Task :javacutil:compileJava UP-TO-DATE
 > Task :javacutil:classes UP-TO-DATE
 > Task :javacutil:jar UP-TO-DATE
-> Task :framework-test:compileJava UP-TO-DATE
-> Task :framework-test:classes UP-TO-DATE
-> Task :framework-test:jar UP-TO-DATE
 > Task :dataflow:compileJava UP-TO-DATE
 > Task :dataflow:classes UP-TO-DATE
 > Task :dataflow:jar UP-TO-DATE
+> Task :framework-test:compileJava UP-TO-DATE
+> Task :framework-test:classes UP-TO-DATE
+> Task :framework-test:jar UP-TO-DATE
 > Task :framework:compileJava UP-TO-DATE
 > Task :checker:compileJava UP-TO-DATE
 > Task :checker:classes UP-TO-DATE
 > Task :checker:compileTestJava UP-TO-DATE
 > Task :checker:testClasses UP-TO-DATE
-> Task :framework:copyAndMinimizeAnnotatedJdkFiles
+> Task :framework:copyAndMinimizeAnnotatedJdkFiles UP-TO-DATE
 > Task :framework:processResources UP-TO-DATE
 > Task :framework:classes UP-TO-DATE
 > Task :framework:jar UP-TO-DATE
@@ -51,10 +51,10 @@
 
 > Task :checker:PICOConstrictorTest
 Testsuite: org.checkerframework.checker.test.junit.PICOConstrictorTest
-Tests run: 5, Failures: 0, Skipped: 0, Time elapsed: 5.134 sec
+Tests run: 5, Failures: 0, Skipped: 0, Time elapsed: 7.426 sec
 
 
-[Incubating] Problems report is available at: file:///workspace/checker-framework/build/reports/problems/problems-report.html
+[Incubating] Problems report is available at: file:///Users/aosenxiong/pico-artifact/checker-framework/build/reports/problems/problems-report.html
 
-BUILD SUCCESSFUL in 25s
-25 actionable tasks: 5 executed, 20 up-to-date
+BUILD SUCCESSFUL in 13s
+25 actionable tasks: 4 executed, 21 up-to-date

@@ -1,76 +1,54 @@
-+ ./gradlew assembleforjavac
-Downloading https://services.gradle.org/distributions/gradle-8.14.3-bin.zip
-.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%..............100%
-
-Welcome to Gradle 8.14.3!
-
-Here are the highlights of this release:
- - Java 24 support
- - GraalVM Native Image toolchain selection
- - Enhancements to test reporting
- - Build Authoring improvements
-
-For more details see https://docs.gradle.org/8.14.3/release-notes.html
-
++ bash ./gradlew assembleforjavac
 Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :buildSrc:compileJava NO-SOURCE
-> Task :buildSrc:compileGroovy UP-TO-DATE
+> Task :buildSrc:compileGroovy
 > Task :buildSrc:processResources NO-SOURCE
-> Task :buildSrc:classes UP-TO-DATE
-> Task :buildSrc:jar UP-TO-DATE
+> Task :buildSrc:classes
+> Task :buildSrc:jar
 > Task :setLocalRepo SKIPPED
 > Task :installGitHooks SKIPPED
-> Task :framework-test:processResources NO-SOURCE
+> Task :framework:processStubifierResources NO-SOURCE
 > Task :javacutil:processResources NO-SOURCE
-> Task :checker-qual:processResources NO-SOURCE
+> Task :framework-test:processResources NO-SOURCE
 > Task :dataflow:processResources NO-SOURCE
 > Task :checker-util:processResources NO-SOURCE
-> Task :framework:processStubifierResources NO-SOURCE
+> Task :checker-qual:processResources NO-SOURCE
 > Task :checker:processResources UP-TO-DATE
 > Task :checker:generateGitProperties SKIPPED
 > Task :checker:processTestannotationsResources NO-SOURCE
-> Task :checker-qual:compileJava9
 > Task :framework:compileStubifierJava
 > Task :framework:stubifierClasses
 > Task :framework:cloneAnnotatedJdk SKIPPED
+> Task :checker-qual:compileJava9
 > Task :checker-qual:compileJava
 > Task :checker-qual:classes
+> Task :checker-util:compileJava UP-TO-DATE
+> Task :checker-util:classes UP-TO-DATE
+> Task :checker-util:jar UP-TO-DATE
+> Task :checker-qual:jar UP-TO-DATE
+> Task :javacutil:compileJava UP-TO-DATE
+> Task :javacutil:classes UP-TO-DATE
+> Task :javacutil:jar UP-TO-DATE
+> Task :dataflow:compileJava UP-TO-DATE
+> Task :dataflow:classes UP-TO-DATE
+> Task :dataflow:jar UP-TO-DATE
 > Task :checker:compileTestannotationsJava
 > Task :checker:testannotationsClasses
-
-> Task :checker-qual:jar
-warning: Classpath is empty. Private-Package, -privatepackage, and Export-Package can only expand from the classpath when there is one
-
-> Task :checker-util:compileJava
-> Task :checker-util:classes
-> Task :checker-util:jar UP-TO-DATE
-> Task :javacutil:compileJava
-> Task :javacutil:classes
-> Task :javacutil:jar UP-TO-DATE
+> Task :framework:compileJava UP-TO-DATE
+> Task :checker:compileJava UP-TO-DATE
+> Task :checker:classes UP-TO-DATE
 > Task :framework-test:compileJava
 > Task :framework-test:classes
 > Task :framework-test:jar UP-TO-DATE
-> Task :dataflow:compileJava
-> Task :dataflow:classes
-> Task :dataflow:jar
-> Task :framework:compileJava
-> Task :checker:compileJava
-> Task :checker:classes
+> Task :checker:compileTestJava
 > Task :framework:copyAndMinimizeAnnotatedJdkFiles
 > Task :framework:processResources UP-TO-DATE
-> Task :framework:classes
+> Task :framework:classes UP-TO-DATE
 > Task :framework:jar UP-TO-DATE
-> Task :checker:compileTestJava
 > Task :checker:shadowJar
 > Task :checker:assembleForJavac
 
-[Incubating] Problems report is available at: file:///workspace/checker-framework/build/reports/problems/problems-report.html
+[Incubating] Problems report is available at: file:///Users/aosenxiong/pico-artifact/checker-framework/build/reports/problems/problems-report.html
 
-Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-
-You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-
-For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-
-BUILD SUCCESSFUL in 1m 45s
-24 actionable tasks: 16 executed, 8 up-to-date
+BUILD SUCCESSFUL in 59s
+24 actionable tasks: 11 executed, 13 up-to-date

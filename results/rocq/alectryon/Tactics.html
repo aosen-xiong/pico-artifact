@@ -76,16 +76,16 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
   (<span class="nb">cbn</span> <span class="k">in</span> *) ||
   (autounfold <span class="k">in</span> *)
 .</span></span></pre><div class="doc">
-Taken from Cpdt 
+Taken from Cpdt
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --></pre><div class="doc">
-Succeed iff <span class="inlinecode"><span class="id" title="var">x</span></span> is in the list <span class="inlinecode"><span class="id" title="var">ls</span></span>, represented with left-associated nested tuples. 
+Succeed iff <span class="inlinecode"><span class="id" title="var">x</span></span> is in the list <span class="inlinecode"><span class="id" title="var">ls</span></span>, represented with left-associated nested tuples.
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">inList</span> x ls :=
   <span class="k">match</span> ls <span class="k">with</span>
     | x =&gt; <span class="kp">idtac</span>
     | (_, x) =&gt; <span class="kp">idtac</span>
     | (<span class="nl">?LS</span>, _) =&gt; inList x LS
   <span class="k">end</span>.</span></span></pre><div class="doc">
-Taken from Cpdt 
+Taken from Cpdt
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">step_inversion</span> predicates :=
   <span class="k">let</span> <span class="nv">invert</span> <span class="nv">H</span> <span class="nv">F</span> :=
     inList F predicates;

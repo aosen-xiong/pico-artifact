@@ -1,23 +1,25 @@
 Artifact evaluation completed.
 
 Checker Framework / JDK:
-  assembleforjavac log: /workspace/results/checker/assembleforjavac.log
-  JDK checker log: /workspace/results/checker/compile.log
+  assembleforjavac log: /Users/aosenxiong/pico-artifact/results/checker/assembleforjavac.log
+  JDK checker log: /Users/aosenxiong/pico-artifact/results/checker/compile.log
   JDK checker exit status: 0
-  PICOConstrictorTest log: /workspace/results/checker/PICOConstrictorTest.log
-  PICOMutableDefaultTest log: /workspace/results/checker/PICOMutableDefaultTest.log
+  PICOConstrictorTest log: /Users/aosenxiong/pico-artifact/results/checker/PICOConstrictorTest.log
+  PICOMutableDefaultTest log: /Users/aosenxiong/pico-artifact/results/checker/PICOMutableDefaultTest.log
 
 Annotation counts:
-  LaTeX: /workspace/results/counts/java-util-annotation-counts.tex
-  CSV: /workspace/results/counts/java-util-annotation-counts.csv
-  Text: /workspace/results/counts/java-util-annotation-counts.txt
+  LaTeX: /Users/aosenxiong/pico-artifact/results/counts/java-util-annotation-counts.tex
+  CSV: /Users/aosenxiong/pico-artifact/results/counts/java-util-annotation-counts.csv
+  Text: /Users/aosenxiong/pico-artifact/results/counts/java-util-annotation-counts.txt
+  Constrictor CSV: /Users/aosenxiong/pico-artifact/results/counts/constrictor-annotation-counts.csv
+  Mutable-default CSV: /Users/aosenxiong/pico-artifact/results/counts/mutable-default-annotation-counts.csv
 
 Rocq:
-  make log: /workspace/results/rocq/make.log
-  make check log: /workspace/results/rocq/make-check.log
-  Alectryon HTML: /workspace/results/rocq/alectryon/index.html
-  Alectryon log: /workspace/results/rocq/alectryon-doc.log
+  make log: /Users/aosenxiong/pico-artifact/results/rocq/make.log
+  make check log: /Users/aosenxiong/pico-artifact/results/rocq/make-check.log
+  Alectryon HTML: /Users/aosenxiong/pico-artifact/results/rocq/alectryon/index.html
+  Alectryon log: /Users/aosenxiong/pico-artifact/results/rocq/alectryon-doc.log
 
 Timings:
-  TSV: /workspace/results/timings.tsv
-  Markdown: /workspace/results/timings.md
+  TSV: /Users/aosenxiong/pico-artifact/results/timings.tsv
+  Markdown: /Users/aosenxiong/pico-artifact/results/timings.md

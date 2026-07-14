@@ -71,6 +71,14 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
     | _, _ =&gt; Final
   <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">concrete_assignable_implies_assignable</span> : <span class="k">forall</span> <span class="nv">q1</span> <span class="nv">a1</span>,
+  vpa_assignability_concret_imm q1 a1 = Assignable -&gt;
+  vpa_assignability q1 a1 = Assignable.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> q1 a1 H.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> q1, a1; <span class="nb">simpl</span> <span class="k">in</span> *; <span class="kp">try</span> <span class="bp">discriminate</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 <span class="c">(* Check whether a type respect its bound *)</span>
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">vpa_mutability_bound</span> (<span class="nv">q1</span>: q)(<span class="nv">q2</span> : q_c) : q :=
   <span class="k">match</span> q1, q2 <span class="k">with</span>

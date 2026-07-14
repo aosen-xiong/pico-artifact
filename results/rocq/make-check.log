@@ -1,8 +1,3 @@
-+ opam exec -- make check
-[WARNING] Running as root is not recommended
-make -C "/workspace/pico-rocq/" -f CoqMakefile
-make[1]: Entering directory '/workspace/pico-rocq'
-make[2]: Nothing to be done for 'real-all'.
-make[1]: Leaving directory '/workspace/pico-rocq'
-python3 "/workspace/pico-rocq/scripts/check-no-axioms-admits.py" "/workspace/pico-rocq/"
++ make check
 No forbidden Axiom/admit usage found.
+All 15 manifest-listed public theorems are closed under the global context; the manifest matches every source Theorem declaration.

@@ -47,8 +47,8 @@ File: AbstractMap.java
     @PolyMutable                             :     9
     @Mutable                                 :     5
     @Immutable                               :     4
-    @SuppressWarnings:pico                   :     2
     @Assignable                              :     2
+    @SuppressWarnings:pico                   :     2
     @ReceiverDependentMutable                :     1
 
 File: AbstractQueue.java
@@ -69,16 +69,16 @@ File: AbstractSet.java
   Total annotations: 8
   Breakdown:
     @Readonly                                :     6
-    @ReceiverDependentMutable                :     1
     @Mutable                                 :     1
+    @ReceiverDependentMutable                :     1
 
 File: ArrayDeque.java
   Total annotations: 93
   Breakdown:
     @Readonly                                :    54
     @Mutable                                 :    31
-    @ReceiverDependentMutable                :     3
     @PolyMutable                             :     3
+    @ReceiverDependentMutable                :     3
     @SuppressWarnings:pico                   :     2
 
 File: ArrayList.java
@@ -87,8 +87,8 @@ File: ArrayList.java
     @Readonly                                :   104
     @Mutable                                 :    49
     @PolyMutable                             :    15
-    @ReceiverDependentMutable                :     7
     @SuppressWarnings:pico                   :     7
+    @ReceiverDependentMutable                :     7
 
 File: ArrayPrefixHelpers.java
   Total annotations: 0
@@ -199,8 +199,8 @@ File: HashSet.java
   Total annotations: 36
   Breakdown:
     @Readonly                                :    19
-    @Mutable                                 :     6
     @ReceiverDependentMutable                :     6
+    @Mutable                                 :     6
     @Immutable                               :     3
     @SuppressWarnings:pico                   :     2
 
@@ -212,8 +212,8 @@ File: Hashtable.java
     @PolyMutable                             :    10
     @ReceiverDependentMutable                :    10
     @Assignable                              :     9
-    @Immutable                               :     4
     @SuppressWarnings:pico                   :     4
+    @Immutable                               :     4
 
 File: IdentityHashMap.java
   Total annotations: 193
@@ -288,8 +288,8 @@ File: LinkedList.java
     @Mutable                                 :    55
     @Readonly                                :    42
     @ReceiverDependentMutable                :     8
-    @PolyMutable                             :     6
     @SuppressWarnings:pico                   :     6
+    @PolyMutable                             :     6
     @Assignable                              :     3
 
 File: List.java
@@ -381,8 +381,8 @@ File: SortedSet.java
   Breakdown:
     @PolyMutable                             :     6
     @Readonly                                :     3
-    @ReceiverDependentMutable                :     1
     @Mutable                                 :     1
+    @ReceiverDependentMutable                :     1
 
 File: Spliterator.java
   Total annotations: 31
@@ -421,8 +421,8 @@ File: TreeSet.java
     @Readonly                                :    22
     @PolyMutable                             :    18
     @Mutable                                 :     9
-    @ReceiverDependentMutable                :     4
     @SuppressWarnings:pico                   :     4
+    @ReceiverDependentMutable                :     4
     @Immutable                               :     1
 
 File: Vector.java

@@ -119,7 +119,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">update_r_env_value</span> (<span class="nv">rΓ</span> : r_env) (<span class="nv">l</span> : Loc) (<span class="nv">v</span> : value) : r_env :=
   <span class="k">match</span> rΓ <span class="k">with</span>
-  {| vars := vars; |} =&gt; 
+  {| vars := vars; |} =&gt;
       {| vars := update l v vars;|}
   <span class="k">end</span>.</span></span></pre><div class="doc">
 <a id="lab4"></a><h2 class="section">Updates lemmas</h2>

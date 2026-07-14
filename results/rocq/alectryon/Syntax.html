@@ -9,7 +9,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">var</span> : <span class="kt">Type</span> := nat.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">method_name</span> : <span class="kt">Type</span> := nat.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">class_name</span> : <span class="kt">Type</span> := nat.</span></span></pre><div class="doc">
-All Mutability Qualifer 
+All Mutability Qualifer
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q</span> : <span class="kt">Type</span> :=
   <span class="c">(* q_c *)</span>
   | Mut
@@ -20,7 +20,7 @@ All Mutability Qualifer
   <span class="c">(* q_h *)</span>
   | Lost
   | Bot.</span></span></pre><div class="doc">
-User-facing Mutability Qualifier  
+User-facing Mutability Qualifier
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q_f</span> : <span class="kt">Type</span> :=
   <span class="c">(* q_c *)</span>
   | Mut_f
@@ -28,7 +28,7 @@ User-facing Mutability Qualifier
   | RDM_f
   <span class="c">(* q_f *)</span>
   | RO_f.</span></span></pre><div class="doc">
-Class Declaration Mutability Qualifier 
+Class Declaration Mutability Qualifier
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q_c</span> : <span class="kt">Type</span> :=
   <span class="c">(* q_c *)</span>
   | Mut_c
@@ -97,8 +97,15 @@ Class Declaration Mutability Qualifier
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">method_type</span> : <span class="kt">Type</span> :=
   | AbstractImm
+  | ConcreteState
   | SafeRO
   | ConcreteImm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">safe_readonly_method_type</span> (<span class="nv">mt</span> : method_type) : <span class="kt">Prop</span> :=
+  mt &lt;&gt; AbstractImm /\ mt &lt;&gt; ConcreteState.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">concrete_assignability_method_type</span> (<span class="nv">mt</span> : method_type) : <span class="kt">Prop</span> :=
+  mt = ConcreteState \/ mt = ConcreteImm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">method_sig</span> := {
   mtype: method_type;
@@ -139,34 +146,34 @@ Class Declaration Mutability Qualifier
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">class_table</span> := list class_def.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 <span class="c">(* ------------------RUNTIME MODEL------------------*)</span></span></pre><div class="doc">
-Runtime Mutability Qualifier 
+Runtime Mutability Qualifier
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q_r</span> : <span class="kt">Type</span> :=
   | Mut_r
   | Imm_r
   .</span></span></pre><div class="doc">
-Runtime Type 
+Runtime Type
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">runtime_type</span> := mkruntime_type {
   rqtype: q_r; <span class="c">(* Runtime mutability *)</span>
   rctype: class_name; <span class="c">(* Class name *)</span>
 }.</span></span></pre><div class="doc">
-Memory Address 
+Memory Address
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">Loc</span> : <span class="kt">Type</span> := nat.</span></span></pre><div class="doc">
-Runtime Value 
+Runtime Value
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">value</span> : <span class="kt">Type</span> :=
   | Null_a : value
   | Iot: Loc -&gt; value.</span></span></pre><div class="doc">
-Variable Mapping 
+Variable Mapping
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">var_mapping</span>   := list value.</span></span></pre><div class="doc">
-Runtime Environment 
+Runtime Environment
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">r_env</span> := mkr_env {
   vars: var_mapping; <span class="c">(* Variable mapping *)</span>
 }.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">set_vars</span> (<span class="nv">_</span> : r_env) (<span class="nv">vars&#39;</span> : var_mapping) : r_env :=
   mkr_env vars&#39;.</span></span></pre><div class="doc">
-Field Mapping 
+Field Mapping
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">fields_mapping</span> := list value.</span><span class="alectryon-wsp"> </span></span></pre><div class="doc">
-Runtime Object 
+Runtime Object
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">Obj</span> := mkObj {
   rt_type: runtime_type; <span class="c">(* Runtime type *)</span>
   fields_map: fields_mapping; <span class="c">(* Field mapping *)</span>
@@ -174,5 +181,5 @@ Runtime Object
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">set_fields_map</span> (<span class="nv">o</span> : Obj) (<span class="nv">fields&#39;</span> : fields_mapping) : Obj :=
   mkObj (rt_type o) fields&#39;.</span></span></pre><div class="doc">
-Heap 
+Heap
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">heap</span>          := list Obj.</span></span></pre></article></body></html>

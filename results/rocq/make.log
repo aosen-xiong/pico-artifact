@@ -1,8 +1,4 @@
-+ opam exec -- make
-[WARNING] Running as root is not recommended
-cd "/workspace/pico-rocq/" && coq_makefile -f _RocqProject -o CoqMakefile
-make -C "/workspace/pico-rocq/" -f CoqMakefile
-make[1]: Entering directory '/workspace/pico-rocq'
++ make
 ROCQ DEP VFILES
 ROCQ compile LibTactics.v
 ROCQ compile Tactics.v
@@ -15,12 +11,24 @@ ROCQ compile Typing.v
 ROCQ compile Reachability.v
 ROCQ compile Bigstep.v
 ROCQ compile Properties.v
+ROCQ compile ConcreteState.v
+ROCQ compile ObjectCreationExamples.v
 ROCQ compile Preservation.v
+ROCQ compile ExecutionConfinement.v
 ROCQ compile DeepImmutability.v
+ROCQ compile ConcreteStateImmutability.v
 ROCQ compile ReadonlyHelper.v
-ROCQ compile ReadonlyConfinement.v
+ROCQ compile MutableCapability.v
+ROCQ compile AuthorityCapability.v
+ROCQ compile ProtectionHistory.v
+ROCQ compile ComponentColoring.v
+ROCQ compile ForwardCapabilityHistory.v
+ROCQ compile AuthorityHistory.v
+ROCQ compile WatchedFrames.v
+ROCQ compile LiveCapabilityStack.v
+ROCQ compile PotentialCapability.v
+ROCQ compile ProtectedFieldPreservation.v
 ROCQ compile ReadonlyNoMutation.v
 ROCQ compile ReadonlySafety.v
 ROCQ compile ConcreteImmutability.v
 ROCQ compile WFNOMutationEXP.v
-make[1]: Leaving directory '/workspace/pico-rocq'
