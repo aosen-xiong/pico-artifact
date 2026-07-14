@@ -37,6 +37,17 @@ The main implementation files are organized as follows:
 - `ObjectIdentityMethodEnforcer`: checks that object identity methods use only abstract-state information.
 - `messages.properties`: diagnostic message text for PICO checker errors.
 
+### Scope of the implementation track
+
+The Java checker implements PICO's mutability and assignability qualifiers,
+class mutability polymorphism, initialization integration, and the AS-style
+viewpoint adaptation used by the case studies. The AS, CS, RS, and TS method
+scopes are distinguished in the core formal model and mechanized in the Rocq
+track; the Java implementation does not expose those four scopes as method
+annotations. Consequently, this track validates the implemented qualifier
+system and case studies, while the Rocq track validates the four-mode
+metatheory.
+
 ## 1. Smoke Test
 
 Inside the container, run:
@@ -88,6 +99,11 @@ The command writes the checker output to:
 ```text
 /workspace/checker-framework/compile.log
 ```
+
+Expected result: the command exits with status `0` and reports no PICO type
+errors. The current run emits only javac's two informational lines about
+unchecked operations in `Collections.java`; `compile.log` must contain no
+`error:` diagnostics.
 
 The file list for this case study is:
 
@@ -202,9 +218,21 @@ count_java_annotations.pl -l \
   checker-framework/checker/tests/pico-constrictor
 ```
 
+Expected total:
+
+| Files | LOC | `@Assignable` | `@Immutable` | `@Readonly` | `@ReceiverDependentMutable` | `@Mutable` | `@PolyMutable` | `@SuppressWarnings:pico` |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 51 | 1,184 | 12 | 16 | 85 | 0 | 1 | 0 | 4 |
+
+The automated evaluation writes this table to
+`/workspace/results/counts/constrictor-annotation-counts.csv` and verifies its
+total row.
+
 ### 4.3 PICO Mutable-Default Benchmark
 
-Run from `/workspace`:
+`PaperFigureExamples.java` is an illustrative paper-example test rather than a
+member of the evaluated mutable-default benchmark. Run from `/workspace` while
+excluding it:
 
 ```bash
 cd /workspace
@@ -212,10 +240,19 @@ count_java_annotations.pl -l \
   -a @Assignable -a @Immutable -a @Readonly \
   -a @ReceiverDependentMutable -a @Mutable -a @PolyMutable \
   -s pico \
-  checker-framework/checker/tests/pico-mutable-default
+  $(find checker-framework/checker/tests/pico-mutable-default -name '*.java' \
+      ! -name 'PaperFigureExamples.java' | sort)
 ```
 
-Note: the paper appendix included a dummy `PICOCasting.java` file in this benchmark. The artifact removes that file, so the mutable-default LOC total is 8 lines lower than the appendix table. The annotation counts are unchanged.
+Expected total:
+
+| Files | LOC | `@Assignable` | `@Immutable` | `@Readonly` | `@ReceiverDependentMutable` | `@Mutable` | `@PolyMutable` | `@SuppressWarnings:pico` |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 36 | 1,738 | 29 | 224 | 84 | 137 | 150 | 41 | 0 |
+
+The automated evaluation writes this table to
+`/workspace/results/counts/mutable-default-annotation-counts.csv` and verifies
+its total row.
 
 ## 5. Troubleshooting
 

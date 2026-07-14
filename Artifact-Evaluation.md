@@ -9,6 +9,33 @@ The artifact has two independent evaluation tracks:
 - **Rocq formalization**: `pico-rocq/` contains the mechanized formal model and proofs.
 - **PICO implementation in a modified Checker Framework**: `checker-framework/` contains the PICO checker implementation and benchmark tests. This track also uses `jdk/`, which contains the annotated OpenJDK sources for the Java Collections Framework case study.
 
+The Rocq model covers the AS, CS, RS, and TS method scopes. The Checker
+Framework implementation covers the PICO qualifier system and AS-style
+viewpoint adaptation used in the case studies; the four method-scope
+annotations are not part of the Java implementation.
+
+## Claims Supported by the Artifact
+
+This table is the reviewer checklist connecting the paper's significant
+artifact-supported claims to evaluation steps. The two track-specific guides
+give the detailed commands and theorem premises.
+
+| Paper claim | Artifact evidence | Evaluation step |
+|---|---|---|
+| The PICO Checker implements the qualifier hierarchy, viewpoint adaptation, initialization integration, and class mutability polymorphism described in the implementation section. | Checker sources and enabled regression suites. | Run `PICOConstrictorTest` and `PICOMutableDefaultTest` as described in [Artifact-Evaluation-Checker.md](Artifact-Evaluation-Checker.md). |
+| PICO type-checks the evaluated 52-file JCF corpus. | Annotated OpenJDK sources and `TypecheckedList.txt`. | Run the JDK checker command; it must exit `0` without PICO errors. |
+| The reported JCF annotation totals are reproducible. | `count_java_annotations.pl` and the evaluated file manifest. | Generate the JCF table and compare its total with `expected-results/benchmark-totals.csv`. |
+| PICO type-checks the Constrictor and Checker Framework case studies with the reported annotation totals. | Benchmark sources, enabled Gradle suites, and counting script. | Run both suites and compare both generated totals with `expected-results/benchmark-totals.csv`. |
+| The core calculus satisfies preservation and mutation safety (Theorem 1). | `Preservation.v` and `WFNOMutationEXP.v`. | Build the Rocq development and inspect the corresponding entries in [Artifact-Evaluation-Rocq.md](Artifact-Evaluation-Rocq.md). |
+| The core calculus satisfies shallow abstract immutability (Theorem 2). | `DeepImmutability.v`. | Build Rocq and inspect `shallow_immutability_pico`. |
+| The core calculus satisfies the AS and CS guarantees (Theorem 3). | `DeepImmutability.v`, `ConcreteState.v`, and `ConcreteStateImmutability.v`. | Build Rocq and inspect `deep_immutability_pico` and `concrete_state_preservation`. |
+| The core calculus satisfies the RS and TS guarantees (Theorem 4). | `ReadonlySafety.v` and `ConcreteImmutability.v`. | Build Rocq and inspect `readonly_method_call_preserves_arguments` and `ConcreteImmutability`. |
+| Submitted Rocq sources contain no literal `Axiom`, `Admitted`, or `admit` commands. | Proof-hygiene script. | Run `opam exec -- make check`; compare the message with `expected-results/proof-hygiene.txt`. |
+
+The artifact does not claim that the Java checker implements the four
+method-scope annotations; that claim is confined to the Rocq model. See
+[REUSABILITY.md](REUSABILITY.md) for extension guidance and limitations.
+
 ## Getting the Sources
 
 Reviewers should start from the submitted artifact archive. The archive includes
@@ -26,6 +53,9 @@ test -f pico-rocq/_RocqProject
 ## Common Docker Setup
 
 The authors evaluated the artifact on macOS with Docker Desktop. The artifact should also run on a Linux host with Docker.
+
+The supplied image uses Ubuntu 24.04 and contains all build dependencies. Its
+evaluation entry point does not require network access.
 
 Recommended resources:
 
@@ -113,14 +143,6 @@ docker build -t pico-artifact:latest .
 
 The checked-out artifact is about 1 GB. The 15-20 GB recommendation leaves room for Docker image layers, Gradle build outputs, OPAM/Rocq dependencies, and generated evaluation results; it is not an observed minimum.
 
-If an Ubuntu package mirror rejects the build because of temporary apt metadata or signature issues, retry with:
-
-```bash
-docker build --build-arg APT_INSECURE=true -t pico-artifact:latest .
-```
-
-Use the insecure apt build argument only as a fallback for mirror problems.
-
 ## Full Automated Evaluation
 
 To run both tracks and keep the generated logs/tables on the host, run from the repository root:
@@ -170,6 +192,9 @@ The rendered Rocq proof documentation is available at:
 
 Open this file from the host system in a browser after the Docker run completes.
 
+For a compact baseline independent of a particular run, compare the generated
+summary and count files with `expected-results/`.
+
 ## Manual Evaluation
 
 For manual inspection, start a shell:
@@ -191,3 +216,5 @@ Then follow either:
 
 - [Rocq artifact evaluation](Artifact-Evaluation-Rocq.md)
 - [PICO implementation artifact evaluation](Artifact-Evaluation-Checker.md)
+
+For reuse beyond reproducing the paper, see [REUSABILITY.md](REUSABILITY.md).

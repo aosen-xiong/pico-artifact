@@ -1,0 +1,13 @@
+Expected full-evaluation outcome:
+
+- Checker Framework assembleforjavac: PASS
+- JCF PICO checker exit status: 0, with no PICO errors
+- PICOConstrictorTest: PASS
+- PICOMutableDefaultTest: PASS
+- All three benchmark total assertions: PASS
+- Rocq clean build: PASS
+- Rocq forbidden-command scan: PASS
+- Alectryon rendering: PASS
+
+The generated Alectryon index must include ConcreteState.html and
+ConcreteStateImmutability.html.

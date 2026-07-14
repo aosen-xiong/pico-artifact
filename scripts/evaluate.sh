@@ -11,6 +11,9 @@ TIMINGS_FILE="${RESULTS_DIR}/timings.tsv"
 TIMINGS_MD="${RESULTS_DIR}/timings.md"
 JDK_UTIL_DIR="${WORKSPACE}/jdk/src/java.base/share/classes/java/util"
 TYPECHECKED_LIST="${JDK_UTIL_DIR}/TypecheckedList.txt"
+CONSTRICTOR_DIR="${WORKSPACE}/checker-framework/checker/tests/pico-constrictor"
+MUTABLE_DEFAULT_DIR="${WORKSPACE}/checker-framework/checker/tests/pico-mutable-default"
+EXPECTED_TOTALS_FILE="${WORKSPACE}/expected-results/benchmark-totals.csv"
 
 mkdir -p "${CHECKER_RESULTS_DIR}" "${ROCQ_RESULTS_DIR}" "${COUNTS_RESULTS_DIR}"
 printf 'step\tseconds\n' > "${TIMINGS_FILE}"
@@ -43,6 +46,30 @@ run_logged() {
   record_timing "${step}" "${elapsed}"
   echo "Completed ${step} in $(format_seconds "${elapsed}")"
   return "${status}"
+}
+
+assert_csv_total() {
+  local csv_file="$1"
+  local expected="$2"
+  local actual
+  actual="$(grep '^Total,' "${csv_file}")"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "Unexpected total in ${csv_file}" >&2
+    echo "  expected: ${expected}" >&2
+    echo "  actual:   ${actual}" >&2
+    return 1
+  fi
+}
+
+expected_csv_total() {
+  local benchmark="$1"
+  awk -F, -v benchmark="${benchmark}" '
+    $1 == benchmark {
+      printf "Total";
+      for (i = 3; i <= NF; i++) printf ",%s", $i;
+      printf "\n";
+    }
+  ' "${EXPECTED_TOTALS_FILE}"
 }
 
 echo "=== Smoke Test ==="
@@ -118,6 +145,30 @@ count_java_annotations.pl \
   -s pico \
   -f TypecheckedList.txt \
   > "${COUNTS_RESULTS_DIR}/java-util-annotation-counts.txt"
+
+count_java_annotations.pl -t \
+  -a @Assignable -a @Immutable -a @Readonly \
+  -a @ReceiverDependentMutable -a @Mutable -a @PolyMutable \
+  -s pico \
+  "${CONSTRICTOR_DIR}" \
+  > "${COUNTS_RESULTS_DIR}/constrictor-annotation-counts.csv"
+
+mapfile -d '' -t MUTABLE_DEFAULT_FILES < <(
+  find "${MUTABLE_DEFAULT_DIR}" -name '*.java' ! -name 'PaperFigureExamples.java' -print0 | sort -z
+)
+count_java_annotations.pl -t \
+  -a @Assignable -a @Immutable -a @Readonly \
+  -a @ReceiverDependentMutable -a @Mutable -a @PolyMutable \
+  -s pico \
+  "${MUTABLE_DEFAULT_FILES[@]}" \
+  > "${COUNTS_RESULTS_DIR}/mutable-default-annotation-counts.csv"
+
+assert_csv_total "${COUNTS_RESULTS_DIR}/java-util-annotation-counts.csv" \
+  "$(expected_csv_total JCF)"
+assert_csv_total "${COUNTS_RESULTS_DIR}/constrictor-annotation-counts.csv" \
+  "$(expected_csv_total Constrictor)"
+assert_csv_total "${COUNTS_RESULTS_DIR}/mutable-default-annotation-counts.csv" \
+  "$(expected_csv_total 'Checker Framework mutable-default')"
 COUNTS_END="$(date +%s)"
 COUNTS_SECONDS=$((COUNTS_END - COUNTS_START))
 record_timing "annotation-counts" "${COUNTS_SECONDS}"
@@ -169,6 +220,8 @@ Annotation counts:
   LaTeX: ${COUNTS_RESULTS_DIR}/java-util-annotation-counts.tex
   CSV: ${COUNTS_RESULTS_DIR}/java-util-annotation-counts.csv
   Text: ${COUNTS_RESULTS_DIR}/java-util-annotation-counts.txt
+  Constrictor CSV: ${COUNTS_RESULTS_DIR}/constrictor-annotation-counts.csv
+  Mutable-default CSV: ${COUNTS_RESULTS_DIR}/mutable-default-annotation-counts.csv
 
 Rocq:
   make log: ${ROCQ_RESULTS_DIR}/make.log

@@ -7,47 +7,27 @@ ARG COQ_CORE_VERSION=9.1.1
 ARG ROCQ_CORE_VERSION=9.1.1
 ARG ROCQ_STDLIB_VERSION=9.0.0
 ARG ALECTRYON_VERSION=2.0.0
-ARG APT_INSECURE=false
 
 SHELL ["/bin/bash", "-lc"]
 
 RUN rm -rf /var/lib/apt/lists/* \
-  && if [[ "${APT_INSECURE}" == "true" ]]; then \
-       apt-get -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update; \
-       apt-get install -y --allow-unauthenticated --no-install-recommends \
-         ca-certificates \
-         curl \
-         unzip \
-         git \
-         build-essential \
-         pkg-config \
-         m4 \
-         libgmp-dev \
-         bubblewrap \
-         opam \
-         perl \
-         openjdk-17-jdk \
-         python3 \
-         python3-pip \
-         rsync; \
-     else \
-       apt-get update && apt-get install -y --no-install-recommends \
-         ca-certificates \
-         curl \
-         unzip \
-         git \
-         build-essential \
-         pkg-config \
-         m4 \
-         libgmp-dev \
-         bubblewrap \
-         opam \
-         perl \
-         openjdk-17-jdk \
-         python3 \
-         python3-pip \
-         rsync; \
-     fi \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends \
+       ca-certificates \
+       curl \
+       unzip \
+       git \
+       build-essential \
+       pkg-config \
+       m4 \
+       libgmp-dev \
+       bubblewrap \
+       opam \
+       perl \
+       openjdk-17-jdk \
+       python3 \
+       python3-pip \
+       rsync \
   && rm -rf /var/lib/apt/lists/*
 
 ENV CHECKERFRAMEWORK_HOME=/opt/checker-framework
@@ -71,5 +51,10 @@ RUN test -d /workspace/checker-framework \
   && test -f /workspace/pico-rocq/Makefile \
   && test -f /workspace/pico-rocq/_RocqProject
 RUN chmod +x /workspace/scripts/*.sh /workspace/checker-framework/gradlew /workspace/checker-framework/checker/bin/javac || true
+
+# Resolve all build dependencies and validate both tracks while constructing
+# the image. Reviewer-time evaluation can therefore run without network access.
+RUN cd /workspace/checker-framework && bash ./gradlew assembleforjavac
+RUN cd /workspace/pico-rocq && opam exec -- make check
 
 ENTRYPOINT ["/workspace/scripts/run-artifact.sh"]

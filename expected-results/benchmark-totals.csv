@@ -1,0 +1,4 @@
+Benchmark,Files,LOC,@Assignable,@Immutable,@Readonly,@ReceiverDependentMutable,@Mutable,@PolyMutable,@SuppressWarnings:pico
+JCF,52,22992,66,349,1919,241,736,650,94
+Constrictor,51,1184,12,16,85,0,1,0,4
+Checker Framework mutable-default,36,1738,29,224,84,137,150,41,0

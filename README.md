@@ -15,7 +15,16 @@ The artifact has two evaluation tracks:
 - [Rocq formalization](Artifact-Evaluation-Rocq.md): mechanized model and proofs in `pico-rocq/`.
 - [PICO implementation in a modified Checker Framework](Artifact-Evaluation-Checker.md): PICO checker, tests, benchmarks, and annotated JDK case study.
 
+The Rocq track mechanizes all four protection modes (AS, CS, RS, and TS). The
+Checker Framework track evaluates the implemented PICO qualifier system and its
+AS-style viewpoint adaptation; it does not implement the four method-scope
+annotations from the core formal model.
+
 For a short guide to PICO type-check errors, see [PICO-Error-Message-Tutorial.md](PICO-Error-Message-Tutorial.md). It includes focused files under `tutorial/pico-errors/` that reviewers can compile directly.
+
+For extending the checker or formalization, see [REUSABILITY.md](REUSABILITY.md).
+Licensing information for the artifact and its bundled upstream components is
+summarized in [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).
 
 Quick start:
 

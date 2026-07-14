@@ -2,7 +2,9 @@
 .gitmodules
 .gitignore
 results/
+PICOPaper/
 pico-artifact-anonymous.tar.gz
+pico-artifact.tar.gz
 pico-artifact-image-*.tar
 **/.DS_Store
 **/*.log
@@ -22,3 +24,4 @@ pico-rocq/.*.aux
 pico-rocq/_build/
 pico-rocq/alectryon/
 pico-rocq/doc/
+pico-rocq/.local/

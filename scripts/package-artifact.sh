@@ -4,7 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPO_PARENT="$(dirname "${REPO_ROOT}")"
 REPO_NAME="$(basename "${REPO_ROOT}")"
-OUTPUT="${1:-${REPO_PARENT}/${REPO_NAME}-anonymous.tar.gz}"
+OUTPUT="${1:-${REPO_PARENT}/${REPO_NAME}.tar.gz}"
 
 if [[ ! -f "${REPO_ROOT}/pico-rocq/Makefile" || ! -f "${REPO_ROOT}/pico-rocq/_RocqProject" ]]; then
   echo "error: pico-rocq sources are missing" >&2
@@ -34,6 +34,8 @@ EXCLUDES=(
   --exclude "${REPO_NAME}/**/.vscode/*"
   --exclude "${REPO_NAME}/results"
   --exclude "${REPO_NAME}/results/*"
+  --exclude "${REPO_NAME}/PICOPaper"
+  --exclude "${REPO_NAME}/PICOPaper/*"
   --exclude "${REPO_NAME}/pico-artifact-image-*"
   --exclude "${REPO_NAME}/checker-framework/.gradle"
   --exclude "${REPO_NAME}/checker-framework/.gradle/*"
@@ -58,6 +60,8 @@ EXCLUDES=(
   --exclude "${REPO_NAME}/pico-rocq/alectryon/*"
   --exclude "${REPO_NAME}/pico-rocq/doc"
   --exclude "${REPO_NAME}/pico-rocq/doc/*"
+  --exclude "${REPO_NAME}/pico-rocq/.local"
+  --exclude "${REPO_NAME}/pico-rocq/.local/*"
 )
 
 case "${OUTPUT_ABS}" in
@@ -69,7 +73,7 @@ esac
 
 tar -czf "${OUTPUT_ABS}" "${EXCLUDES[@]}" -C "${REPO_PARENT}" "${REPO_NAME}"
 
-echo "Created anonymous artifact archive:"
+echo "Created artifact archive:"
 echo "  ${OUTPUT_ABS}"
 echo
 echo "Verify that no .git directories were included:"
