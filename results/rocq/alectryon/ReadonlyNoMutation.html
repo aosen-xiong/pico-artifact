@@ -10,18 +10,16 @@ RS preserves every Final/RDA field of every object in the graph reachable
     from the initial call roots.  The structural history theorem supplies the
     call, nested-call, and sequence reasoning; only the paper-facing projection
     remains here.
-</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">deep_readonly_preservation</span> :
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">readonly_state_statement_preservation</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">l</span> <span class="nv">C</span> <span class="nv">anyrq</span> <span class="nv">vals</span> <span class="nv">vals&#39;</span> <span class="nv">f</span>
     (<span class="nv">Hconfined</span> : env_respects_protected_set
-      (reachable_locations_from_initial_env CT h rΓ) sΓ rΓ)
+      (reachable_locations_from_initial_env h rΓ) sΓ rΓ)
     (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
     (<span class="nv">Htyping</span> : stmt_typing CT sΓ mt stmt sΓ&#39;)
-    (<span class="nv">Hmtype</span> : safe_readonly_method_type mt)
-    (<span class="nv">Heval</span> : eval_stmt OK
-      (reachable_locations_from_initial_env CT h rΓ) CT rΓ h stmt
-      OK (reachable_locations_from_initial_env CT h rΓ) rΓ&#39; h&#39;)
+    (<span class="nv">Hscope</span> : readonly_state_method_scope mt)
+    (<span class="nv">Heval</span> : eval_stmt CT rΓ h stmt OK rΓ&#39; h&#39;)
     (<span class="nv">Hlocalset</span> : Ensembles.In Loc
-      (reachable_locations_from_initial_env CT h rΓ) l)
+      (reachable_locations_from_initial_env h rΓ) l)
     (<span class="nv">Hobj</span> : runtime_getObj h l =
       Some (mkObj (mkruntime_type anyrq C) vals))
     (<span class="nv">Hobj&#39;</span> : runtime_getObj h&#39; l =
@@ -35,7 +33,7 @@ RS preserves every Final/RDA field of every object in the graph reachable
     Hwf Hconfined.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> successful_stmt_preserves_protected_field <span class="k">with</span>
     (authority := Imm_r) (stack := [])
-    (Z := reachable_locations_from_initial_env CT h rΓ)
+    (Z := reachable_locations_from_initial_env h rΓ)
     (cutoff := dom h); <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hassignability <span class="k">as</span> [Hfinal | Hrda].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hfinal.</span><span class="alectryon-wsp">

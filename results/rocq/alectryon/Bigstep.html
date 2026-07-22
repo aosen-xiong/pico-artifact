@@ -94,14 +94,14 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">qualifier_typable_context</span> (<span class="nv">qr</span>: q_r) (<span class="nv">qs</span>: q) (<span class="nv">qcontext</span>: q_r): <span class="kt">Prop</span> :=
   <span class="k">match</span> qr <span class="k">with</span>
   | Imm_r =&gt;
-    <span class="k">match</span> vpa_mutability_rs qcontext qs <span class="k">with</span>
+    <span class="k">match</span> vpa_mutability_runtime qcontext qs <span class="k">with</span>
     | Imm =&gt; <span class="kt">True</span>
     | RO =&gt; <span class="kt">True</span>
     | Lost =&gt; <span class="kt">True</span>
     | _ =&gt; <span class="kt">False</span>
     <span class="k">end</span>
   | Mut_r =&gt;
-    <span class="k">match</span> vpa_mutability_rs qcontext qs <span class="k">with</span>
+    <span class="k">match</span> vpa_mutability_runtime qcontext qs <span class="k">with</span>
     | Mut =&gt; <span class="kt">True</span>
     | RO =&gt; <span class="kt">True</span>
     | Lost =&gt; <span class="kt">True</span>
@@ -172,21 +172,14 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
     ι &lt; (List.length h) -&gt;
     wf_obj CT h ι.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">wf_r_typable</span> (<span class="nv">CT</span>: class_table) (<span class="nv">rΓ</span>: r_env) (<span class="nv">h</span>: heap) (<span class="nv">ι</span>: Loc) (<span class="nv">sqt</span>: qualified_type) (<span class="nv">qcontext</span>: q_r) : <span class="kt">Prop</span> :=
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">wf_r_typable</span> (<span class="nv">CT</span>: class_table) (<span class="nv">h</span>: heap) (<span class="nv">ι</span>: Loc)
+  (<span class="nv">sqt</span>: qualified_type) (<span class="nv">qcontext</span>: q_r) : <span class="kt">Prop</span> :=
   <span class="k">match</span> r_type h ι <span class="k">with</span>
   | Some rqt =&gt;
       base_subtype CT (rctype rqt) (sctype sqt) /\
       qualifier_typable_context (rqtype rqt) (sqtype sqt) qcontext
   | _ =&gt; <span class="kt">False</span>
-  <span class="k">end</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">wf_r_typable_env_independent_simple</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ1</span> <span class="nv">rΓ2</span> <span class="nv">h</span> <span class="nv">loc</span> <span class="nv">sqt</span> <span class="nv">qcontext</span>
-  (<span class="nv">Hwf</span> : wf_r_typable CT rΓ1 h loc sqt qcontext),
-  wf_r_typable CT rΓ2 h loc sqt qcontext.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rΓ1 rΓ2 h loc sqt qcontext Hwf.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hwf.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><div class="doc">
+  <span class="k">end</span>.</span></span></pre><div class="doc">
 A runtime configuration is well formed when its class table, heap, and
     environments are well formed and the static and runtime environments
     correspond pointwise.
@@ -209,7 +202,7 @@ A runtime configuration is well formed when its class table, heap, and
     <span class="c">(* Static lookup at index [i]. *)</span>
     nth_error sΓ i = Some sqt -&gt;
     <span class="k">match</span> runtime_getVal rΓ i <span class="k">with</span>
-    | Some (Iot loc) =&gt; wf_r_typable CT rΓ h loc sqt qcontext
+    | Some (Iot loc) =&gt; wf_r_typable CT h loc sqt qcontext
     | Some Null_a =&gt; <span class="kt">True</span>
     | None =&gt; <span class="kt">False</span>
     <span class="k">end</span>.</span><span class="alectryon-wsp">
@@ -230,7 +223,7 @@ A runtime configuration is well formed when its class table, heap, and
   <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">reachable_locations_from_initial_env</span>
-  (<span class="nv">CT</span> : class_table) (<span class="nv">h</span> : heap) (<span class="nv">rΓ</span> : r_env) : Ensembles.Ensemble Loc :=
+  (<span class="nv">h</span> : heap) (<span class="nv">rΓ</span> : r_env) : Ensembles.Ensemble Loc :=
   <span class="k">fun</span> <span class="nv">l_target</span> =&gt;
     <span class="k">exists</span> <span class="nv">x</span> <span class="nv">l_root</span> ,
       runtime_getVal rΓ x = Some (Iot l_root) /\
@@ -253,11 +246,11 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">--</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (Hnone y Hin HPy).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Defined</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">reachable_locations_from_initial_env_dec</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">rΓ</span> <span class="nv">l</span>,
-  {Ensembles.In Loc (reachable_locations_from_initial_env CT h rΓ) l} +
-  {~ Ensembles.In Loc (reachable_locations_from_initial_env CT h rΓ) l}.</span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">reachable_locations_from_initial_env_dec</span> : <span class="k">forall</span> <span class="nv">h</span> <span class="nv">rΓ</span> <span class="nv">l</span>,
+  {Ensembles.In Loc (reachable_locations_from_initial_env h rΓ) l} +
+  {~ Ensembles.In Loc (reachable_locations_from_initial_env h rΓ) l}.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h rΓ l.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> h rΓ l.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> Ensembles.In, reachable_locations_from_initial_env.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">set</span> (root_reaches := <span class="k">fun</span> <span class="nv">x</span> =&gt;
     <span class="k">exists</span> <span class="nv">l_root</span>,
@@ -286,44 +279,39 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 <span class="c">(* PICO expression evaluation *)</span>
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">eval_expr</span> : eval_result -&gt; (Loc -&gt; <span class="kt">Prop</span>) -&gt; class_table -&gt; r_env -&gt; heap -&gt; expr -&gt; value -&gt; eval_result -&gt; (Loc -&gt; <span class="kt">Prop</span>)  -&gt; r_env -&gt; heap -&gt; <span class="kt">Prop</span> :=
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">eval_expr</span> : class_table -&gt; r_env -&gt; heap -&gt; expr -&gt; value -&gt; eval_result -&gt; r_env -&gt; heap -&gt; <span class="kt">Prop</span> :=
   <span class="c">(* evalutate null expression  *)</span>
-  | EBS_Null : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span>,
-      eval_expr OK P CT rΓ h ENull Null_a OK P rΓ h
+  | EBS_Null : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span>,
+      eval_expr CT rΓ h ENull Null_a OK rΓ h
 
   <span class="c">(* evaluate value expression *)</span>
-  | EBS_Val : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">v</span>
+  | EBS_Val : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">v</span>
       (<span class="nv">Hval</span> : runtime_getVal rΓ x = Some v),
-      eval_expr OK P CT rΓ h (EVar x) v OK P rΓ h
+      eval_expr CT rΓ h (EVar x) v OK rΓ h
 
   <span class="c">(* evaluate field access expression *)</span>
-  | EBS_Field : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">v</span> <span class="nv">o</span> <span class="nv">v1</span>
+  | EBS_Field : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">v</span> <span class="nv">o</span> <span class="nv">v1</span>
       (<span class="nv">Hval</span>   : runtime_getVal rΓ x = Some (Iot v))
       (<span class="nv">Hobj</span>   : runtime_getObj h v = Some o)
       (<span class="nv">Hfield</span> : getVal o.(fields_map) f = Some v1),
-      eval_expr OK P CT rΓ h (EField x f) v1 OK P rΓ h
+      eval_expr CT rΓ h (EField x f) v1 OK rΓ h
 
   <span class="c">(* evaluate field access expression yields NPE *)</span>
-  | EBS_Field_NPE : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span>
+  | EBS_Field_NPE : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span>
       (<span class="nv">Hnull</span> : runtime_getVal rΓ x = Some (Null_a)),
-      eval_expr OK P CT rΓ h (EField x f) Null_a NPE P rΓ h
+      eval_expr CT rΓ h (EField x f) Null_a NPE rΓ h
   .</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;rΓ &#39;,&#39; h &#39;⟦&#39; e &#39;⟧&#39; &#39;--&gt;&#39; v &#39;,&#39; rΓ&#39; &#39;,&#39; h&#39;&quot;</span> := (eval_expr OK rΓ h e v OK rΓ&#39; h&#39;) (<span class="kn">at level</span> <span class="mi">200</span>).</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">
-<span class="c">(* Determinism of eval_expr.</span>
+</span></span><span class="alectryon-txt"><span class="c">(* Determinism of eval_expr.</span>
 
 <span class="c">   Every well-formed expression evaluation from a given starting state</span>
-<span class="c">   produces the same result value, outcome tag, reach set, environment,</span>
-<span class="c">   and heap. *)</span>
+<span class="c">   produces the same result value, outcome tag, environment, and heap. *)</span>
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">eval_expr_deterministic</span> :
-  <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">e</span> <span class="nv">v1</span> <span class="nv">r1</span> <span class="nv">reach1&#39;</span> <span class="nv">rΓ1&#39;</span> <span class="nv">h1&#39;</span> <span class="nv">v2</span> <span class="nv">r2</span> <span class="nv">reach2&#39;</span> <span class="nv">rΓ2&#39;</span> <span class="nv">h2&#39;</span>,
-    eval_expr OK P CT rΓ h e v1
-              r1 reach1&#39; rΓ1&#39; h1&#39; -&gt;
-    eval_expr OK P CT rΓ h e v2
-              r2 reach2&#39; rΓ2&#39; h2&#39; -&gt;
-    v1 = v2 /\ r1 = r2 /\ reach1&#39; = reach2&#39; /\ rΓ1&#39; = rΓ2&#39; /\ h1&#39; = h2&#39;.</span><span class="alectryon-wsp">
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">e</span> <span class="nv">v1</span> <span class="nv">r1</span> <span class="nv">rΓ1&#39;</span> <span class="nv">h1&#39;</span> <span class="nv">v2</span> <span class="nv">r2</span> <span class="nv">rΓ2&#39;</span> <span class="nv">h2&#39;</span>,
+    eval_expr CT rΓ h e v1 r1 rΓ1&#39; h1&#39; -&gt;
+    eval_expr CT rΓ h e v2 r2 rΓ2&#39; h2&#39; -&gt;
+    v1 = v2 /\ r1 = r2 /\ rΓ1&#39; = rΓ2&#39; /\ h1&#39; = h2&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> P CT rΓ h e v1 r1 reach1&#39; rΓ1&#39; h1&#39; v2 r2 reach2&#39; rΓ2&#39; h2&#39; H1 H2.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rΓ h e v1 r1 rΓ1&#39; h1&#39; v2 r2 rΓ2&#39; h2&#39; H1 H2.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H1; <span class="nb">subst</span>; <span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* EBS_Null vs EBS_Null *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
@@ -344,35 +332,35 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 <span class="c">(* PICO Statement evaluation *)</span>
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">eval_stmt</span> : eval_result -&gt; (Loc -&gt; <span class="kt">Prop</span>)  -&gt; class_table -&gt; r_env -&gt; heap -&gt; stmt -&gt; eval_result -&gt; (Loc -&gt; <span class="kt">Prop</span>)  -&gt; r_env -&gt; heap -&gt; <span class="kt">Prop</span> :=
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">eval_stmt</span> : class_table -&gt; r_env -&gt; heap -&gt; stmt -&gt; eval_result -&gt; r_env -&gt; heap -&gt; <span class="kt">Prop</span> :=
   <span class="c">(* evaluate skip statement *)</span>
-  | SBS_Skip : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span>,
-      eval_stmt OK P CT rΓ h SSkip OK P rΓ h
+  | SBS_Skip : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span>,
+      eval_stmt CT rΓ h SSkip OK rΓ h
 
   <span class="c">(* evaluate local variable declaration statement *)</span>
-  | SBS_Local : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">T</span> <span class="nv">x</span>
+  | SBS_Local : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">T</span> <span class="nv">x</span>
       (<span class="nv">Hnone</span> : runtime_getVal rΓ x = None),
-      eval_stmt OK P CT rΓ h (SLocal T x) OK P
+      eval_stmt CT rΓ h (SLocal T x) OK
       (set_vars rΓ (rΓ.(vars)++[Null_a]) )
       h
 
   <span class="c">(* evaluate variable assignment statement *)</span>
-  | SBS_Assign : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">e</span> <span class="nv">v1</span> <span class="nv">v2</span>
+  | SBS_Assign : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">e</span> <span class="nv">v1</span> <span class="nv">v2</span>
       (<span class="nv">Hval</span>   : runtime_getVal rΓ x = Some v1)
-      (<span class="nv">Heval</span>  : eval_expr OK P CT rΓ h e v2 OK P rΓ h),
-      eval_stmt OK P CT rΓ h (SVarAss x e) OK P
+      (<span class="nv">Heval</span>  : eval_expr CT rΓ h e v2 OK rΓ h),
+      eval_stmt CT rΓ h (SVarAss x e) OK
       (set_vars rΓ (update x v2 rΓ.(vars)))
       h
 
-  | SBS_Assign_NPE : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">e</span> <span class="nv">v1</span> <span class="nv">v2</span>
+  | SBS_Assign_NPE : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">e</span> <span class="nv">v1</span> <span class="nv">v2</span>
       (<span class="nv">Hval</span>   : runtime_getVal rΓ x = Some v1)
-      (<span class="nv">Heval</span>  : eval_expr OK P CT rΓ h e v2 NPE P rΓ h),
-      eval_stmt OK P CT rΓ h (SVarAss x e) NPE P
+      (<span class="nv">Heval</span>  : eval_expr CT rΓ h e v2 NPE rΓ h),
+      eval_stmt CT rΓ h (SVarAss x e) NPE
       rΓ
       h
 
   <span class="c">(* evaluate field write statement *)</span>
-  | SBS_FldWrite : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span> <span class="nv">loc_x</span> <span class="nv">o</span> <span class="nv">a</span> <span class="nv">vf</span> <span class="nv">val_y</span> <span class="nv">h&#39;</span>
+  | SBS_FldWrite : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span> <span class="nv">loc_x</span> <span class="nv">o</span> <span class="nv">a</span> <span class="nv">vf</span> <span class="nv">val_y</span> <span class="nv">h&#39;</span>
       (<span class="nv">Hval_x</span>  : runtime_getVal rΓ x = Some (Iot loc_x))
       (<span class="nv">Hobj</span>    : runtime_getObj h loc_x = Some o)
       (<span class="nv">Hfield</span>  : getVal o.(fields_map) f = Some vf)
@@ -380,24 +368,24 @@ A runtime configuration is well formed when its class table, heap, and
       (<span class="nv">Hval_y</span>  : runtime_getVal rΓ y = Some val_y)
       (<span class="nv">Hruntime_assignable</span> : runtime_vpa_assignability (rqtype (rt_type o)) a = Assignable)
       (<span class="nv">Hupdate</span> : h&#39; = update_field h loc_x f val_y),
-      eval_stmt OK P CT rΓ h (SFldWrite x f y) OK P rΓ h&#39;
+      eval_stmt CT rΓ h (SFldWrite x f y) OK rΓ h&#39;
 
   <span class="c">(* evaluate field write statement NPE *)</span>
-  | SBS_FldWrite_NPE : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span>
+  | SBS_FldWrite_NPE : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span>
       (<span class="nv">Hnull</span> : runtime_getVal rΓ x = Some (Null_a)),
-      eval_stmt OK P CT rΓ h (SFldWrite x f y) NPE P rΓ h
+      eval_stmt CT rΓ h (SFldWrite x f y) NPE rΓ h
 
-  | SBS_FldWrite_MUTATIONEXP : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span> <span class="nv">loc_x</span> <span class="nv">o</span> <span class="nv">a</span> <span class="nv">vf</span> <span class="nv">val_y</span>
+  | SBS_FldWrite_MUTATIONEXP : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span> <span class="nv">loc_x</span> <span class="nv">o</span> <span class="nv">a</span> <span class="nv">vf</span> <span class="nv">val_y</span>
       (<span class="nv">Hval_x</span>  : runtime_getVal rΓ x = Some (Iot loc_x))
       (<span class="nv">Hobj</span>    : runtime_getObj h loc_x = Some o)
       (<span class="nv">Hfield</span>  : getVal o.(fields_map) f = Some vf)
       (<span class="nv">Hassign</span> : sf_assignability_rel CT (rctype (rt_type o)) f a)
       (<span class="nv">Hval_y</span>  : runtime_getVal rΓ y = Some val_y)
       (<span class="nv">Hfinal</span>  : runtime_vpa_assignability (rqtype (rt_type o)) a = Final),
-      eval_stmt OK P CT rΓ h (SFldWrite x f y) MUTATIONEXP P rΓ h
+      eval_stmt CT rΓ h (SFldWrite x f y) MUTATIONEXP rΓ h
 
   <span class="c">(* evaluate object creation statement *)</span>
-  | SBS_New : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> (<span class="nv">q_c</span>:q_c) <span class="nv">c</span> <span class="nv">ys</span> <span class="nv">l1</span> <span class="nv">qthisr</span> <span class="nv">vals</span> <span class="nv">o</span> <span class="nv">qadapted</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span>
+  | SBS_New : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> (<span class="nv">q_c</span>:q_c) <span class="nv">c</span> <span class="nv">ys</span> <span class="nv">l1</span> <span class="nv">qthisr</span> <span class="nv">vals</span> <span class="nv">o</span> <span class="nv">qadapted</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span>
       (<span class="nv">Hthis</span>    : runtime_getVal rΓ <span class="mi">0</span> = Some (Iot l1))
       (<span class="nv">Hargs</span>    : runtime_lookup_list rΓ ys = Some vals)
       (<span class="nv">Hmut</span>     : r_muttype h l1 = Some qthisr)
@@ -405,10 +393,10 @@ A runtime configuration is well formed when its class table, heap, and
       (<span class="nv">Hobj</span>     : o = mkObj (mkruntime_type qadapted c) (vals))
       (<span class="nv">Hheap</span>    : h&#39; = h++[o])
       (<span class="nv">Henv</span>     : rΓ&#39; = (set_vars rΓ (update x (Iot (dom h)) rΓ.(vars)))),
-      eval_stmt OK P CT rΓ h (SNew x q_c c ys) OK P rΓ&#39; h&#39;
+      eval_stmt CT rΓ h (SNew x q_c c ys) OK rΓ&#39; h&#39;
 
   <span class="c">(* evaluate method call statement *)</span>
-  | SBS_Call : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">m</span> <span class="nv">zs</span> <span class="nv">vals</span> <span class="nv">ly</span> <span class="nv">cy</span> <span class="nv">mdef</span> <span class="nv">mbody</span> <span class="nv">mstmt</span> <span class="nv">mret</span> <span class="nv">retval</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;</span> <span class="nv">rΓ&#39;&#39;</span> <span class="nv">rΓ&#39;&#39;&#39;</span>
+  | SBS_Call : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">m</span> <span class="nv">zs</span> <span class="nv">vals</span> <span class="nv">ly</span> <span class="nv">cy</span> <span class="nv">mdef</span> <span class="nv">mbody</span> <span class="nv">mstmt</span> <span class="nv">mret</span> <span class="nv">retval</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;</span> <span class="nv">rΓ&#39;&#39;</span> <span class="nv">rΓ&#39;&#39;&#39;</span>
       (<span class="nv">Hval_y</span>      : runtime_getVal rΓ y = Some (Iot ly))
       (<span class="nv">Hbase</span>       : r_basetype h ly = Some cy)
       (<span class="nv">Hfind</span>       : FindMethodWithName CT cy m mdef /\ mbody = Syntax.mbody mdef)
@@ -416,17 +404,17 @@ A runtime configuration is well formed when its class table, heap, and
       (<span class="nv">Hret</span>        : mret = mbody.(mreturn))
       (<span class="nv">Hargs</span>       : runtime_lookup_list rΓ zs = Some vals)
       (<span class="nv">Hframe</span>      : rΓ&#39; = mkr_env (Iot ly :: vals))
-      (<span class="nv">Heval_body</span>  : eval_stmt OK P CT rΓ&#39; h mstmt OK P rΓ&#39;&#39; h&#39;)
+      (<span class="nv">Heval_body</span>  : eval_stmt CT rΓ&#39; h mstmt OK rΓ&#39;&#39; h&#39;)
       (<span class="nv">Hretval</span>     : runtime_getVal rΓ&#39;&#39; mret = Some retval)
       (<span class="nv">Henv</span>        : rΓ&#39;&#39;&#39; = (set_vars rΓ (update x retval rΓ.(vars)))),
-      eval_stmt OK P CT rΓ h (SCall x m y zs) OK P rΓ&#39;&#39;&#39; h&#39;
+      eval_stmt CT rΓ h (SCall x m y zs) OK rΓ&#39;&#39;&#39; h&#39;
 
   <span class="c">(* evaluate method call statement NPE *)</span>
-  | SBS_Call_NPE : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">m</span> <span class="nv">zs</span>
+  | SBS_Call_NPE : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">m</span> <span class="nv">zs</span>
       (<span class="nv">Hnull</span> : runtime_getVal rΓ y = Some (Null_a)),
-      eval_stmt OK P CT rΓ h (SCall x m y zs) NPE P rΓ h
+      eval_stmt CT rΓ h (SCall x m y zs) NPE rΓ h
 
-  | SBS_Call_NPE_Body : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">m</span> <span class="nv">zs</span> <span class="nv">vals</span> <span class="nv">ly</span> <span class="nv">cy</span> <span class="nv">mdef</span> <span class="nv">mbody</span> <span class="nv">mstmt</span> <span class="nv">mret</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;</span> <span class="nv">rΓ&#39;&#39;</span>
+  | SBS_Call_NPE_Body : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">m</span> <span class="nv">zs</span> <span class="nv">vals</span> <span class="nv">ly</span> <span class="nv">cy</span> <span class="nv">mdef</span> <span class="nv">mbody</span> <span class="nv">mstmt</span> <span class="nv">mret</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;</span> <span class="nv">rΓ&#39;&#39;</span>
       (<span class="nv">Hval_y</span>     : runtime_getVal rΓ y = Some (Iot ly))
       (<span class="nv">Hbase</span>      : r_basetype h ly = Some cy)
       (<span class="nv">Hfind</span>      : FindMethodWithName CT cy m mdef /\ mbody = Syntax.mbody mdef)
@@ -434,10 +422,10 @@ A runtime configuration is well formed when its class table, heap, and
       (<span class="nv">Hret</span>       : mret = mbody.(mreturn))
       (<span class="nv">Hargs</span>      : runtime_lookup_list rΓ zs = Some vals)
       (<span class="nv">Hframe</span>     : rΓ&#39; = mkr_env (Iot ly :: vals))
-      (<span class="nv">Heval_body</span> : eval_stmt OK P CT rΓ&#39; h mstmt NPE P rΓ&#39;&#39; h&#39;),
-      eval_stmt OK P CT rΓ h (SCall x m y zs) NPE P rΓ&#39;&#39; h&#39;
+      (<span class="nv">Heval_body</span> : eval_stmt CT rΓ&#39; h mstmt NPE rΓ&#39;&#39; h&#39;),
+      eval_stmt CT rΓ h (SCall x m y zs) NPE rΓ&#39;&#39; h&#39;
 
-  | SBS_Call_MUTATIONEXP_Body : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">m</span> <span class="nv">zs</span> <span class="nv">vals</span> <span class="nv">ly</span> <span class="nv">cy</span> <span class="nv">mdef</span> <span class="nv">mbody</span> <span class="nv">mstmt</span> <span class="nv">mret</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;</span> <span class="nv">rΓ&#39;&#39;</span>
+  | SBS_Call_MUTATIONEXP_Body : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">m</span> <span class="nv">zs</span> <span class="nv">vals</span> <span class="nv">ly</span> <span class="nv">cy</span> <span class="nv">mdef</span> <span class="nv">mbody</span> <span class="nv">mstmt</span> <span class="nv">mret</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;</span> <span class="nv">rΓ&#39;&#39;</span>
       (<span class="nv">Hval_y</span>     : runtime_getVal rΓ y = Some (Iot ly))
       (<span class="nv">Hbase</span>      : r_basetype h ly = Some cy)
       (<span class="nv">Hfind</span>      : FindMethodWithName CT cy m mdef /\ mbody = Syntax.mbody mdef)
@@ -445,49 +433,48 @@ A runtime configuration is well formed when its class table, heap, and
       (<span class="nv">Hret</span>       : mret = mbody.(mreturn))
       (<span class="nv">Hargs</span>      : runtime_lookup_list rΓ zs = Some vals)
       (<span class="nv">Hframe</span>     : rΓ&#39; = mkr_env (Iot ly :: vals))
-      (<span class="nv">Heval_body</span> : eval_stmt OK P CT rΓ&#39; h mstmt MUTATIONEXP P rΓ&#39;&#39; h&#39;),
-      eval_stmt OK P CT rΓ h (SCall x m y zs) MUTATIONEXP P rΓ&#39;&#39; h&#39;
+      (<span class="nv">Heval_body</span> : eval_stmt CT rΓ&#39; h mstmt MUTATIONEXP rΓ&#39;&#39; h&#39;),
+      eval_stmt CT rΓ h (SCall x m y zs) MUTATIONEXP rΓ&#39;&#39; h&#39;
   <span class="c">(* evaluate sequence of statements *)</span>
-  | SBS_Seq : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;&#39;</span> <span class="nv">h&#39;&#39;</span>
-      (<span class="nv">Heval1</span> : eval_stmt OK P CT rΓ h s1 OK P rΓ&#39; h&#39;)
-      (<span class="nv">Heval2</span> : eval_stmt OK P CT rΓ&#39; h&#39; s2 OK P rΓ&#39;&#39; h&#39;&#39;),
-      eval_stmt OK P CT rΓ h (SSeq s1 s2) OK P rΓ&#39;&#39; h&#39;&#39;
+  | SBS_Seq : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;&#39;</span> <span class="nv">h&#39;&#39;</span>
+      (<span class="nv">Heval1</span> : eval_stmt CT rΓ h s1 OK rΓ&#39; h&#39;)
+      (<span class="nv">Heval2</span> : eval_stmt CT rΓ&#39; h&#39; s2 OK rΓ&#39;&#39; h&#39;&#39;),
+      eval_stmt CT rΓ h (SSeq s1 s2) OK rΓ&#39;&#39; h&#39;&#39;
 
-  | SBS_Seq_NPE_first : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span>
-      (<span class="nv">Heval1</span> : eval_stmt OK P CT rΓ h s1 NPE P rΓ&#39; h&#39;),
-      eval_stmt OK P CT rΓ h (SSeq s1 s2) NPE P rΓ&#39; h&#39;
+  | SBS_Seq_NPE_first : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span>
+      (<span class="nv">Heval1</span> : eval_stmt CT rΓ h s1 NPE rΓ&#39; h&#39;),
+      eval_stmt CT rΓ h (SSeq s1 s2) NPE rΓ&#39; h&#39;
 
-  | SBS_Seq_NPE_second : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;&#39;</span> <span class="nv">h&#39;&#39;</span>
-      (<span class="nv">Heval1</span> : eval_stmt OK P CT rΓ h s1 OK P rΓ&#39; h&#39;)
-      (<span class="nv">Heval2</span> : eval_stmt OK P CT rΓ&#39; h&#39; s2 NPE P rΓ&#39;&#39; h&#39;&#39;),
-      eval_stmt OK P CT rΓ h (SSeq s1 s2) NPE P rΓ&#39;&#39; h&#39;&#39;
+  | SBS_Seq_NPE_second : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;&#39;</span> <span class="nv">h&#39;&#39;</span>
+      (<span class="nv">Heval1</span> : eval_stmt CT rΓ h s1 OK rΓ&#39; h&#39;)
+      (<span class="nv">Heval2</span> : eval_stmt CT rΓ&#39; h&#39; s2 NPE rΓ&#39;&#39; h&#39;&#39;),
+      eval_stmt CT rΓ h (SSeq s1 s2) NPE rΓ&#39;&#39; h&#39;&#39;
 
-  | SBS_Seq_MUTATIONEXP_first : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span>
-      (<span class="nv">Heval1</span> : eval_stmt OK P CT rΓ h s1 MUTATIONEXP P rΓ&#39; h&#39;),
-      eval_stmt OK P CT rΓ h (SSeq s1 s2) MUTATIONEXP P rΓ&#39; h&#39;
+  | SBS_Seq_MUTATIONEXP_first : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span>
+      (<span class="nv">Heval1</span> : eval_stmt CT rΓ h s1 MUTATIONEXP rΓ&#39; h&#39;),
+      eval_stmt CT rΓ h (SSeq s1 s2) MUTATIONEXP rΓ&#39; h&#39;
 
-  | SBS_Seq_MUTATIONEXP_second : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;&#39;</span> <span class="nv">h&#39;&#39;</span>
-      (<span class="nv">Heval1</span> : eval_stmt OK P CT rΓ h s1 OK P rΓ&#39; h&#39;)
-      (<span class="nv">Heval2</span> : eval_stmt OK P CT rΓ&#39; h&#39; s2 MUTATIONEXP P rΓ&#39;&#39; h&#39;&#39;),
-      eval_stmt OK P CT rΓ h (SSeq s1 s2) MUTATIONEXP P rΓ&#39;&#39; h&#39;&#39;
+  | SBS_Seq_MUTATIONEXP_second : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s1</span> <span class="nv">s2</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">rΓ&#39;&#39;</span> <span class="nv">h&#39;&#39;</span>
+      (<span class="nv">Heval1</span> : eval_stmt CT rΓ h s1 OK rΓ&#39; h&#39;)
+      (<span class="nv">Heval2</span> : eval_stmt CT rΓ&#39; h&#39; s2 MUTATIONEXP rΓ&#39;&#39; h&#39;&#39;),
+      eval_stmt CT rΓ h (SSeq s1 s2) MUTATIONEXP rΓ&#39;&#39; h&#39;&#39;
   .</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 <span class="c">(* Determinism of eval_stmt.</span>
 
 <span class="c">   Every well-formed statement evaluation from a given starting state</span>
-<span class="c">   produces the same outcome tag, reach set, environment, and heap. *)</span>
+<span class="c">   produces the same outcome tag, environment, and heap. *)</span>
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">eval_stmt_deterministic</span> :
-  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s</span> <span class="nv">reach</span> <span class="nv">res1</span> <span class="nv">reach1&#39;</span> <span class="nv">rΓ1&#39;</span> <span class="nv">h1&#39;</span> <span class="nv">res2</span> <span class="nv">reach2&#39;</span> <span class="nv">rΓ2&#39;</span> <span class="nv">h2&#39;</span>,
-    eval_stmt OK reach CT rΓ h s res1 reach1&#39; rΓ1&#39; h1&#39; -&gt;
-    eval_stmt OK reach CT rΓ h s res2 reach2&#39; rΓ2&#39; h2&#39; -&gt;
-    res1 = res2 /\ reach1&#39; = reach2&#39; /\ rΓ1&#39; = rΓ2&#39; /\ h1&#39; = h2&#39;.</span><span class="alectryon-wsp">
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">s</span> <span class="nv">res1</span> <span class="nv">rΓ1&#39;</span> <span class="nv">h1&#39;</span> <span class="nv">res2</span> <span class="nv">rΓ2&#39;</span> <span class="nv">h2&#39;</span>,
+    eval_stmt CT rΓ h s res1 rΓ1&#39; h1&#39; -&gt;
+    eval_stmt CT rΓ h s res2 rΓ2&#39; h2&#39; -&gt;
+    res1 = res2 /\ rΓ1&#39; = rΓ2&#39; /\ h1&#39; = h2&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rΓ h s reach res1 reach1&#39; rΓ1&#39; h1&#39; res2 reach2&#39; rΓ2&#39; h2&#39; H1.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rΓ h s res1 rΓ1&#39; h1&#39; res2 rΓ2&#39; h2&#39; H1.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> h2&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> rΓ2&#39;.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> reach2&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> res2.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> H1; <span class="nb">intros</span> res2 reach2&#39; rΓ2&#39; h2&#39; H2.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> H1; <span class="nb">intros</span> res2 rΓ2&#39; h2&#39; H2.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Skip *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
@@ -497,20 +484,23 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Assign *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Assign *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (eval_expr_deterministic _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ Heval Heval0)
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (eval_expr_deterministic
+        _ _ _ _ _ _ _ _ _ _ _ _ Heval Heval0)
         <span class="k">as</span> Hdet.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hdet <span class="k">as</span> [Hveq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Assign_NPE — eval_expr OK vs NPE *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (eval_expr_deterministic _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ Heval Heval0)
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Assign_NPE — eval_expr vs NPE *)</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (eval_expr_deterministic
+        _ _ _ _ _ _ _ _ _ _ _ _ Heval Heval0)
         <span class="k">as</span> Hdet.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hdet <span class="k">as</span> [_ [Hreq _]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Assign_NPE *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Assign — eval_expr NPE vs OK *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (eval_expr_deterministic _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ Heval Heval0)
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (eval_expr_deterministic
+        _ _ _ _ _ _ _ _ _ _ _ _ Heval Heval0)
         <span class="k">as</span> Hdet.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hdet <span class="k">as</span> [_ [Hreq _]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
@@ -569,7 +559,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [_ [_ [Henv_eq Hheap_eq]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [_ [Henv_eq Hheap_eq]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hretval0 <span class="k">in</span> Hretval; <span class="nb">injection</span> Hretval <span class="k">as</span> Hretval_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
@@ -583,7 +573,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Call_MUTATIONEXP_Body — IH: OK = MUTATIONEXP *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hval_y0 <span class="k">in</span> Hval_y; <span class="nb">injection</span> Hval_y <span class="k">as</span> Hly_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
@@ -593,7 +583,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Call_NPE *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
@@ -615,7 +605,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Call_NPE — Iot vs Null *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hnull <span class="k">in</span> Hval_y; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
@@ -627,7 +617,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [_ [_ [Henv_eq Hheap_eq]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [_ [Henv_eq Hheap_eq]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Call_MUTATIONEXP_Body — IH: NPE = MUTATIONEXP *)</span></span><span class="alectryon-wsp">
@@ -638,7 +628,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Call_MUTATIONEXP_Body *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
@@ -650,7 +640,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Call_NPE — Iot vs Null *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hnull <span class="k">in</span> Hval_y; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
@@ -662,7 +652,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Call_MUTATIONEXP_Body *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hval_y0 <span class="k">in</span> Hval_y; <span class="nb">injection</span> Hval_y <span class="k">as</span> Hly_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
@@ -672,86 +662,86 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (find_method_with_name_deterministic _ _ _ _ _ Hfmn1 Hfmn2) <span class="k">as</span> Hmdef_eq.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hargs0 <span class="k">in</span> Hargs; <span class="nb">injection</span> Hargs <span class="k">as</span> Hvals_eq; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval_body) <span class="k">as</span> [_ [_ [Henv_eq Hheap_eq]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval_body) <span class="k">as</span> [_ [Henv_eq Hheap_eq]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Seq *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt2 _ _ _ _ Heval2).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt2 _ _ _ Heval2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_NPE_first — IH on s1: OK = NPE *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_NPE_second — IH on s2: OK = NPE *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ _ Heval2) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ Heval2) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_MUTATIONEXP_first — IH on s1: OK = MUTATIONEXP *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_MUTATIONEXP_second — IH on s2: OK = MUTATIONEXP *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ _ Heval2) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ Heval2) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Seq_NPE_first *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq — IH on s1: NPE = OK *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_NPE_first *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt _ _ _ _ Heval1).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt _ _ _ Heval1).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_NPE_second — IH on s1: NPE = OK *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_MUTATIONEXP_first — IH on s1: NPE = MUTATIONEXP *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_MUTATIONEXP_second — IH on s1: NPE = OK *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Seq_NPE_second *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq — IH on s2: NPE = OK *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ _ Heval2) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ Heval2) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_NPE_first — IH on s1: OK = NPE *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_NPE_second *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt2 _ _ _ _ Heval2).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt2 _ _ _ Heval2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_MUTATIONEXP_first — IH on s1: OK = MUTATIONEXP *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+ <span class="c">(* H2 : SBS_Seq_MUTATIONEXP_second — IH on s2: NPE = MUTATIONEXP *)</span></span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ _ Heval2) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ Heval2) <span class="k">as</span> [Hres_eq _].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Seq_MUTATIONEXP_first *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt _ _ _ _ Heval1).</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt _ _ _ Heval1).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* SBS_Seq_MUTATIONEXP_second *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H2; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ _ Heval2) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ _ Heval2) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ _ Heval1) <span class="k">as</span> [_ [_ [Hrenv1 Hh1]]].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt2 _ _ _ _ Heval2).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ Heval2) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt2 _ _ _ Heval2) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [Hres_eq _]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IHeval_stmt1 _ _ _ Heval1) <span class="k">as</span> [_ [Hrenv1 Hh1]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (IHeval_stmt2 _ _ _ Heval2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">r_type_dom</span> : <span class="k">forall</span> <span class="nv">h</span> <span class="nv">loc</span> <span class="nv">rqt</span>
@@ -794,13 +784,13 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 <span class="c">(* Subtyping Preservation for wf_r_typable *)</span>
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">wf_r_typable_subtype</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">loc</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">wf_r_typable_subtype</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">loc</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span>
   (<span class="nv">Hwfheap</span> : wf_heap CT h)
-  (<span class="nv">Hwf</span>     : wf_r_typable CT rΓ h loc T1 qcontext)
+  (<span class="nv">Hwf</span>     : wf_r_typable CT h loc T1 qcontext)
   (<span class="nv">Hsub</span>    : qualified_type_subtype CT T1 T2),
-  wf_r_typable CT rΓ h loc T2 qcontext.</span><span class="alectryon-wsp">
+  wf_r_typable CT h loc T2 qcontext.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rΓ h loc T1 T2 qcontext hwfheap Hwf Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h loc T1 T2 qcontext hwfheap Hwf Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (r_type h loc) <span class="k">as</span> [rqt|] <span class="nb">eqn</span>:Hrtype; [|<span class="bp">contradiction</span>].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
@@ -850,40 +840,40 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hr; <span class="nb">subst</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_mutability_tt_sctype_abs_imm</span> : <span class="k">forall</span> <span class="nv">Tthis</span> <span class="nv">T</span>,
-  sctype (vpa_mutability_tt_abs_imm Tthis T) = sctype T.</span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_mutability_tt_sctype_abstract_state</span> : <span class="k">forall</span> <span class="nv">Tthis</span> <span class="nv">T</span>,
+  sctype (vpa_mutability_tt_abstract_state Tthis T) = sctype T.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> Tthis T.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_abs_imm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_abstract_state.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> T <span class="k">as</span> [q c].</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (sqtype Tthis); <span class="nb">destruct</span> q; <span class="nb">simpl</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_preserve_basetype_subtype_abs_imm</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">Tthis</span> <span class="nv">T1</span> <span class="nv">T2</span>
-  (<span class="nv">Hsub</span> : base_subtype CT (sctype (vpa_mutability_tt_abs_imm Tthis T1)) (sctype (vpa_mutability_tt_abs_imm Tthis T2))),
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_preserve_basetype_subtype_abstract_state</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">Tthis</span> <span class="nv">T1</span> <span class="nv">T2</span>
+  (<span class="nv">Hsub</span> : base_subtype CT (sctype (vpa_mutability_tt_abstract_state Tthis T1)) (sctype (vpa_mutability_tt_abstract_state Tthis T2))),
   base_subtype CT (sctype T1) (sctype T2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT Tthis T1 T2 Hsub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> !vpa_mutability_tt_sctype_abs_imm <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> !vpa_mutability_tt_sctype_abstract_state <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_mutability_tt_sctype_safe_ro</span> : <span class="k">forall</span> <span class="nv">Tthis</span> <span class="nv">T</span>,
-  sctype (vpa_mutability_tt_safe_ro Tthis T) = sctype T.</span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_mutability_tt_sctype_readonly_state</span> : <span class="k">forall</span> <span class="nv">Tthis</span> <span class="nv">T</span>,
+  sctype (vpa_mutability_tt_readonly_state Tthis T) = sctype T.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> Tthis T.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_safe_ro.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_readonly_state.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> T <span class="k">as</span> [q c].</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (sqtype Tthis); <span class="nb">destruct</span> q; <span class="nb">simpl</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_preserve_basetype_subtype_safe_ro</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">Tthis</span> <span class="nv">T1</span> <span class="nv">T2</span>
-  (<span class="nv">Hsub</span> : base_subtype CT (sctype (vpa_mutability_tt_safe_ro Tthis T1)) (sctype (vpa_mutability_tt_safe_ro Tthis T2))),
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">vpa_preserve_basetype_subtype_readonly_state</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">Tthis</span> <span class="nv">T1</span> <span class="nv">T2</span>
+  (<span class="nv">Hsub</span> : base_subtype CT (sctype (vpa_mutability_tt_readonly_state Tthis T1)) (sctype (vpa_mutability_tt_readonly_state Tthis T2))),
   base_subtype CT (sctype T1) (sctype T2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT Tthis T1 T2 Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">  <span class="c">(* apply qualified_type_subtype_base_subtype in Hsub. *)</span>
-</span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> !vpa_mutability_tt_sctype_safe_ro <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> !vpa_mutability_tt_sctype_readonly_state <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
@@ -891,16 +881,16 @@ A runtime configuration is well formed when its class table, heap, and
 <span class="c">(* q_subtype (sqtype (vpa_mutability_tt Tthis T1)) (sqtype (vpa_mutability_tt Tthis T2)) &lt;-&gt;</span>
 <span class="c">q_subtype (sqtype T1) (sqtype T2). *)</span>
 
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">wf_r_typable_adapted_subtype_abs_imm</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">Tthis</span> <span class="nv">locthis</span> <span class="nv">loc</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">wf_r_typable_adapted_subtype_abstract_state</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">Tthis</span> <span class="nv">locthis</span> <span class="nv">loc</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span>
   (<span class="nv">HwfConfig</span>        : wf_heap CT h)
   (<span class="nv">HThisType</span>        : get_this_qualified_type sΓ = Some Tthis)
   (<span class="nv">HThisVal</span>         : get_this_var_mapping (vars rΓ) = Some locthis)
   (<span class="nv">HthisMutability</span>  : r_muttype h locthis = Some qcontext)
-  (* wf_r_typable CT rΓ h locthis Tthis qcontext -&gt; *)
+  (* wf_r_typable CT h locthis Tthis qcontext -&gt; *)
   (<span class="nv">Hthistypablity</span>   : qualifier_typable_context qcontext (sqtype Tthis) qcontext)
-  (<span class="nv">Hwf</span>              : wf_r_typable CT rΓ h loc T1 qcontext)
-  (<span class="nv">Hsub</span>             : qualified_type_subtype CT (vpa_mutability_tt_abs_imm Tthis T1) (vpa_mutability_tt_abs_imm Tthis T2)),
-  wf_r_typable CT rΓ h loc T2 qcontext.</span><span class="alectryon-wsp">
+  (<span class="nv">Hwf</span>              : wf_r_typable CT h loc T1 qcontext)
+  (<span class="nv">Hsub</span>             : qualified_type_subtype CT (vpa_mutability_tt_abstract_state Tthis T1) (vpa_mutability_tt_abstract_state Tthis T2)),
+  wf_r_typable CT h loc T2 qcontext.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ rΓ h Tthis locthis loc T1 T2 qcontext HwfConfig HThisType HThisVal HthisMutability Hthistypablity Hwf Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable <span class="k">in</span> *.</span><span class="alectryon-wsp">
@@ -911,12 +901,9 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (base_subtype CT (sctype T1) (sctype T2)).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> vpa_preserve_basetype_subtype_abs_imm; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> vpa_preserve_basetype_subtype_abstract_state; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hsub; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; [<span class="bp">exact</span> Hbase | <span class="bp">exact</span> H].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hwf <span class="k">as</span> [_ Hqualifier].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_config <span class="k">in</span> HwfConfig.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
@@ -937,22 +924,22 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> HThisRuntimeType; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> HthisMutability; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_rs <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_tt_abs_imm <span class="k">in</span> *.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_runtime <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_tt_abstract_state <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (rqtype rt) <span class="nb">eqn</span>: qt; <span class="nb">destruct</span> qcontext <span class="nb">eqn</span>: qrthis; <span class="nb">destruct</span> (sqtype Tthis) <span class="nb">eqn</span>: qsthis; <span class="nb">destruct</span> (sqtype T1) <span class="nb">eqn</span>: qt1; <span class="nb">destruct</span> (sqtype T2) <span class="nb">eqn</span>: qt2; <span class="nb">simpl</span> <span class="k">in</span> *; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">rewrite</span> qt1 <span class="k">in</span> Hsub; <span class="kp">try</span> <span class="nb">rewrite</span> qt2 <span class="k">in</span> Hsub; <span class="kp">try</span> <span class="nb">constructor</span>; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="nb">inversion</span> Hsub; <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">wf_r_typable_adapted_subtype_safe_ro</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">Tthis</span> <span class="nv">locthis</span> <span class="nv">loc</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">wf_r_typable_adapted_subtype_readonly_state</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">Tthis</span> <span class="nv">locthis</span> <span class="nv">loc</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span>
   (<span class="nv">HwfConfig</span>        : wf_heap CT h)
   (<span class="nv">HThisType</span>        : get_this_qualified_type sΓ = Some Tthis)
   (<span class="nv">HThisVal</span>         : get_this_var_mapping (vars rΓ) = Some locthis)
   (<span class="nv">HthisMutability</span>  : r_muttype h locthis = Some qcontext)
-  (* wf_r_typable CT rΓ h locthis Tthis qcontext -&gt; *)
+  (* wf_r_typable CT h locthis Tthis qcontext -&gt; *)
   (<span class="nv">Hthistypablity</span>   : qualifier_typable_context qcontext (sqtype Tthis) qcontext)
-  (<span class="nv">Hwf</span>              : wf_r_typable CT rΓ h loc T1 qcontext)
-  (<span class="nv">Hsub</span>             : qualified_type_subtype CT (vpa_mutability_tt_safe_ro Tthis T1) (vpa_mutability_tt_safe_ro Tthis T2)),
-  wf_r_typable CT rΓ h loc T2 qcontext.</span><span class="alectryon-wsp">
+  (<span class="nv">Hwf</span>              : wf_r_typable CT h loc T1 qcontext)
+  (<span class="nv">Hsub</span>             : qualified_type_subtype CT (vpa_mutability_tt_readonly_state Tthis T1) (vpa_mutability_tt_readonly_state Tthis T2)),
+  wf_r_typable CT h loc T2 qcontext.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ rΓ h Tthis locthis loc T1 T2 qcontext HwfConfig HThisType HThisVal HthisMutability Hthistypablity Hwf Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable <span class="k">in</span> *.</span><span class="alectryon-wsp">
@@ -963,12 +950,9 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_base_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (base_subtype CT (sctype T1) (sctype T2)).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> vpa_preserve_basetype_subtype_safe_ro; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> vpa_preserve_basetype_subtype_readonly_state; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hsub; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> base_trans; [<span class="bp">exact</span> Hbase | <span class="bp">exact</span> H].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hwf <span class="k">as</span> [_ Hqualifier].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_config <span class="k">in</span> HwfConfig.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
@@ -989,7 +973,7 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> HThisRuntimeType; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> HthisMutability; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_rs <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_tt_safe_ro <span class="k">in</span> *.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_runtime <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_tt_readonly_state <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (rqtype rt) <span class="nb">eqn</span>: qt; <span class="nb">destruct</span> qcontext <span class="nb">eqn</span>: qrthis; <span class="nb">destruct</span> (sqtype Tthis) <span class="nb">eqn</span>: qsthis; <span class="nb">destruct</span> (sqtype T1) <span class="nb">eqn</span>: qt1; <span class="nb">destruct</span> (sqtype T2) <span class="nb">eqn</span>: qt2; <span class="nb">simpl</span> <span class="k">in</span> *; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">rewrite</span> qt1 <span class="k">in</span> Hsub; <span class="kp">try</span> <span class="nb">rewrite</span> qt2 <span class="k">in</span> Hsub; <span class="kp">try</span> <span class="nb">constructor</span>; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="nb">inversion</span> Hsub; <span class="bp">easy</span>.</span><span class="alectryon-wsp">
@@ -1054,7 +1038,7 @@ A runtime configuration is well formed when its class table, heap, and
   (<span class="nv">Hruntime</span>       : runtime_lookup_list rΓ args = Some vals),
   Forall2 (<span class="k">fun</span> <span class="nv">v</span> <span class="nv">T</span> =&gt; <span class="k">match</span> v <span class="k">with</span>
     | Null_a =&gt; <span class="kt">True</span>
-    | Iot loc =&gt; wf_r_typable CT rΓ h loc T qcontext
+    | Iot loc =&gt; wf_r_typable CT h loc T qcontext
     <span class="k">end</span>) vals argtypes.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ rΓ h args vals argtypes ι qcontext Hreceiveraddr Hreceiverrmut Hwf Hstatic Hruntime.</span><span class="alectryon-wsp">
@@ -1097,11 +1081,11 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> nth_error_app1.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hloc.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">heap_extension_preserves_wf_r_typable</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">obj</span> <span class="nv">loc</span> <span class="nv">T</span> <span class="nv">qcontext</span>
-  (<span class="nv">Hwf</span> : wf_r_typable CT rΓ h loc T qcontext),
-  wf_r_typable CT rΓ (h ++ [obj]) loc T qcontext.</span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">heap_extension_preserves_wf_r_typable</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">obj</span> <span class="nv">loc</span> <span class="nv">T</span> <span class="nv">qcontext</span>
+  (<span class="nv">Hwf</span> : wf_r_typable CT h loc T qcontext),
+  wf_r_typable CT (h ++ [obj]) loc T qcontext.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rΓ h obj loc T qcontext Hwf.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h obj loc T qcontext Hwf.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (r_type h loc) <span class="k">as</span> [rqt|] <span class="nb">eqn</span>:Hrtype; [|<span class="bp">contradiction</span>].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">  <span class="c">(* destruct (get_this_var_mapping (vars rΓ)) as [ι&#39;|] eqn:Hthis; [|contradiction]. *)</span>
@@ -1178,9 +1162,9 @@ A runtime configuration is well formed when its class table, heap, and
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 <span class="c">(* evaluation preserves runtime type on heap. *)</span>
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">runtime_preserves_r_type_heap</span> : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">loc</span> <span class="nv">C</span> <span class="nv">h&#39;</span> <span class="nv">vals</span> <span class="nv">s</span> <span class="nv">rΓ&#39;</span>
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">runtime_preserves_r_type_heap</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">loc</span> <span class="nv">C</span> <span class="nv">h&#39;</span> <span class="nv">vals</span> <span class="nv">s</span> <span class="nv">rΓ&#39;</span>
   (<span class="nv">Hobj</span>  : runtime_getObj h loc = Some {| rt_type := C; fields_map := vals |})
-  (<span class="nv">Heval</span> : eval_stmt OK P CT rΓ h s OK P rΓ&#39; h&#39;),
+  (<span class="nv">Heval</span> : eval_stmt CT rΓ h s OK rΓ&#39; h&#39;),
   <span class="k">exists</span> <span class="nv">vals&#39;</span>, runtime_getObj h&#39; loc = Some {| rt_type := C; fields_map := vals&#39; |}.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">remember</span> OK <span class="k">as</span> ok.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> vals.</span><span class="alectryon-wsp">
@@ -1274,18 +1258,18 @@ A runtime configuration is well formed when its class table, heap, and
 <span class="c">(* Expression Evaluation Preservation *)</span></span></pre><div class="doc">
 The receiver premises supply the runtime qualifier context used in the
     non-null result.
-</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">expr_eval_preservation</span> : <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">e</span> <span class="nv">v</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">T</span> <span class="nv">ι</span> <span class="nv">qcontext</span>
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">expr_eval_preservation</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">e</span> <span class="nv">v</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">T</span> <span class="nv">ι</span> <span class="nv">qcontext</span>
   (<span class="nv">Hreceiveraddr</span> : get_this_var_mapping (vars rΓ) = Some ι)
   (<span class="nv">Hreceiverrmut</span> : (r_muttype h ι) = Some qcontext)
   (<span class="nv">Hwf</span>           : wf_r_config CT sΓ rΓ h)
   (<span class="nv">Htype</span>         : expr_has_type CT sΓ mt e T)
-  (<span class="nv">Heval</span>         : eval_expr OK P CT rΓ h e v OK P rΓ&#39; h&#39;),
+  (<span class="nv">Heval</span>         : eval_expr CT rΓ h e v OK rΓ&#39; h&#39;),
   <span class="k">match</span> v <span class="k">with</span>
   | Null_a =&gt; <span class="kt">True</span>
-  | Iot loc =&gt; wf_r_typable CT rΓ h loc T qcontext
+  | Iot loc =&gt; wf_r_typable CT h loc T qcontext
   <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> P CT sΓ mt rΓ h e v rΓ&#39; h&#39; T ι qcontext Hreceiveraddr Hreceiverrmut Hwf Htype Heval.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ mt rΓ h e v rΓ&#39; h&#39; T ι qcontext Hreceiveraddr Hreceiverrmut Hwf Htype Heval.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hevalcopy := Heval.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">remember</span> OK <span class="k">as</span> ok.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> Heval; <span class="nb">inversion</span> Htype; <span class="nb">subst</span>; <span class="kp">try</span> <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
@@ -1299,7 +1283,7 @@ The receiver premises supply the runtime qualifier context used in the
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> v <span class="k">as</span> [|loc]; [<span class="nb">trivial</span> | <span class="bp">exact</span> Hcorr].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* EBS_Field *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> v1 <span class="k">as</span> [|loc]; [<span class="nb">trivial</span>|].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">  <span class="c">(* Need to show: wf_r_typable CT rΓ h loc (vpa_type_to_type T0 ...) *)</span>
+</span></span><span class="alectryon-txt">  <span class="c">(* Need to show: wf_r_typable CT h loc (vpa_type_to_type T0 ...) *)</span>
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_config <span class="k">in</span> Hwf.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hwf <span class="k">as</span> [Hwfclass [Hwf_heap [Hwf_renv [Hwf_senv [_ Hcorr]]]]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">  <span class="c">(* Use heap well-formedness to get field typing *)</span>
@@ -1463,7 +1447,7 @@ The receiver premises supply the runtime qualifier context used in the
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
     <span class="c">(* Use wf_r_typable for x *)</span>
-</span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hx_wf : wf_r_typable CT rΓ h v T0 qcontext).</span><span class="alectryon-wsp">
+</span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hx_wf : wf_r_typable CT h v T0 qcontext).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hx_bound : x &lt; dom sΓ) <span class="bp">by</span> (<span class="nb">apply</span> static_getType_dom <span class="k">in</span> Hget_x; <span class="bp">exact</span> Hget_x).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (Hcorr ι qcontext Hreceiveraddr Hreceiverrmut x Hx_bound T0 Hget_x).</span><span class="alectryon-wsp">
@@ -1493,7 +1477,7 @@ The receiver premises supply the runtime qualifier context used in the
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hreceiveraddr; <span class="nb">subst</span> ι&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hmut <span class="k">in</span> Hreceiverrmut.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hreceiverrmut; <span class="nb">subst</span> q.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rs; <span class="nb">unfold</span> vpa_mutability_stype_fld_abs_imm <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_rec_fld <span class="k">in</span> Hqualifiertypable;
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_runtime; <span class="nb">unfold</span> vpa_mutability_stype_fld_abstract_state <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_rec_fld <span class="k">in</span> Hqualifiertypable;
     <span class="nb">destruct</span> (rqtype rqt) <span class="nb">eqn</span>: Hrqttype;
     <span class="nb">destruct</span> (sqtype T0) <span class="nb">eqn</span>: HsqtypeT0;
     <span class="nb">destruct</span> (mutability (ftype fDef)) <span class="nb">eqn</span>: Hfieldqualifier;
@@ -1550,11 +1534,11 @@ The receiver premises supply the runtime qualifier context used in the
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">simpl</span> <span class="k">in</span> Hoqualifier.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">rewrite</span> HreceiverRuntimeQualifier <span class="k">in</span> Hoqualifier.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">unfold</span> qualifier_typable <span class="k">in</span> Hoqualifier.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_rs; <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_stype_fld <span class="k">in</span> *; <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_rec_fld <span class="k">in</span> Hqualifiertypable; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_runtime; <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_stype_fld <span class="k">in</span> *; <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_rec_fld <span class="k">in</span> Hqualifiertypable; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">  </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">exfalso</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hforall2.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> v1 <span class="k">as</span> [|loc]; [<span class="nb">trivial</span>|].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">  <span class="c">(* Need to show: wf_r_typable CT rΓ h loc (vpa_type_to_type T0 ...) *)</span>
+</span></span><span class="alectryon-txt">  <span class="c">(* Need to show: wf_r_typable CT h loc (vpa_type_to_type T0 ...) *)</span>
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_config <span class="k">in</span> Hwf.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hwf <span class="k">as</span> [Hwfclass [Hwf_heap [Hwf_renv [Hwf_senv [_ Hcorr]]]]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">  <span class="c">(* Use heap well-formedness to get field typing *)</span>
@@ -1719,7 +1703,7 @@ The receiver premises supply the runtime qualifier context used in the
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
       <span class="c">(* Use wf_r_typable for x *)</span>
-</span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hx_wf : wf_r_typable CT rΓ h v T0 qcontext).</span><span class="alectryon-wsp">
+</span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hx_wf : wf_r_typable CT h v T0 qcontext).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hx_bound : x &lt; dom sΓ) <span class="bp">by</span> (<span class="nb">apply</span> static_getType_dom <span class="k">in</span> Hget_x; <span class="bp">exact</span> Hget_x).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (Hcorr ι qcontext Hreceiveraddr Hreceiverrmut x Hx_bound T0 Hget_x).</span><span class="alectryon-wsp">
@@ -1749,7 +1733,7 @@ The receiver premises supply the runtime qualifier context used in the
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hreceiveraddr; <span class="nb">subst</span> ι&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hmut <span class="k">in</span> Hreceiverrmut.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hreceiverrmut; <span class="nb">subst</span> q.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_rs; <span class="nb">unfold</span> vpa_mutability_stype_fld_abs_imm <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_rec_fld <span class="k">in</span> Hqualifiertypable;
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_runtime; <span class="nb">unfold</span> vpa_mutability_stype_fld_abstract_state <span class="k">in</span> *; <span class="nb">unfold</span> vpa_mutability_rec_fld <span class="k">in</span> Hqualifiertypable;
     <span class="nb">destruct</span> (rqtype rqt) <span class="nb">eqn</span>: Hrqttype;
     <span class="nb">destruct</span> (sqtype T0) <span class="nb">eqn</span>: HsqtypeT0;
     <span class="nb">destruct</span> (mutability (ftype fDef)) <span class="nb">eqn</span>: Hfieldqualifier;
@@ -1806,7 +1790,7 @@ The receiver premises supply the runtime qualifier context used in the
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">simpl</span> <span class="k">in</span> Hoqualifier.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">rewrite</span> HreceiverRuntimeQualifier <span class="k">in</span> Hoqualifier.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">unfold</span> qualifier_typable <span class="k">in</span> Hoqualifier.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_rs; <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_stype_fld <span class="k">in</span> *; <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_rec_fld <span class="k">in</span> Hqualifiertypable; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_runtime; <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_stype_fld <span class="k">in</span> *; <span class="kp">try</span> <span class="nb">unfold</span> vpa_mutability_rec_fld <span class="k">in</span> Hqualifiertypable; <span class="kp">try</span> <span class="bp">easy</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp">  </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">exfalso</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hforall2.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
@@ -1872,18 +1856,4 @@ The receiver premises supply the runtime qualifier context used in the
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_getObj h ly) <span class="k">as</span> [obj|] <span class="nb">eqn</span>:Hobj; [<span class="nb">trivial</span> | <span class="bp">discriminate</span> Hly_base].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">- <span class="c">(* Rest of the list: vals0 *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> runtime_lookup_list_preserves_wf_values; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">wf_class_in_table</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">C</span>
-  (<span class="nv">Hwf_ct</span>    : wf_class_table CT)
-  (<span class="nv">Hwf_class</span> : wf_class CT C)
-  (<span class="nv">Hdom</span>      : cname (signature C) &lt; dom CT),
-  find_class CT (cname (signature C)) = Some C.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT C Hwf_ct Hwf_class Hdom.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_class_table <span class="k">in</span> Hwf_ct.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hwf_ct <span class="k">as</span> [Hforall Hcname_consistent].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">  <span class="c">(* Use the bidirectional consistency directly *)</span>
-</span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Hcname_consistent.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></article></body></html>

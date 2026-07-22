@@ -95,20 +95,20 @@ Class Declaration Mutability Qualifier
   mreturn: var; <span class="c">(* Return variable *)</span>
 }.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">method_type</span> : <span class="kt">Type</span> :=
-  | AbstractImm
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">method_scope</span> : <span class="kt">Type</span> :=
+  | AbstractState
   | ConcreteState
-  | SafeRO
-  | ConcreteImm.</span><span class="alectryon-wsp">
+  | ReadonlyState
+  | TransitiveState.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">safe_readonly_method_type</span> (<span class="nv">mt</span> : method_type) : <span class="kt">Prop</span> :=
-  mt &lt;&gt; AbstractImm /\ mt &lt;&gt; ConcreteState.</span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">readonly_state_method_scope</span> (<span class="nv">mt</span> : method_scope) : <span class="kt">Prop</span> :=
+  mt = ReadonlyState \/ mt = TransitiveState.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">concrete_assignability_method_type</span> (<span class="nv">mt</span> : method_type) : <span class="kt">Prop</span> :=
-  mt = ConcreteState \/ mt = ConcreteImm.</span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">strict_assignability_method_scope</span> (<span class="nv">mt</span> : method_scope) : <span class="kt">Prop</span> :=
+  mt = ConcreteState \/ mt = TransitiveState.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Record</span> <span class="nf">method_sig</span> := {
-  mtype: method_type;
+  mscope: method_scope;
   mret : qualified_type; <span class="c">(* Return type *)</span>
   mname : method_name; <span class="c">(* Method name *)</span>
   mreceiver: qualified_type; <span class="c">(*T this*)</span>

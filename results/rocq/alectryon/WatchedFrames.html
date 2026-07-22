@@ -103,7 +103,7 @@ This is the PICO call-boundary analogue of roDOT's call case for mutable
     <span class="nv">vals</span> <span class="nv">ly</span> <span class="nv">cy</span> <span class="nv">runtime_mdef</span> <span class="nv">Ty</span>,
     wf_r_config CT sGamma rGamma h -&gt;
     stmt_typing CT sGamma mt (SCall x m y args) sGamma&#39; -&gt;
-    safe_readonly_method_type mt -&gt;
+    readonly_state_method_scope mt -&gt;
     static_getType sGamma y = Some Ty -&gt;
     runtime_getVal rGamma y = Some (Iot ly) -&gt;
     r_basetype h ly = Some cy -&gt;
@@ -136,16 +136,16 @@ This is the PICO call-boundary analogue of roDOT's call case for mutable
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">rdm_roots_descend_after_assignment</span> :
-  <span class="k">forall</span> <span class="nv">P</span> <span class="nv">CT</span> <span class="nv">sGamma</span> <span class="nv">mt</span> <span class="nv">rGamma</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">e</span> <span class="nv">old</span> <span class="nv">value</span>,
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sGamma</span> <span class="nv">mt</span> <span class="nv">rGamma</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">e</span> <span class="nv">old</span> <span class="nv">value</span>,
     wf_r_config CT sGamma rGamma h -&gt;
     stmt_typing CT sGamma mt (SVarAss x e) sGamma -&gt;
-    safe_readonly_method_type mt -&gt;
+    readonly_state_method_scope mt -&gt;
     runtime_getVal rGamma x = Some old -&gt;
-    eval_expr OK P CT rGamma h e value OK P rGamma h -&gt;
+    eval_expr CT rGamma h e value OK rGamma h -&gt;
     rdm_roots_descend_from CT h sGamma rGamma sGamma
       (update_r_env_value rGamma x value).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> P CT sGamma mt rGamma h x e old value Hwf Htyping Hscope Hx
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sGamma mt rGamma h x e old value Hwf Htyping Hscope Hx
     Heval root Hroot.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> assignment_rdm_root_has_old_ancestor; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">

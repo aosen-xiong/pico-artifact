@@ -15,13 +15,13 @@ A proof-only authority context records whether <span class="inlinecode"><span cl
     r_muttype h this = Some Mut_r.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">nonnull_subtype_preserves_authority_capability</span> :
-  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rGamma</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span> <span class="nv">authority</span>,
-    wf_r_typable CT rGamma h l T1 qcontext -&gt;
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span> <span class="nv">authority</span>,
+    wf_r_typable CT h l T1 qcontext -&gt;
     qualified_type_subtype CT T1 T2 -&gt;
     capability_in_context authority (sqtype T2) -&gt;
     capability_in_context authority (sqtype T1).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rGamma h l T1 T2 qcontext authority Htyp Hsub Hcap.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h l T1 T2 qcontext authority Htyp Hsub Hcap.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> capability_in_context <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcap <span class="k">as</span> [Hmut | [Hrdm Hauthority]].</span><span class="alectryon-wsp">

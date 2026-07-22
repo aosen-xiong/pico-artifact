@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="alectryon-standalone"><head><title>DeepImmutability.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
+<html class="alectryon-standalone"><head><title>AbstractStatePreservation.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.0
 compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require Import</span> List.</span><span class="alectryon-wsp">
@@ -8,23 +8,21 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax Notations Helpers Typing Subtyping Bigstep ViewpointAdaptation Properties Reachability Preservation ConcreteState.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">LocSet</span>      : <span class="kt">Type</span> := Ensembles.Ensemble Loc.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">shallow_immutability_pico_with_end</span> :
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">shallow_abstract_immutability_with_end</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">l</span> <span class="nv">C</span> <span class="nv">vals</span> <span class="nv">vals&#39;</span> <span class="nv">f</span>
-    (<span class="nv">Hloc</span>       : l &lt; dom h)
     (<span class="nv">Hobj_start</span> : runtime_getObj h l = Some (mkObj (mkruntime_type Imm_r C) vals))
     (<span class="nv">Hwf</span>        : wf_r_config CT sΓ rΓ h)
     (<span class="nv">Htyping</span>    : stmt_typing CT sΓ mt stmt sΓ&#39;)
-    (<span class="nv">Heval</span>      : eval_stmt OK (reachable_locations_from_initial_env CT h rΓ) CT rΓ h stmt OK (reachable_locations_from_initial_env CT h rΓ) rΓ&#39; h&#39;)
+    (<span class="nv">Heval</span>      : eval_stmt CT rΓ h stmt OK rΓ&#39; h&#39;)
     (<span class="nv">Hobj_end</span>   : runtime_getObj h&#39; l = Some (mkObj (mkruntime_type Imm_r C) vals&#39;))
     (<span class="nv">Hfield_imm</span> : sf_assignability_rel CT C f Final \/
                   sf_assignability_rel CT C f RDA \/
-                  concrete_assignability_method_type mt),
+                  strict_assignability_method_scope mt),
     nth_error vals f = nth_error vals&#39; f.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ mt rΓ h stmt rΓ&#39; h&#39; sΓ&#39; l C vals vals&#39; f
-    Hloc Hobj_start Hwf Htyping Heval Hobj_end Hfield_imm.</span><span class="alectryon-wsp">
+    Hobj_start Hwf Htyping Heval Hobj_end Hfield_imm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hloc : l &lt; dom h <span class="bp">by</span> (<span class="nb">eapply</span> runtime_getObj_dom; <span class="nb">eauto</span>).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">remember</span> OK <span class="k">as</span> ok.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> sΓ.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">generalize dependent</span> sΓ&#39;.</span><span class="alectryon-wsp">
@@ -93,7 +91,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcs <span class="k">as</span> [Hcs | Hts]; <span class="nb">subst</span> mt.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> concrete_state_write_cannot_target_immutable; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> concrete_immutability_write_cannot_target_immutable; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> transitive_state_write_cannot_target_immutable; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hvals_eq : vals&#39; = [f0 ↦ val_y] (vals)).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
@@ -161,7 +159,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> runtime_and_static_method_signatures_agree; <span class="nb">eauto</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hfield_callee : sf_assignability_rel CT C f Final \/
                           sf_assignability_rel CT C f RDA \/
-                          concrete_assignability_method_type (mtype (msignature mdef))).</span><span class="alectryon-wsp">
+                          strict_assignability_method_scope (mscope (msignature mdef))).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hfield_imm <span class="k">as</span> [Hfinal | [Hrda | Hconcrete]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>; <span class="bp">exact</span> Hfinal.</span><span class="alectryon-wsp">
@@ -171,7 +169,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> mt.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hconcrete <span class="k">as</span> [Hbad | Hbad]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> mt.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hsigeq_scope.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> concrete_assignability_submethod; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> IHHeval <span class="k">with</span> (mt:=(mtype (msignature mdef)))(sΓ&#39; := sΓmethodend)(sΓ := sΓmethodinit).</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">1</span>-<span class="mi">5</span>: <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> IHHeval <span class="k">with</span> (mt:=(mscope (msignature mdef)))(sΓ&#39; := sΓmethodend)(sΓ := sΓmethodinit).</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">1</span>-<span class="mi">5</span>: <span class="nb">auto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">remember</span> {| vars := Iot ly :: vals |} <span class="k">as</span> rΓmethodinit.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (r_muttype h ly) <span class="nb">eqn</span>: Hinnerthis.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>:{</span><span class="alectryon-wsp">
@@ -228,7 +226,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> runtime_and_static_method_signatures_agree; <span class="nb">eauto</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hfield_callee : sf_assignability_rel CT C f Final \/
                           sf_assignability_rel CT C f RDA \/
-                          concrete_assignability_method_type (mtype (msignature mdef))).</span><span class="alectryon-wsp">
+                          strict_assignability_method_scope (mscope (msignature mdef))).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hfield_imm <span class="k">as</span> [Hfinal | [Hrda | Hconcrete]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>; <span class="bp">exact</span> Hfinal.</span><span class="alectryon-wsp">
@@ -236,7 +234,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>; <span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hsigeq_scope.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> concrete_assignability_submethod; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> IHHeval <span class="k">with</span> (mt:=(mtype (msignature mdef)))(sΓ&#39; := sΓmethodend)(sΓ := sΓmethodinit).</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">1</span>-<span class="mi">5</span>: <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> IHHeval <span class="k">with</span> (mt:=(mscope (msignature mdef)))(sΓ&#39; := sΓmethodend)(sΓ := sΓmethodinit).</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">1</span>-<span class="mi">5</span>: <span class="nb">auto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">remember</span> {| vars := Iot ly :: vals |} <span class="k">as</span> rΓmethodinit.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (r_muttype h ly) <span class="nb">eqn</span>: Hinnerthis.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="mi">2</span>:{</span><span class="alectryon-wsp">
@@ -281,41 +279,40 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">contradiction</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-  <span class="c">(* Seq *)</span> <span class="c">(* Apply IH transitively *)</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Htyping; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (eval_stmt_preserves_heap_domain_simple P CT rΓ h s1 rΓ&#39; h&#39; Heval1) <span class="k">as</span> Hh&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (eval_stmt_preserves_heap_domain_simple CT rΓ h s1 rΓ&#39; h&#39; Heval1) <span class="k">as</span> Hh&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hloc_h&#39; : l &lt; dom h&#39;) <span class="bp">by</span> <span class="bp">lia</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (runtime_getObj_Some h&#39; l Hloc_h&#39;) <span class="k">as</span> [C&#39; [values&#39; Hh&#39;some]].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (runtime_preserves_r_type_heap P CT rΓ h l ({| rqtype := Imm_r; rctype := C |})
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (runtime_preserves_r_type_heap CT rΓ h l ({| rqtype := Imm_r; rctype := C |})
   h&#39; vals s1 rΓ&#39; Hobj_start Heval1) <span class="k">as</span> [vals1 Hrtype].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hrtype <span class="k">in</span> Hh&#39;some; <span class="nb">inversion</span> Hh&#39;some; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (IHHeval1 Hloc Heqok values&#39; Hrtype vals Hobj_start mt Hfield_imm sΓ&#39;0 sΓ Hwf Htype1).</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (preservation_pico P CT sΓ mt rΓ h s1 rΓ&#39; h&#39; sΓ&#39;0 Hwf Htype1 Heval1) <span class="k">as</span> Hwf&#39;.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (IHHeval2 Hloc_h&#39; Heqok vals&#39; Hobj_end values&#39; Hrtype mt Hfield_imm sΓ&#39; sΓ&#39;0 Hwf&#39; Htype2).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (IHHeval1 Heqok Hloc values&#39; Hrtype vals Hobj_start mt Hfield_imm sΓ&#39;0 sΓ Hwf Htype1).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (preservation_pico CT sΓ mt rΓ h s1 rΓ&#39; h&#39; sΓ&#39;0 Hwf Htype1 Heval1) <span class="k">as</span> Hwf&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (IHHeval2 Heqok Hloc_h&#39; vals&#39; Hobj_end values&#39; Hrtype mt Hfield_imm sΓ&#39; sΓ&#39;0 Hwf&#39; Htype2).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> IHHeval2 <span class="k">in</span> IHHeval1; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><div class="doc">
 Public shallow-immutability statement.  Evaluation preserves the runtime
     type and existence of every pre-existing object, so callers need not
     provide the final object as a separate premise.
-</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Theorem</span> <span class="nf">shallow_immutability_pico</span> :
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Theorem</span> <span class="nf">shallow_abstract_immutability</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">l</span> <span class="nv">C</span> <span class="nv">vals</span> <span class="nv">f</span>
-    (<span class="nv">Hloc</span>       : l &lt; dom h)
     (<span class="nv">Hobj_start</span> : runtime_getObj h l = Some (mkObj (mkruntime_type Imm_r C) vals))
     (<span class="nv">Hwf</span>        : wf_r_config CT sΓ rΓ h)
     (<span class="nv">Htyping</span>    : stmt_typing CT sΓ mt stmt sΓ&#39;)
-    (<span class="nv">Heval</span>      : eval_stmt OK (reachable_locations_from_initial_env CT h rΓ) CT rΓ h stmt OK (reachable_locations_from_initial_env CT h rΓ) rΓ&#39; h&#39;)
+    (<span class="nv">Heval</span>      : eval_stmt CT rΓ h stmt OK rΓ&#39; h&#39;)
     (<span class="nv">Hfield_imm</span> : sf_assignability_rel CT C f Final \/
                   sf_assignability_rel CT C f RDA \/
-                  concrete_assignability_method_type mt),
+                  strict_assignability_method_scope mt),
     <span class="k">exists</span> <span class="nv">vals&#39;</span>,
       runtime_getObj h&#39; l = Some (mkObj (mkruntime_type Imm_r C) vals&#39;) /\
       nth_error vals f = nth_error vals&#39; f.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ mt rΓ h stmt rΓ&#39; h&#39; sΓ&#39; l C vals f
-    Hloc Hobj_start Hwf Htyping Heval Hfield_imm.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_preserves_r_type_heap (reachable_locations_from_initial_env CT h rΓ) CT rΓ h l
+    Hobj_start Hwf Htyping Heval Hfield_imm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_preserves_r_type_heap CT rΓ h l
     (mkruntime_type Imm_r C) h&#39; vals stmt rΓ&#39; Hobj_start Heval)
     <span class="k">as</span> [vals&#39; Hobj_end].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">vals&#39;</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">exact</span> Hobj_end|].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> shallow_immutability_pico_with_end; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> shallow_abstract_immutability_with_end; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">imm_step_preserves_imm</span> :
@@ -467,14 +464,13 @@ Public shallow-immutability statement.  Evaluation preserves the runtime
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> reachable_abs_from_imm_points_to_imm; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">deep_immutability_pico_with_end</span> :
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">abstract_state_preservation_with_end</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">root</span> <span class="nv">C0</span> <span class="nv">vals0</span> <span class="nv">l</span> <span class="nv">C</span> <span class="nv">qr</span> <span class="nv">vals</span> <span class="nv">vals&#39;</span> <span class="nv">f</span>
-    (<span class="nv">Hdom</span> : root &lt; dom h)
     (<span class="nv">Himm_root</span> : runtime_getObj h root = Some (mkObj (mkruntime_type Imm_r C0) vals0))
     (<span class="nv">Hreach</span> : reachable_abs CT h root l)
     (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
     (<span class="nv">Htyping</span> : stmt_typing CT sΓ mt stmt sΓ&#39;)
-    (<span class="nv">Heval</span> : eval_stmt OK (reachable_locations_from_initial_env CT h rΓ) CT rΓ h stmt OK (reachable_locations_from_initial_env CT h rΓ) rΓ&#39; h&#39;)
+    (<span class="nv">Heval</span> : eval_stmt CT rΓ h stmt OK rΓ&#39; h&#39;)
     (<span class="nv">Hobj</span> : runtime_getObj h l = Some (mkObj (mkruntime_type qr C) vals))
     (<span class="nv">Hobj&#39;</span> : runtime_getObj h&#39; l = Some (mkObj (mkruntime_type qr C) vals&#39;))
     (<span class="nv">Hprotected</span> : sf_assignability_rel CT C f Final \/
@@ -486,22 +482,20 @@ Public shallow-immutability statement.  Evaluation preserves the runtime
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hreach <span class="k">as</span> [C&#39; [vals&#39;&#39; Himm_l]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Himm_l <span class="k">in</span> Hobj.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">injection</span> Hobj; <span class="nb">intros</span>; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> shallow_immutability_pico_with_end <span class="k">with</span> (l := l); <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> runtime_getObj_dom <span class="k">in</span> Himm_l.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Himm_l.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> shallow_abstract_immutability_with_end <span class="k">with</span> (l := l); <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hprotected <span class="k">as</span> [Hfinal | Hrda].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>; <span class="bp">exact</span> Hfinal.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>; <span class="nb">left</span>; <span class="bp">exact</span> Hrda.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><div class="doc">
-Public transitive abstract-immutability statement with the final object
+Public abstract-state-preservation statement with the final object
     derived from evaluation.
-</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Theorem</span> <span class="nf">deep_immutability_pico</span> :
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Theorem</span> <span class="nf">abstract_state_preservation</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">root</span> <span class="nv">C0</span> <span class="nv">vals0</span> <span class="nv">l</span> <span class="nv">C</span> <span class="nv">qr</span> <span class="nv">vals</span> <span class="nv">f</span>
-    (<span class="nv">Hdom</span> : root &lt; dom h)
     (<span class="nv">Himm_root</span> : runtime_getObj h root = Some (mkObj (mkruntime_type Imm_r C0) vals0))
     (<span class="nv">Hreach</span> : reachable_abs CT h root l)
     (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
     (<span class="nv">Htyping</span> : stmt_typing CT sΓ mt stmt sΓ&#39;)
-    (<span class="nv">Heval</span> : eval_stmt OK (reachable_locations_from_initial_env CT h rΓ) CT rΓ h stmt OK (reachable_locations_from_initial_env CT h rΓ) rΓ&#39; h&#39;)
+    (<span class="nv">Heval</span> : eval_stmt CT rΓ h stmt OK rΓ&#39; h&#39;)
     (<span class="nv">Hobj</span> : runtime_getObj h l = Some (mkObj (mkruntime_type qr C) vals))
     (<span class="nv">Hprotected</span> : sf_assignability_rel CT C f Final \/
                   sf_assignability_rel CT C f RDA),
@@ -510,10 +504,10 @@ Public transitive abstract-immutability statement with the final object
       nth_error vals f = nth_error vals&#39; f.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ mt rΓ h stmt rΓ&#39; h&#39; sΓ&#39; root C0 vals0 l C qr vals f
-    Hdom Himm_root Hreach Hwf Htyping Heval Hobj Hprotected.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_preserves_r_type_heap (reachable_locations_from_initial_env CT h rΓ) CT rΓ h l
+    Himm_root Hreach Hwf Htyping Heval Hobj Hprotected.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_preserves_r_type_heap CT rΓ h l
     (mkruntime_type qr C) h&#39; vals stmt rΓ&#39; Hobj Heval)
     <span class="k">as</span> [vals&#39; Hobj&#39;].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">vals&#39;</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">exact</span> Hobj&#39;|].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> deep_immutability_pico_with_end; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> abstract_state_preservation_with_end; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></article></body></html>

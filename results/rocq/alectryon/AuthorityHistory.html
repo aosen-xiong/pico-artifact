@@ -66,10 +66,10 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sGamma</span> <span class="nv">rGamma</span> <span class="nv">h</span>,
     wf_r_config CT sGamma rGamma h -&gt;
     env_respects_protected_set
-      (reachable_locations_from_initial_env CT h rGamma) sGamma rGamma -&gt;
+      (reachable_locations_from_initial_env h rGamma) sGamma rGamma -&gt;
     authority_component_history_state CT
-      (reachable_locations_from_initial_env CT h rGamma)
-      (reachable_locations_from_initial_env CT h rGamma)
+      (reachable_locations_from_initial_env h rGamma)
+      (reachable_locations_from_initial_env h rGamma)
       (Empty_set Loc) (dom h) Imm_r sGamma rGamma h.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sGamma rGamma h Hwf Henv.</span><span class="alectryon-wsp">
@@ -94,14 +94,15 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
     wf_r_config CT sGamma rGamma h -&gt;
     authority_component_history_state CT P Z M cutoff authority
       sGamma rGamma h -&gt;
-    eval_expr OK P CT rGamma h e (Iot l) OK P rGamma h -&gt;
+    retained_heap_closed CT h M -&gt;
+    eval_expr CT rGamma h e (Iot l) OK rGamma h -&gt;
     expr_has_type CT sGamma mt e T -&gt;
-    safe_readonly_method_type mt -&gt;
+    readonly_state_method_scope mt -&gt;
     capability_in_context authority (sqtype T) -&gt;
     In Loc M l.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> P Z M cutoff CT authority sGamma mt rGamma h e l T Hwf
-    [Hcomponent [Hroots Hsound]] Heval Htyping Hscope Hcap.</span><span class="alectryon-wsp">
+    [Hcomponent [Hroots Hsound]] Hretained Heval Htyping Hscope Hcap.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcomponent <span class="k">as</span>
     [[Hcontains [Henv [Hconfined [Hclosed [Hruntime
       [Hmutroots [Havoid Hseparated]]]]]]]
@@ -112,20 +113,25 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Htyping; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">exfalso</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hmt; <span class="nb">subst</span>; <span class="nb">destruct</span> Hscope; <span class="bp">congruence</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hshape :
-        mutability (ftype fDef) = RDM_f /\
-        capability_in_context authority (sqtype T0)).</span><span class="alectryon-wsp">
+        (mutability (ftype fDef) = RDM_f /\
+         capability_in_context authority (sqtype T0)) \/
+        (mutability (ftype fDef) = Mut_f /\ sqtype T0 = Mut)).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcap <span class="k">as</span> [Hout | [Hout Hauth]];
         <span class="nb">destruct</span> authority;
         <span class="nb">destruct</span> (sqtype T0) <span class="nb">eqn</span>:Hreceiver;
         <span class="nb">destruct</span> (mutability (ftype fDef)) <span class="nb">eqn</span>:Hfieldqual;
-        <span class="nb">simpl</span> <span class="k">in</span> Hout; <span class="kp">try</span> <span class="bp">discriminate</span>;
-        <span class="nb">split</span>; <span class="nb">auto</span>;
+        <span class="nb">simpl</span> <span class="k">in</span> Hout; <span class="kp">try</span> <span class="bp">discriminate</span>; <span class="nb">auto</span>;
         <span class="nb">unfold</span> capability_in_context; <span class="nb">auto</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hshape <span class="k">as</span> [Hrdm Hreceiver_cap].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> HreceiverM : In Loc M v.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Hroots.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">x</span>, T0.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">assumption</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Hclosed; [<span class="bp">exact</span> HreceiverM|].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> runtime_static_rdm_edge; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hshape <span class="k">as</span> [[Hrdm Hreceiver_cap] | [Hmut Hreceiver]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> HreceiverM : In Loc M v.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Hroots.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">x</span>, T0.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">assumption</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Hclosed; [<span class="bp">exact</span> HreceiverM|].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> runtime_static_rdm_edge; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> HreceiverM : In Loc M v.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Hroots.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">x</span>, T0.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="kp">try</span> <span class="bp">assumption</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">          </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> capability_in_context.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hreceiver.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> Hretained; [<span class="bp">exact</span> HreceiverM|].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> runtime_static_mut_field_edge; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">authority_history_after_assignment</span> :
@@ -133,15 +139,16 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
     wf_r_config CT sGamma rGamma h -&gt;
     authority_component_history_state CT P Z M cutoff authority
       sGamma rGamma h -&gt;
+    retained_heap_closed CT h M -&gt;
     stmt_typing CT sGamma mt (SVarAss x e) sGamma -&gt;
-    safe_readonly_method_type mt -&gt;
+    readonly_state_method_scope mt -&gt;
     runtime_getVal rGamma x = Some old -&gt;
-    eval_expr OK P CT rGamma h e value OK P rGamma h -&gt;
+    eval_expr CT rGamma h e value OK rGamma h -&gt;
     authority_component_history_state CT P Z M cutoff authority sGamma
       (update_r_env_value rGamma x value) h.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT P Z M cutoff authority sGamma mt rGamma h x e old value Hwf
-    [Hcomponent [Hroots Hsound]] Htyping Hscope Hx Heval.</span><span class="alectryon-wsp">
+    [Hcomponent [Hroots Hsound]] Hretained Htyping Hscope Hx Heval.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> component_forward_history_after_assignment; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
@@ -158,11 +165,11 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">injection</span> Hval <span class="k">as</span> &lt;-.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hget_x <span class="k">in</span> Htype.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">injection</span> Htype <span class="k">as</span> &lt;-.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (extract_receiver_from_wf_config CT sGamma rGamma h Hwf)
           <span class="k">as</span> [this [qcontext [Hrthis [_ Hqcontext]]]].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (expr_eval_preservation P CT sGamma mt rGamma h e
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (expr_eval_preservation CT sGamma mt rGamma h e
           (Iot result) rGamma h Te this qcontext Hrthis Hqcontext Hwf Htype_e
           Heval) <span class="k">as</span> Htypable.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hexprcap := nonnull_subtype_preserves_authority_capability
-          CT rGamma h result Te Tx qcontext authority Htypable Hsub Hcap.</span><span class="alectryon-wsp">
+          CT h result Te Tx qcontext authority Htypable Hsub Hcap.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> authority_expression_capability_in_history
           <span class="k">with</span> (P := P) (Z := Z) (cutoff := cutoff) (CT := CT)
             (authority := authority) (sGamma := sGamma) (mt := mt)
@@ -212,8 +219,8 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
     authority_component_history_state CT P Z M cutoff authority
       sGamma rGamma h -&gt;
     stmt_typing CT sGamma mt (SFldWrite x f y) sGamma&#39; -&gt;
-    safe_readonly_method_type mt -&gt;
-    eval_stmt OK P CT rGamma h (SFldWrite x f y) OK P rGamma&#39; h&#39; -&gt;
+    readonly_state_method_scope mt -&gt;
+    eval_stmt CT rGamma h (SFldWrite x f y) OK rGamma&#39; h&#39; -&gt;
     <span class="k">exists</span> <span class="nv">M&#39;</span>,
       Included Loc M M&#39; /\
       authority_component_history_state CT P Z M&#39; cutoff authority
@@ -480,7 +487,7 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
     stmt_typing CT sGamma mt (SNew x qc C args) sGamma&#39; -&gt;
     cutoff &lt;= dom h -&gt;
     ~ In Loc Z (dom h) -&gt;
-    eval_stmt OK P CT rGamma h (SNew x qc C args) OK P rGamma&#39; h&#39; -&gt;
+    eval_stmt CT rGamma h (SNew x qc C args) OK rGamma&#39; h&#39; -&gt;
     <span class="k">exists</span> <span class="nv">M&#39;</span>,
       Included Loc M M&#39; /\
       authority_component_history_state CT P Z M&#39; cutoff authority
@@ -558,7 +565,7 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
     authority_component_history_state CT P Z M cutoff caller_authority
       sGamma rGamma h -&gt;
     stmt_typing CT sGamma mt (SCall x m y args) sGamma&#39; -&gt;
-    safe_readonly_method_type mt -&gt;
+    readonly_state_method_scope mt -&gt;
     static_getType sGamma y = Some Ty -&gt;
     runtime_getVal rGamma y = Some (Iot ly) -&gt;
     r_basetype h ly = Some cy -&gt;
@@ -574,12 +581,14 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
     [Hcomponent [Hroots Hsound]] Htyping Hscope Hgety Hval Hbase Hfind
     Hargs root [z [T [Htype [Hrootval Hcap]]]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcap <span class="k">as</span> [Hmut | [Hrdm Hcallee_mut]].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">exfalso</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> safe_call_callee_has_no_mut_root <span class="k">with</span>
-      (CT := CT) (sGamma := sGamma) (mt := mt) (rGamma := rGamma)
-      (h := h) (x := x) (m := m) (y := y) (args := args)
-      (sGamma&#39; := sGamma&#39;) (vals := vals) (ly := ly) (cy := cy)
-      (runtime_mdef := runtime_mdef) (root := root); <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">z</span>, T.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">assumption</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> Hroots.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (safe_call_callee_mut_root_origin CT sGamma mt rGamma h x m y
+      args sGamma&#39; vals ly cy runtime_mdef root Hwf Htyping Hscope Hval Hbase
+      Hfind Hargs) <span class="k">as</span> [caller_z [caller_T
+        [Hcaller_type [Hcaller_val Hcaller_mut]]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">z</span>, T.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="bp">assumption</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">caller_z</span>, caller_T.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="kp">try</span> <span class="bp">assumption</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> capability_in_context.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hcaller_mut.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hrootrdm : typed_root RDM
       (mreceiver (msignature runtime_mdef) ::
         mparams (msignature runtime_mdef))
@@ -610,7 +619,7 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
     authority_component_history_state CT P Z M cutoff caller_authority
       sGamma rGamma h -&gt;
     stmt_typing CT sGamma mt (SCall x m y args) sGamma&#39; -&gt;
-    safe_readonly_method_type mt -&gt;
+    readonly_state_method_scope mt -&gt;
     static_getType sGamma y = Some Ty -&gt;
     runtime_getVal rGamma y = Some (Iot ly) -&gt;
     r_basetype h ly = Some cy -&gt;
@@ -643,7 +652,7 @@ The forward set <span class="inlinecode"><span class="id" title="var">M</span></
     authority_component_history_state CT P Z M cutoff caller_authority
       sGamma rGamma h -&gt;
     stmt_typing CT sGamma mt (SCall x m y args) sGamma&#39; -&gt;
-    safe_readonly_method_type mt -&gt;
+    readonly_state_method_scope mt -&gt;
     static_getType sGamma y = Some Ty -&gt;
     runtime_getVal rGamma y = Some (Iot ly) -&gt;
     r_basetype h ly = Some cy -&gt;

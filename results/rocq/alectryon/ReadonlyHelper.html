@@ -2,18 +2,18 @@
 <html class="alectryon-standalone"><head><title>ReadonlyHelper.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.0
-compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax Notations Helpers Typing Subtyping Bigstep ViewpointAdaptation Properties DeepImmutability Reachability Preservation ExecutionConfinement.</span><span class="alectryon-wsp">
+compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax Notations Helpers Typing Subtyping Bigstep ViewpointAdaptation Properties AbstractStatePreservation Reachability Preservation ExecutionConfinement.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require Import</span> List.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require</span> String.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Import</span> ListNotations.</span></span></pre><div class="doc">
 Qualifiers that do not grant direct mutable authority.
-</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">is_safe_mode</span> (<span class="nv">m</span> : q) : <span class="kt">Prop</span> :=
-  m = RO \/ m = Lost \/ m = RDM \/ m = Imm.</span><span class="alectryon-wsp">
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">is_nonmutable_qualifier</span> (<span class="nv">qualifier</span> : q) : <span class="kt">Prop</span> :=
+  qualifier = RO \/ qualifier = Lost \/ qualifier = RDM \/ qualifier = Imm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">solve_safe_mode</span> :=
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">solve_nonmutable_qualifier</span> :=
   <span class="k">match goal with</span>
   <span class="c">(* Recursively select a disjunct. *)</span>
-  | |- <span class="nl">?A</span> \/ <span class="nl">?B</span> =&gt; (<span class="nb">left</span>; solve_safe_mode) || (<span class="nb">right</span>; solve_safe_mode)
+  | |- <span class="nl">?A</span> \/ <span class="nl">?B</span> =&gt; (<span class="nb">left</span>; solve_nonmutable_qualifier) || (<span class="nb">right</span>; solve_nonmutable_qualifier)
   | |- <span class="nl">?X</span> = <span class="nl">?X</span> =&gt; <span class="bp">reflexivity</span>
   | |- _ =&gt; <span class="bp">assumption</span>
   <span class="k">end</span>.</span></span></pre><div class="doc">
@@ -26,7 +26,7 @@ Every reference into <span class="inlinecode"><span class="id" title="var">P</sp
     runtime_getVal rΓ x = Some (Iot l) -&gt;
 
     Ensembles.In Loc P l -&gt;
-    is_safe_mode (sqtype T).</span><span class="alectryon-wsp">
+    is_nonmutable_qualifier (sqtype T).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">extract_receiver_from_wf_config</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span>
@@ -50,10 +50,10 @@ Every reference into <span class="inlinecode"><span class="id" title="var">P</sp
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">subtype_safe_implies_safe</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">T_sub</span> <span class="nv">T_super</span>
          (<span class="nv">Hsub</span> : qualified_type_subtype CT T_sub T_super)
-         (<span class="nv">Hsafe_sub</span> : is_safe_mode (sqtype T_sub)),
-    is_safe_mode (sqtype T_super).</span><span class="alectryon-wsp">
+         (<span class="nv">Hsafe_sub</span> : is_nonmutable_qualifier (sqtype T_sub)),
+    is_nonmutable_qualifier (sqtype T_super).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> is_safe_mode <span class="k">in</span> *.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> is_nonmutable_qualifier <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hsub; <span class="nb">subst</span>; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- H0 <span class="k">in</span> Hsafe_sub.</span><span class="alectryon-wsp">
@@ -67,14 +67,14 @@ Every reference into <span class="inlinecode"><span class="id" title="var">P</sp
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">adapted_subtype_safe_implies_safe</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">T_sub</span> <span class="nv">T_Receiver</span> <span class="nv">T_super</span>
-         (<span class="nv">Hsub</span> : qualified_type_subtype CT T_sub (vpa_mutability_tt_safe_ro T_Receiver T_super))
-         (<span class="nv">Hsafe_sub</span> : is_safe_mode (sqtype T_sub)),
-    is_safe_mode (sqtype T_super).</span><span class="alectryon-wsp">
+         (<span class="nv">Hsub</span> : qualified_type_subtype CT T_sub (vpa_mutability_tt_readonly_state T_Receiver T_super))
+         (<span class="nv">Hsafe_sub</span> : is_nonmutable_qualifier (sqtype T_sub)),
+    is_nonmutable_qualifier (sqtype T_super).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> is_safe_mode <span class="k">in</span> *.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> is_nonmutable_qualifier <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_safe_ro <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_mutability_tt_readonly_state <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (sqtype T_Receiver) <span class="nb">eqn</span>: Hreceiver;
   <span class="nb">destruct</span> (sqtype T_super) <span class="nb">eqn</span>: HSuper;
   <span class="nb">destruct</span> Hsafe_sub <span class="k">as</span> [Hrd | [Hlost| [HRDM | HImm]]];
@@ -109,8 +109,8 @@ Every reference into <span class="inlinecode"><span class="id" title="var">P</sp
     (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
     (<span class="nv">Hall_readonly</span> : <span class="k">forall</span> <span class="nv">y</span> <span class="nv">T</span>,
       static_getType sΓ y = Some T -&gt;
-      is_safe_mode (sqtype T)),
-    env_respects_protected_set (reachable_locations_from_initial_env CT h rΓ) sΓ rΓ.</span><span class="alectryon-wsp">
+      is_nonmutable_qualifier (sqtype T)),
+    env_respects_protected_set (reachable_locations_from_initial_env h rΓ) sΓ rΓ.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> env_respects_protected_set.</span><span class="alectryon-wsp">
@@ -128,8 +128,8 @@ Every reference into <span class="inlinecode"><span class="id" title="var">P</sp
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">reachable_locations_from_initial_env_dom</span> :
-  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">rΓ</span> <span class="nv">l_y</span>
-    (<span class="nv">Hin</span> : Ensembles.In Loc (reachable_locations_from_initial_env CT h rΓ) l_y),
+  <span class="k">forall</span> <span class="nv">h</span> <span class="nv">rΓ</span> <span class="nv">l_y</span>
+    (<span class="nv">Hin</span> : Ensembles.In Loc (reachable_locations_from_initial_env h rΓ) l_y),
     l_y &lt; dom h.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">

@@ -12,7 +12,7 @@ Extract the runtime typability fact supplied by a well-formed
     wf_r_config CT sΓ rΓ h -&gt;
     static_getType sΓ x = Some T -&gt;
     runtime_getVal rΓ x = Some (Iot loc) -&gt;
-    <span class="k">exists</span> <span class="nv">qcontext</span>, wf_r_typable CT rΓ h loc T qcontext.</span><span class="alectryon-wsp">
+    <span class="k">exists</span> <span class="nv">qcontext</span>, wf_r_typable CT h loc T qcontext.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ rΓ h x loc T Hwf Hget_x Hval_x.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_config <span class="k">in</span> Hwf.</span><span class="alectryon-wsp">
@@ -36,7 +36,7 @@ Both CS and TS use concrete assignability adaptation.  A field write in
     either scope therefore requires a statically mutable receiver.
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Theorem</span> <span class="nf">concrete_assignability_field_write_requires_mutable_receiver</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span> <span class="nv">sΓ&#39;</span>,
-    concrete_assignability_method_type mt -&gt;
+    strict_assignability_method_scope mt -&gt;
     stmt_typing CT sΓ mt (SFldWrite x f y) sΓ&#39; -&gt;
     <span class="k">exists</span> <span class="nv">Tx</span>,
       static_getType sΓ x = Some Tx /\
@@ -46,12 +46,12 @@ Both CS and TS use concrete assignability adaptation.  A field write in
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Htyping; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hscope <span class="k">as</span> [H | H]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">Tx</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">assumption</span>|].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_assignability_concret_imm <span class="k">in</span> Hassignable.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_assignability_cs_ts <span class="k">in</span> Hassignable.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (sqtype Tx), a; <span class="nb">simpl</span> <span class="k">in</span> Hassignable;
       <span class="kp">try</span> <span class="bp">discriminate</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hscope <span class="k">as</span> [H | H]; <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">Tx</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">assumption</span>|].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_assignability_concret_imm <span class="k">in</span> Hassignable.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> vpa_assignability_cs_ts <span class="k">in</span> Hassignable.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (sqtype Tx), a; <span class="nb">simpl</span> <span class="k">in</span> Hassignable;
       <span class="kp">try</span> <span class="bp">discriminate</span>; <span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
@@ -67,9 +67,9 @@ Both CS and TS use concrete assignability adaptation.  A field write in
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Corollary</span> <span class="nf">concrete_immutability_field_write_requires_mutable_receiver</span> :
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Corollary</span> <span class="nf">transitive_state_field_write_requires_mutable_receiver</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span> <span class="nv">sΓ&#39;</span>,
-    stmt_typing CT sΓ ConcreteImm (SFldWrite x f y) sΓ&#39; -&gt;
+    stmt_typing CT sΓ TransitiveState (SFldWrite x f y) sΓ&#39; -&gt;
     <span class="k">exists</span> <span class="nv">Tx</span>,
       static_getType sΓ x = Some Tx /\
       sqtype Tx = Mut.</span><span class="alectryon-wsp">
@@ -80,7 +80,7 @@ Both CS and TS use concrete assignability adaptation.  A field write in
 The CS/TS assignability policy is a strengthening of the AS/RS policy.
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Corollary</span> <span class="nf">concrete_state_write_is_abstract_state_write</span> :
   <span class="k">forall</span> <span class="nv">q</span> <span class="nv">a</span>,
-    vpa_assignability_concret_imm q a = Assignable -&gt;
+    vpa_assignability_cs_ts q a = Assignable -&gt;
     vpa_assignability q a = Assignable.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> concrete_assignable_implies_assignable.</span><span class="alectryon-wsp">
@@ -89,7 +89,7 @@ No field write checked with concrete assignability can target an immutable
     runtime object in a well-formed configuration.
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">concrete_assignability_write_cannot_target_immutable</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">mt</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span> <span class="nv">sΓ&#39;</span> <span class="nv">loc</span> <span class="nv">C</span> <span class="nv">vals</span>,
-    concrete_assignability_method_type mt -&gt;
+    strict_assignability_method_scope mt -&gt;
     wf_r_config CT sΓ rΓ h -&gt;
     stmt_typing CT sΓ mt (SFldWrite x f y) sΓ&#39; -&gt;
     runtime_getVal rΓ x = Some (Iot loc) -&gt;
@@ -106,7 +106,7 @@ No field write checked with concrete assignability can target an immutable
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj <span class="k">in</span> Htypable.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Htypable <span class="k">as</span> [_ Hqual].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hmut <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs,
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_runtime,
     qualifier_typable_heap <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> qcontext; <span class="nb">simpl</span> <span class="k">in</span> Hqual; <span class="bp">contradiction</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
@@ -123,10 +123,10 @@ No field write checked with concrete assignability can target an immutable
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Corollary</span> <span class="nf">concrete_immutability_write_cannot_target_immutable</span> :
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Corollary</span> <span class="nf">transitive_state_write_cannot_target_immutable</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">f</span> <span class="nv">y</span> <span class="nv">sΓ&#39;</span> <span class="nv">loc</span> <span class="nv">C</span> <span class="nv">vals</span>,
     wf_r_config CT sΓ rΓ h -&gt;
-    stmt_typing CT sΓ ConcreteImm (SFldWrite x f y) sΓ&#39; -&gt;
+    stmt_typing CT sΓ TransitiveState (SFldWrite x f y) sΓ&#39; -&gt;
     runtime_getVal rΓ x = Some (Iot loc) -&gt;
     runtime_getObj h loc = Some (mkObj (mkruntime_type Imm_r C) vals) -&gt;
     <span class="kt">False</span>.</span><span class="alectryon-wsp">

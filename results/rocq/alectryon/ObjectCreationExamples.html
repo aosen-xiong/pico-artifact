@@ -39,7 +39,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
   [ex_type RDM; ex_type qarg; ex_type RO].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Example</span> <span class="nf">object_creation_rdm_constructor_rdm_instantiation</span> :
-  stmt_typing ex_CT (ex_senv RDM) SafeRO (SNew <span class="mi">2</span> RDM_c <span class="mi">0</span> [<span class="mi">1</span>]) (ex_senv RDM).</span><span class="alectryon-wsp">
+  stmt_typing ex_CT (ex_senv RDM) ReadonlyState (SNew <span class="mi">2</span> RDM_c <span class="mi">0</span> [<span class="mi">1</span>]) (ex_senv RDM).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> S_New <span class="k">with</span>
     (Tx := ex_type RO)
@@ -61,7 +61,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Example</span> <span class="nf">object_creation_rdm_constructor_imm_instantiation</span> :
-  stmt_typing ex_CT (ex_senv Imm) SafeRO (SNew <span class="mi">2</span> Imm_c <span class="mi">0</span> [<span class="mi">1</span>]) (ex_senv Imm).</span><span class="alectryon-wsp">
+  stmt_typing ex_CT (ex_senv Imm) ReadonlyState (SNew <span class="mi">2</span> Imm_c <span class="mi">0</span> [<span class="mi">1</span>]) (ex_senv Imm).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> S_New <span class="k">with</span>
     (Tx := ex_type RO)
@@ -83,7 +83,7 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Example</span> <span class="nf">object_creation_rdm_constructor_mut_instantiation</span> :
-  stmt_typing ex_CT (ex_senv Mut) SafeRO (SNew <span class="mi">2</span> Mut_c <span class="mi">0</span> [<span class="mi">1</span>]) (ex_senv Mut).</span><span class="alectryon-wsp">
+  stmt_typing ex_CT (ex_senv Mut) ReadonlyState (SNew <span class="mi">2</span> Mut_c <span class="mi">0</span> [<span class="mi">1</span>]) (ex_senv Mut).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> S_New <span class="k">with</span>
     (Tx := ex_type RO)

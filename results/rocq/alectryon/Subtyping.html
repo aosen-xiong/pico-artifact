@@ -7,34 +7,44 @@ compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indi
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Import</span> ListNotations.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax Notations LibTactics Tactics Helpers.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">method_subtype</span> : method_type -&gt; method_type -&gt; <span class="kt">Prop</span> :=
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">method_scope_subtype</span> : method_scope -&gt; method_scope -&gt; <span class="kt">Prop</span> :=
   | method_subtyping_refl : <span class="k">forall</span> <span class="nv">mt</span>,
-      method_subtype mt mt
-  | method_cs_as : method_subtype ConcreteState AbstractImm
-  | method_rs_as : method_subtype SafeRO AbstractImm
-  | method_ts_as : method_subtype ConcreteImm AbstractImm
-  | method_ts_cs : method_subtype ConcreteImm ConcreteState
-  | method_ts_rs : method_subtype ConcreteImm SafeRO
+      method_scope_subtype mt mt
+  | method_cs_as : method_scope_subtype ConcreteState AbstractState
+  | method_rs_as : method_scope_subtype ReadonlyState AbstractState
+  | method_ts_as : method_scope_subtype TransitiveState AbstractState
+  | method_ts_cs : method_scope_subtype TransitiveState ConcreteState
+  | method_ts_rs : method_scope_subtype TransitiveState ReadonlyState
   .</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">method_subtyping_trans</span> :
   <span class="k">forall</span> <span class="nv">mt1</span> <span class="nv">mt2</span> <span class="nv">mt3</span>
-    (<span class="nv">H12</span> : method_subtype mt1 mt2)
-    (<span class="nv">H23</span> : method_subtype mt2 mt3),
-    method_subtype mt1 mt3.</span><span class="alectryon-wsp">
+    (<span class="nv">H12</span> : method_scope_subtype mt1 mt2)
+    (<span class="nv">H23</span> : method_scope_subtype mt2 mt3),
+    method_scope_subtype mt1 mt3.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> mt1 mt2 mt3 H12 H23.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> H12; <span class="nb">subst</span>; <span class="nb">inversion</span> H23; <span class="nb">subst</span>; <span class="nb">constructor</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">concrete_assignability_submethod</span> : <span class="k">forall</span> <span class="nv">callee</span> <span class="nv">caller</span>,
-  concrete_assignability_method_type caller -&gt;
-  method_subtype callee caller -&gt;
-  concrete_assignability_method_type callee.</span><span class="alectryon-wsp">
+  strict_assignability_method_scope caller -&gt;
+  method_scope_subtype callee caller -&gt;
+  strict_assignability_method_scope callee.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> callee caller Hcaller Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcaller <span class="k">as</span> [Hcaller | Hcaller]; <span class="nb">subst</span> caller;
-    <span class="nb">inversion</span> Hsub; <span class="nb">subst</span>; <span class="nb">unfold</span> concrete_assignability_method_type; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+    <span class="nb">inversion</span> Hsub; <span class="nb">subst</span>; <span class="nb">unfold</span> strict_assignability_method_scope; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">readonly_state_submethod</span> : <span class="k">forall</span> <span class="nv">callee</span> <span class="nv">caller</span>,
+  readonly_state_method_scope caller -&gt;
+  method_scope_subtype callee caller -&gt;
+  readonly_state_method_scope callee.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> callee caller Hcaller Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcaller <span class="k">as</span> [-&gt; | -&gt;]; <span class="nb">inversion</span> Hsub; <span class="nb">subst</span>;
+    <span class="nb">unfold</span> readonly_state_method_scope; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><div class="doc">
 Qualifier Ordering
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">q_subtype</span> : q -&gt; q -&gt; <span class="kt">Prop</span> :=

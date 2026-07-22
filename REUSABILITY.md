@@ -94,8 +94,8 @@ layers are:
 2. static semantics (`Subtyping.v`, `Typing.v`),
 3. runtime semantics and reachability (`Bigstep.v`, `Reachability.v`), and
 4. soundness and immutability theorems (`Preservation.v`,
-   `DeepImmutability.v`, `ConcreteStateImmutability.v`, `ReadonlySafety.v`,
-   and `ConcreteImmutability.v`).
+   `AbstractStatePreservation.v`, `ConcreteStatePreservation.v`,
+   `ReadonlyStatePreservation.v`, and `TransitiveStatePreservation.v`).
 
 Add a new `.v` file to `_RocqProject` after its dependencies, then run:
 

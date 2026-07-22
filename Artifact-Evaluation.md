@@ -27,9 +27,9 @@ give the detailed commands and theorem premises.
 | The reported JCF annotation totals are reproducible. | `count_java_annotations.pl` and the evaluated file manifest. | Generate the JCF table and compare its total with `expected-results/benchmark-totals.csv`. |
 | PICO type-checks the Constrictor and Checker Framework case studies with the reported annotation totals. | Benchmark sources, enabled Gradle suites, and counting script. | Run both suites and compare both generated totals with `expected-results/benchmark-totals.csv`. |
 | The core calculus satisfies preservation and mutation safety (Theorem 1). | `Preservation.v` and `WFNOMutationEXP.v`. | Build the Rocq development and inspect the corresponding entries in [Artifact-Evaluation-Rocq.md](Artifact-Evaluation-Rocq.md). |
-| The core calculus satisfies shallow abstract immutability (Theorem 2). | `DeepImmutability.v`. | Build Rocq and inspect `shallow_immutability_pico`. |
-| The core calculus satisfies the AS and CS guarantees (Theorem 3). | `DeepImmutability.v`, `ConcreteState.v`, and `ConcreteStateImmutability.v`. | Build Rocq and inspect `deep_immutability_pico` and `concrete_state_preservation`. |
-| The core calculus satisfies the RS and TS guarantees (Theorem 4). | `ReadonlySafety.v` and `ConcreteImmutability.v`. | Build Rocq and inspect `readonly_method_call_preserves_arguments` and `ConcreteImmutability`. |
+| The core calculus satisfies shallow abstract immutability (Theorem 2). | `AbstractStatePreservation.v`. | Build Rocq and inspect `shallow_abstract_immutability`. |
+| The core calculus satisfies the AS and CS guarantees (Theorem 3). | `AbstractStatePreservation.v`, `ConcreteState.v`, and `ConcreteStatePreservation.v`. | Build Rocq and inspect `abstract_state_preservation` and `concrete_state_preservation`. |
+| The core calculus satisfies the RS and TS guarantees (Theorem 4). | `ReadonlyStatePreservation.v` and `TransitiveStatePreservation.v`. | Build Rocq and inspect `readonly_state_preservation` and `transitive_state_preservation`. |
 | Submitted Rocq sources contain no literal `Axiom`, `Admitted`, or `admit` commands. | Proof-hygiene script. | Run `opam exec -- make check`; compare the message with `expected-results/proof-hygiene.txt`. |
 
 The artifact does not claim that the Java checker implements the four

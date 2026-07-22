@@ -9,5 +9,6 @@ Expected full-evaluation outcome:
 - Rocq forbidden-command scan: PASS
 - Alectryon rendering: PASS
 
-The generated Alectryon index must include ConcreteState.html and
-ConcreteStateImmutability.html.
+The generated Alectryon index must include AbstractStatePreservation.html,
+ConcreteStatePreservation.html, ReadonlyStatePreservation.html, and
+TransitiveStatePreservation.html.

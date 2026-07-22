@@ -4,12 +4,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.0
 compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax Notations Helpers Typing Subtyping Bigstep.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> ViewpointAdaptation Properties Preservation ReadonlyHelper.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> ExecutionConfinement.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require Import</span> List.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require Import</span> Sets.Ensembles.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Import</span> ListNotations.</span></span></pre><div class="doc">
-A heap edge that preserves a mutable capability.  Such an edge is the
-    only field access for which SafeRO viewpoint adaptation can produce
-    <span class="inlinecode"><span class="id" title="var">Mut</span></span>.  The declaring class may be a supertype of the runtime class.
+An RDM heap edge that preserves a mutable capability.  ReadonlyState viewpoint
+    adaptation can also preserve <span class="inlinecode"><span class="id" title="var">Mut</span></span> through an explicitly <span class="inlinecode"><span class="id" title="var">Mut_f</span></span> field;
+    <span class="inlinecode"><span class="id" title="var">retained_mut_edge</span></span> below includes both cases.  The declaring class may be
+    a supertype of the runtime class.
 </div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">mutable_edge</span> (<span class="nv">CT</span> : class_table) (<span class="nv">h</span> : heap) : Loc -&gt; Loc -&gt; <span class="kt">Prop</span> :=
 | mutable_edge_rdm : <span class="k">forall</span> <span class="nv">l</span> <span class="nv">l&#39;</span> <span class="nv">o</span> <span class="nv">f</span> <span class="nv">D</span> <span class="nv">fdef</span>,
     runtime_getObj h l = Some o -&gt;
@@ -24,7 +26,49 @@ A heap edge that preserves a mutable capability.  Such an edge is the
 | mr_step : <span class="k">forall</span> <span class="nv">l1</span> <span class="nv">l2</span> <span class="nv">l3</span>,
     mutable_reachable CT h l1 l2 -&gt;
     mutable_edge CT h l2 l3 -&gt;
-    mutable_reachable CT h l1 l3.</span><span class="alectryon-wsp">
+    mutable_reachable CT h l1 l3.</span></span></pre><div class="doc">
+Retained mutable authority follows the RDM component graph and also an
+    explicitly mutable field.  The latter edge is usable only from a <span class="inlinecode"><span class="id" title="var">Mut</span></span>
+    static viewpoint; membership in the capability set records that fact.
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">retained_mut_edge</span> (<span class="nv">CT</span> : class_table) (<span class="nv">h</span> : heap) : Loc -&gt; Loc -&gt; <span class="kt">Prop</span> :=
+| retained_edge_rdm : <span class="k">forall</span> <span class="nv">l</span> <span class="nv">l&#39;</span>,
+    mutable_edge CT h l l&#39; -&gt;
+    retained_mut_edge CT h l l&#39;
+| retained_edge_mut : <span class="k">forall</span> <span class="nv">l</span> <span class="nv">l&#39;</span> <span class="nv">o</span> <span class="nv">f</span> <span class="nv">D</span> <span class="nv">fdef</span>,
+    runtime_getObj h l = Some o -&gt;
+    r_muttype h l = Some Mut_r -&gt;
+    getVal o.(fields_map) f = Some (Iot l&#39;) -&gt;
+    base_subtype CT (rctype (rt_type o)) D -&gt;
+    sf_def_rel CT D f fdef -&gt;
+    mutability (ftype fdef) = Mut_f -&gt;
+    retained_mut_edge CT h l l&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">retained_mut_reachable</span>
+  (<span class="nv">CT</span> : class_table) (<span class="nv">h</span> : heap) : Loc -&gt; Loc -&gt; <span class="kt">Prop</span> :=
+| rmr_refl : <span class="k">forall</span> <span class="nv">l</span>, retained_mut_reachable CT h l l
+| rmr_step : <span class="k">forall</span> <span class="nv">l1</span> <span class="nv">l2</span> <span class="nv">l3</span>,
+    retained_mut_reachable CT h l1 l2 -&gt;
+    retained_mut_edge CT h l2 l3 -&gt;
+    retained_mut_reachable CT h l1 l3.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">mutable_reachable_is_retained</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">l&#39;</span>,
+  mutable_reachable CT h l l&#39; -&gt; retained_mut_reachable CT h l l&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h l l&#39; Hreach.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> Hreach.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">constructor</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> rmr_step; [<span class="bp">exact</span> IHHreach|].</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">constructor</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> H.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">retained_mut_reachable_transitive</span> : <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l1</span> <span class="nv">l2</span> <span class="nv">l3</span>,
+  retained_mut_reachable CT h l1 l2 -&gt;
+  retained_mut_reachable CT h l2 l3 -&gt;
+  retained_mut_reachable CT h l1 l3.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h l1 l2 l3 H12 H23.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> H23 <span class="k">as</span> [l | start middle finish Hprefix IH Hedge].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> H12.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> rmr_step; [<span class="bp">exact</span> (IH H12)|<span class="bp">exact</span> Hedge].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">mutable_edge_target_dom</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">l&#39;</span>,
@@ -48,6 +92,21 @@ A heap edge that preserves a mutable capability.  Such an edge is the
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Hvalues.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_getObj h l&#39;) <span class="nb">eqn</span>:Htarget; <span class="kp">try</span> <span class="bp">contradiction</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> runtime_getObj_dom <span class="k">in</span> Htarget.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Htarget.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">retained_edge_target_dom</span> :
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">l&#39;</span>,
+    wf_heap CT h -&gt;
+    retained_mut_edge CT h l l&#39; -&gt;
+    l&#39; &lt; dom h.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h l l&#39; Hwf Hedge.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hedge <span class="k">as</span> [source target Hrdm | source target o f D fdef
+    Hobj Hsource_mut Hfield Hsub Hfd Hmut]; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> mutable_edge_target_dom; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> wf_raw_edge_target_dom.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hwf.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">o</span>, f.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">exact</span> Hobj|<span class="bp">exact</span> Hfield].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">capability_in_context</span> (<span class="nv">qcontext</span> : q_r) (<span class="nv">q0</span> : q) : <span class="kt">Prop</span> :=
@@ -81,6 +140,11 @@ The authority inherited by a callee is determined by the caller's
   (<span class="nv">CT</span> : class_table) (<span class="nv">h</span> : heap) (<span class="nv">M</span> : Ensemble Loc) : <span class="kt">Prop</span> :=
   <span class="k">forall</span> <span class="nv">l</span> <span class="nv">l&#39;</span>, In Loc M l -&gt; mutable_edge CT h l l&#39; -&gt; In Loc M l&#39;.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">retained_heap_closed</span>
+  (<span class="nv">CT</span> : class_table) (<span class="nv">h</span> : heap) (<span class="nv">M</span> : Ensemble Loc) : <span class="kt">Prop</span> :=
+  <span class="k">forall</span> <span class="nv">l</span> <span class="nv">l&#39;</span>, In Loc M l -&gt; retained_mut_edge CT h l l&#39; -&gt; In Loc M l&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">mutable_members_runtime_mut</span>
   (<span class="nv">h</span> : heap) (<span class="nv">M</span> : Ensemble Loc) : <span class="kt">Prop</span> :=
   <span class="k">forall</span> <span class="nv">l</span>, In Loc M l -&gt; r_muttype h l = Some Mut_r.</span><span class="alectryon-wsp">
@@ -107,6 +171,36 @@ The authority inherited by a callee is determined by the caller's
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hval <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable, r_type <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> mutable_edge_rdm; <span class="nb">eauto</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (proj1 Hcorr).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">runtime_static_mut_field_edge</span> :
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sGamma</span> <span class="nv">rGamma</span> <span class="nv">h</span> <span class="nv">x</span> <span class="nv">T</span> <span class="nv">l</span> <span class="nv">o</span> <span class="nv">f</span> <span class="nv">fdef</span> <span class="nv">l&#39;</span>
+    (<span class="nv">Hwf</span> : wf_r_config CT sGamma rGamma h)
+    (<span class="nv">Htype</span> : static_getType sGamma x = Some T)
+    (<span class="nv">Hval</span> : runtime_getVal rGamma x = Some (Iot l))
+    (<span class="nv">Hobj</span> : runtime_getObj h l = Some o)
+    (<span class="nv">Hfield</span> : getVal o.(fields_map) f = Some (Iot l&#39;))
+    (<span class="nv">Hfld</span> : sf_def_rel CT (sctype T) f fdef)
+    (<span class="nv">Hreceiver</span> : sqtype T = Mut)
+    (<span class="nv">Hmut</span> : mutability (ftype fdef) = Mut_f),
+    retained_mut_edge CT h l l&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (extract_receiver_from_wf_config CT sGamma rGamma h Hwf)
+    <span class="k">as</span> [this [qcontext [Hthis [_ Hqcontext]]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_config <span class="k">in</span> Hwf.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hwf <span class="k">as</span> [_ [_ [_ [_ [_ Hcorr]]]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hxdom := Htype.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> static_getType_dom <span class="k">in</span> Hxdom.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">specialize</span> (Hcorr this qcontext Hthis Hqcontext x Hxdom T Htype).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hval <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable, r_type <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj <span class="k">in</span> Hcorr.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Hcorr <span class="k">as</span> [Hbase Hqual].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hsource_mut : r_muttype h l = Some Mut_r).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> r_muttype, r_type.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (rqtype (rt_type o)); [<span class="bp">reflexivity</span>|].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_runtime <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hreceiver <span class="k">in</span> Hqual.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> qcontext; <span class="bp">contradiction</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> retained_edge_mut; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">field_defs_agree_at_runtime_subtype</span> :
@@ -159,6 +253,53 @@ The authority inherited by a callee is determined by the caller's
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> mutable_edge_rdm; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">retained_edge_after_field_update</span> :
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">lx</span> <span class="nv">old</span> <span class="nv">fnew</span> <span class="nv">value</span> <span class="nv">l</span> <span class="nv">l&#39;</span>,
+    runtime_getObj h lx = Some old -&gt;
+    retained_mut_edge CT (update_field h lx fnew value) l l&#39; -&gt;
+    retained_mut_edge CT h l l&#39; \/
+    (l = lx /\ value = Iot l&#39; /\
+      <span class="k">exists</span> <span class="nv">D</span> <span class="nv">fdef</span>,
+        base_subtype CT (rctype (rt_type old)) D /\
+        sf_def_rel CT D fnew fdef /\
+        (mutability (ftype fdef) = RDM_f \/
+         mutability (ftype fdef) = Mut_f)).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h lx old fnew value l l&#39; Hold Hedge.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hedge <span class="k">as</span> [l0 l0&#39; Hrdmedge | l0 l0&#39; newobj f D fdef
+    Hnewobj Hsource_mut Hnewfield Hsub Hfd Hmut]; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (mutable_edge_after_field_update CT h lx old fnew value l l&#39;
+      Hold Hrdmedge) <span class="k">as</span> [Holdedge | [Hsource [Hvalue
+        [D [fdef [Hsub [Hfd Hrdm]]]]]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">constructor</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Holdedge.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="kp">try</span> <span class="bp">assumption</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">D</span>, fdef.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="kp">try</span> <span class="bp">assumption</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hrdm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (Nat.eq_dec l lx) <span class="k">as</span> [Heq|Hneq].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> l.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> update_field <span class="k">in</span> Hnewobj.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hold <span class="k">in</span> Hnewobj.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hlxdom := Hold.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> runtime_getObj_dom <span class="k">in</span> Hlxdom.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> runtime_getObj_update_same <span class="k">in</span> Hnewobj; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">injection</span> Hnewobj <span class="k">as</span> Hobj_eq.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> newobj.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Hnewfield, Hsub.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (Nat.eq_dec f fnew) <span class="k">as</span> [-&gt;|Hfdiff].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> getVal <span class="k">in</span> Hnewfield.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hfdom : fnew &lt; dom (update fnew value (fields_map old))).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> nth_error_Some.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hnewfield.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">discriminate</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> update_length <span class="k">in</span> Hfdom.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">pose proof</span> (@update_same Syntax.value fnew value (fields_map old) Hfdom)
+          <span class="k">as</span> Hsame.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hsame <span class="k">in</span> Hnewfield.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">injection</span> Hnewfield <span class="k">as</span> &lt;-.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="nb">auto</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">D</span>, fdef.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> getVal <span class="k">in</span> Hnewfield.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> update_diff <span class="k">in</span> Hnewfield; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> retained_edge_mut; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> r_muttype_update_field_preserve <span class="k">in</span> Hsource_mut.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hsource_mut.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> update_field <span class="k">in</span> Hnewobj.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hold <span class="k">in</span> Hnewobj.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> runtime_getObj_update_diff <span class="k">in</span> Hnewobj; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> retained_edge_mut; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> r_muttype_update_field_preserve <span class="k">in</span> Hsource_mut.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hsource_mut.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">written_rdm_field_is_mutable_edge</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">lx</span> <span class="nv">old</span> <span class="nv">f</span> <span class="nv">oldvalue</span> <span class="nv">target</span> <span class="nv">D</span> <span class="nv">fdef</span>,
     runtime_getObj h lx = Some old -&gt;
@@ -183,26 +324,28 @@ The authority inherited by a callee is determined by the caller's
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hrdm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">mutable_reachable_after_field_update</span> :
+
+
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">retained_reachable_after_field_update</span> :
   <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">lx</span> <span class="nv">old</span> <span class="nv">f</span> <span class="nv">value</span> <span class="nv">root</span> <span class="nv">target</span>,
     runtime_getObj h lx = Some old -&gt;
-    mutable_reachable CT (update_field h lx f value) root target -&gt;
-    mutable_reachable CT h root target \/
+    retained_mut_reachable CT (update_field h lx f value) root target -&gt;
+    retained_mut_reachable CT h root target \/
     <span class="k">exists</span> <span class="nv">written</span>,
       value = Iot written /\
-      mutable_reachable CT h root lx /\
-      mutable_reachable CT h written target.</span><span class="alectryon-wsp">
+      retained_mut_reachable CT h root lx /\
+      retained_mut_reachable CT h written target.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h lx old f value root target Hobj Hreach.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> Hreach <span class="k">as</span> [root|root middle target Hprefix IH Hedge].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">constructor</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (mutable_edge_after_field_update CT h lx old f value
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (retained_edge_after_field_update CT h lx old f value
       middle target Hobj Hedge) <span class="k">as</span>
       [Holdedge | [Hmiddle [Hvalue Hnewedge]]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> IH <span class="k">as</span> [Holdprefix | [written [Hwritten [Hto_source Hsuffix]]]].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> mr_step; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> rmr_step; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">written</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="kp">try</span> <span class="bp">assumption</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> mr_step; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">        </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> rmr_step; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> middle.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> IH <span class="k">as</span> [Holdprefix | [written [Hwritten [Hto_source Hsuffix]]]].</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">target</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="kp">try</span> <span class="bp">assumption</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">constructor</span>.</span><span class="alectryon-wsp">
@@ -234,29 +377,81 @@ The authority inherited by a callee is determined by the caller's
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> mutable_edge_rdm; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">retained_edge_after_append</span> :
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">newobj</span> <span class="nv">l</span> <span class="nv">l&#39;</span>,
+    retained_mut_edge CT (h ++ [newobj]) l l&#39; -&gt;
+    retained_mut_edge CT h l l&#39; \/
+    (l = dom h /\ <span class="k">exists</span> <span class="nv">f</span> <span class="nv">D</span> <span class="nv">fdef</span>,
+      getVal newobj.(fields_map) f = Some (Iot l&#39;) /\
+      base_subtype CT (rctype (rt_type newobj)) D /\
+      sf_def_rel CT D f fdef /\
+      (mutability (ftype fdef) = RDM_f \/
+       mutability (ftype fdef) = Mut_f)).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h newobj l l&#39; Hedge.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> newobj <span class="k">as</span> [newrt newfields].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hedge <span class="k">as</span> [source target Hrdm | source target o f D fdef
+    Hobj Hsource_mut Hfield Hsub Hfd Hmut]; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (mutable_edge_after_append CT h
+      (mkObj newrt newfields) l l&#39; Hrdm)
+      <span class="k">as</span> [Hold | [Hfresh [f [D [fdef [Hfield [Hsub [Hfd Hrdm&#39;]]]]]]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">constructor</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hold.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">exact</span> Hfresh|].</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">f</span>, D, fdef.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="kp">try</span> <span class="bp">assumption</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hrdm&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hldom := Hobj.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> runtime_getObj_dom <span class="k">in</span> Hldom.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> length_app <span class="k">in</span> Hldom.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span> <span class="k">in</span> Hldom.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (Nat.eq_dec l (dom h)) <span class="k">as</span> [Heq|Hneq].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> l.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">reflexivity</span>|].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> runtime_getObj_last <span class="k">in</span> Hobj.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">injection</span> Hobj <span class="k">as</span> &lt;-.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">f</span>, D, fdef.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="kp">try</span> <span class="bp">assumption</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hmut.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">assert</span> (Hlold : l &lt; dom h) <span class="bp">by</span> <span class="bp">lia</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">left</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> runtime_getObj_last2 <span class="k">in</span> Hobj; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> retained_edge_mut; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> r_muttype, r_type <span class="k">in</span> *.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> runtime_getObj_last2 <span class="k">in</span> Hsource_mut; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">retained_reachable_from_old_after_append</span> :
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">newobj</span> <span class="nv">root</span> <span class="nv">target</span>,
+    wf_heap CT h -&gt;
+    root &lt; dom h -&gt;
+    retained_mut_reachable CT (h ++ [newobj]) root target -&gt;
+    target &lt; dom h /\ retained_mut_reachable CT h root target.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h newobj root target Hwf Hroot Hreach.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> Hreach <span class="k">as</span> [root|root middle target Hprefix IH Hedge].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">exact</span> Hroot|<span class="nb">constructor</span>].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (IH Hroot) <span class="k">as</span> [Hmiddle Holdprefix].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (retained_edge_after_append CT h newobj middle target Hedge)
+      <span class="k">as</span> [Holdedge | [Hfresh Hnew]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> retained_edge_target_dom; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input">*</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> rmr_step; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input">+</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">runtime_mut_typable_not_imm</span> :
-  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rGamma</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T</span> <span class="nv">qcontext</span>,
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T</span> <span class="nv">qcontext</span>,
     r_muttype h l = Some Mut_r -&gt;
-    wf_r_typable CT rGamma h l T qcontext -&gt;
+    wf_r_typable CT h l T qcontext -&gt;
     sqtype T &lt;&gt; Imm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rGamma h l T qcontext Hrmut Htyp Himm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h l T qcontext Hrmut Htyp Himm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable <span class="k">in</span> Htyp.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> r_muttype, r_type <span class="k">in</span> *.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_getObj h l) <span class="k">as</span> [o|] <span class="nb">eqn</span>:Hobj; <span class="kp">try</span> <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hrmut; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Htyp <span class="k">as</span> [_ Hqual].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_runtime <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Himm <span class="k">in</span> Hqual.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> H0 <span class="k">in</span> Hqual.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> qcontext; <span class="bp">exact</span> Hqual.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">rdm_typable_runtime_matches_context</span> :
-  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rGamma</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T</span> <span class="nv">qcontext</span>,
-    wf_r_typable CT rGamma h l T qcontext -&gt;
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T</span> <span class="nv">qcontext</span>,
+    wf_r_typable CT h l T qcontext -&gt;
     sqtype T = RDM -&gt;
     r_muttype h l = Some qcontext.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rGamma h l T qcontext Htyp Hrdm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h l T qcontext Htyp Hrdm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable <span class="k">in</span> Htyp.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (r_type h l) <span class="k">as</span> [rt|] <span class="nb">eqn</span>:Hrt; <span class="kp">try</span> <span class="bp">contradiction</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Htyp <span class="k">as</span> [_ Hqual].</span><span class="alectryon-wsp">
@@ -264,33 +459,33 @@ The authority inherited by a callee is determined by the caller's
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_getObj h l) <span class="k">as</span> [o|] <span class="nb">eqn</span>:Hobj; <span class="kp">try</span> <span class="bp">discriminate</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">injection</span> Hrt <span class="k">as</span> &lt;-.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> r_muttype.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hobj.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">simpl</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_runtime <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hrdm <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (rqtype (rt_type o)), qcontext; <span class="kp">try</span> <span class="bp">reflexivity</span>; <span class="bp">contradiction</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">typable_nonnull_not_bot</span> :
-  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rGamma</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T</span> <span class="nv">qcontext</span>,
-    wf_r_typable CT rGamma h l T qcontext -&gt;
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T</span> <span class="nv">qcontext</span>,
+    wf_r_typable CT h l T qcontext -&gt;
     sqtype T &lt;&gt; Bot.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rGamma h l T qcontext Htyp Hbot.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h l T qcontext Htyp Hbot.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> wf_r_typable <span class="k">in</span> Htyp.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (r_type h l) <span class="k">as</span> [rt|] <span class="nb">eqn</span>:Hrt; <span class="kp">try</span> <span class="bp">contradiction</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> Htyp <span class="k">as</span> [_ Hqual].</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_rs <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">unfold</span> qualifier_typable_context, vpa_mutability_runtime <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hbot <span class="k">in</span> Hqual.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (rqtype rt); <span class="nb">destruct</span> qcontext; <span class="bp">exact</span> Hqual.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">nonnull_subtype_to_mut_is_mut</span> :
-  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">rGamma</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span>,
-    wf_r_typable CT rGamma h l T1 qcontext -&gt;
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">h</span> <span class="nv">l</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="nv">qcontext</span>,
+    wf_r_typable CT h l T1 qcontext -&gt;
     qualified_type_subtype CT T1 T2 -&gt;
     sqtype T2 = Mut -&gt;
     sqtype T1 = Mut.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT rGamma h l T1 T2 qcontext Htyp Hsub Hmut.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT h l T1 T2 qcontext Htyp Hsub Hmut.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> qualified_type_subtype_q_subtype <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> Hmut <span class="k">in</span> Hsub.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hsub; <span class="nb">subst</span>; <span class="nb">auto</span>.</span><span class="alectryon-wsp">

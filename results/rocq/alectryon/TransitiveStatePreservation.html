@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html class="alectryon-standalone"><head><title>TransitiveStatePreservation.v</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta content="Alectryon" name="generator"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><link href="project-alectryon.css" rel="stylesheet"><script src="alectryon.js"></script><script src="project-proof-toggle.js"></script></head><body><article class="alectryon-root alectryon-centered alectryon-coqdoc"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time vThe Rocq Prover, version 9.1.0
+compiled with OCaml 5.2.1. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Syntax Notations Helpers Typing Subtyping Bigstep ViewpointAdaptation.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Properties AbstractStatePreservation Reachability Preservation ReadonlyHelper ReadonlyNoMutation ReadonlyStatePreservation.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> PotentialCapability ProtectedFieldPreservation.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require Import</span> List.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> Stdlib <span class="kn">Require</span> String.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Import</span> ListNotations.</span></span></pre><div class="doc">
+Transitive-state preservation is an instance of structural protected-field
+    preservation in which every field is protected.
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">transitive_state_statement_preservation</span> :
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">l</span> <span class="nv">C</span> <span class="nv">anyrq</span> <span class="nv">vals</span> <span class="nv">vals&#39;</span> <span class="nv">f</span>
+    (<span class="nv">Hconfined</span> : env_respects_protected_set
+      (reachable_locations_from_initial_env h rΓ) sΓ rΓ)
+    (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
+    (<span class="nv">Htyping</span> : stmt_typing CT sΓ TransitiveState stmt sΓ&#39;)
+    (<span class="nv">Heval</span> : eval_stmt CT rΓ h stmt OK rΓ&#39; h&#39;)
+    (<span class="nv">Hlocalset</span> : Ensembles.In Loc
+      (reachable_locations_from_initial_env h rΓ) l)
+    (<span class="nv">Hobj</span> : runtime_getObj h l =
+      Some (mkObj (mkruntime_type anyrq C) vals))
+    (<span class="nv">Hobj&#39;</span> : runtime_getObj h&#39; l =
+      Some (mkObj (mkruntime_type anyrq C) vals&#39;)),
+  nth_error vals f = nth_error vals&#39; f.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hinitial := initial_potential_live_history CT sΓ rΓ h
+    Hwf Hconfined.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> successful_stmt_preserves_protected_field <span class="k">with</span>
+    (authority := Imm_r) (stack := [])
+    (Z := reachable_locations_from_initial_env h rΓ)
+    (cutoff := dom h); <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">transitive_state_preservation_with_end</span> :
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">mindex</span> <span class="nv">Ty</span> <span class="nv">mdef</span> <span class="nv">zs</span> <span class="nv">vals</span> <span class="nv">ly</span>
+         <span class="nv">loc_arg</span> <span class="nv">C</span> <span class="nv">anyrq</span> <span class="nv">vals_arg</span> <span class="nv">vals_arg&#39;</span> <span class="nv">f</span>
+    (<span class="nv">Hstmt</span> : stmt = (SCall x mindex y zs))
+    (<span class="nv">Hstatic_type</span> : static_getType sΓ y = Some Ty)
+    (<span class="nv">Hmethod_lookup</span> : FindMethodWithName CT (sctype Ty) mindex mdef)
+    (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
+    (<span class="nv">Htyping</span> : stmt_typing CT sΓ TransitiveState stmt sΓ&#39;)
+    (<span class="nv">Heval</span> : eval_stmt CT rΓ h stmt OK rΓ&#39; h&#39;)
+    (<span class="nv">Hget_y</span> : runtime_getVal rΓ y = Some (Iot ly))
+    (<span class="nv">Hget_zs</span> : runtime_lookup_list rΓ zs = Some vals)
+    (<span class="nv">HinP</span>: Ensembles.In Loc (reachable_locations_from_vals h (Iot ly :: vals)) loc_arg)
+    (<span class="nv">Harg_obj</span> : runtime_getObj h loc_arg = Some (mkObj (mkruntime_type anyrq C) vals_arg))
+    (<span class="nv">Harg_obj&#39;</span> : runtime_getObj h&#39; loc_arg = Some (mkObj (mkruntime_type anyrq C) vals_arg&#39;))
+    (<span class="nv">Hall_readonly</span> : signature_has_no_mutable_roots (msignature mdef)),
+    nth_error vals_arg f = nth_error vals_arg&#39; f.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ rΓ h stmt rΓ&#39; h&#39; sΓ&#39; x y mindex Ty mdef zs vals ly
+    loc_arg C anyrq vals_arg vals_arg&#39; f Hstmt Hstatic_type Hmethod_lookup
+    Hwf Htyping Heval Hget_y Hget_zs HinP Harg_obj Harg_obj&#39; Hall_readonly.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">subst</span> stmt.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hcaller_scope : readonly_state_method_scope TransitiveState.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">{</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">right</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (successful_typed_safe_call_body CT sΓ TransitiveState rΓ h x
+    mindex y zs sΓ&#39; rΓ&#39; h&#39; Ty mdef vals ly Hstatic_type Hmethod_lookup
+    Hwf Htyping Heval Hget_y Hget_zs Hall_readonly Hcaller_scope)
+    <span class="k">as</span> [runtime_mdef [body_sΓ&#39; [body_rΓ&#39;
+      [Hsignature [Hbody_typed [Hframe_wf
+        [Hbody_eval [Hbody_safe [Hbody_scope Hbody_subscope]]]]]]]]].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">inversion</span> Hbody_subscope; <span class="nb">subst</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> transitive_state_statement_preservation <span class="k">with</span>
+    (sΓ := mreceiver (msignature runtime_mdef) ::
+      mparams (msignature runtime_mdef))
+    (rΓ := mkr_env (Iot ly :: vals))
+    (stmt := mbody_stmt (mbody runtime_mdef))
+    (sΓ&#39; := body_sΓ&#39;) (rΓ&#39; := body_rΓ&#39;).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> callee_frame_respects_protected_set; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hframe_wf.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> &lt;- H1.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hbody_typed.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Hbody_eval.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">have</span> Hsubset := reachable_locations_subset_reachable_from_method_frame
+      h ly vals.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> (Hsubset loc_arg HinP).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Harg_obj.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> Harg_obj&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><div class="doc">
+Public TS guarantee with final-object existence and runtime type derived
+    from the successful call evaluation.
+</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Theorem</span> <span class="nf">transitive_state_preservation</span> :
+  <span class="k">forall</span> <span class="nv">CT</span> <span class="nv">sΓ</span> <span class="nv">rΓ</span> <span class="nv">h</span> <span class="nv">stmt</span> <span class="nv">rΓ&#39;</span> <span class="nv">h&#39;</span> <span class="nv">sΓ&#39;</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">mindex</span> <span class="nv">Ty</span> <span class="nv">mdef</span> <span class="nv">zs</span> <span class="nv">vals</span> <span class="nv">ly</span>
+         <span class="nv">loc_arg</span> <span class="nv">C</span> <span class="nv">anyrq</span> <span class="nv">vals_arg</span> <span class="nv">f</span>
+    (<span class="nv">Hstmt</span> : stmt = (SCall x mindex y zs))
+    (<span class="nv">Hstatic_type</span> : static_getType sΓ y = Some Ty)
+    (<span class="nv">Hmethod_lookup</span> : FindMethodWithName CT (sctype Ty) mindex mdef)
+    (<span class="nv">Hwf</span> : wf_r_config CT sΓ rΓ h)
+    (<span class="nv">Htyping</span> : stmt_typing CT sΓ TransitiveState stmt sΓ&#39;)
+    (<span class="nv">Heval</span> : eval_stmt CT rΓ h stmt OK rΓ&#39; h&#39;)
+    (<span class="nv">Hget_y</span> : runtime_getVal rΓ y = Some (Iot ly))
+    (<span class="nv">Hget_zs</span> : runtime_lookup_list rΓ zs = Some vals)
+    (<span class="nv">HinP</span>: Ensembles.In Loc (reachable_locations_from_vals h (Iot ly :: vals)) loc_arg)
+    (<span class="nv">Harg_obj</span> : runtime_getObj h loc_arg = Some (mkObj (mkruntime_type anyrq C) vals_arg))
+    (<span class="nv">Hall_readonly</span> : signature_has_no_mutable_roots (msignature mdef)),
+    <span class="k">exists</span> <span class="nv">vals_arg&#39;</span>,
+      runtime_getObj h&#39; loc_arg = Some (mkObj (mkruntime_type anyrq C) vals_arg&#39;) /\
+      nth_error vals_arg f = nth_error vals_arg&#39; f.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span> CT sΓ rΓ h stmt rΓ&#39; h&#39; sΓ&#39; x y mindex Ty mdef zs vals ly
+    loc_arg C anyrq vals_arg f Hstmt Hstatic_type Hmethod_lookup Hwf Htyping
+    Heval Hget_y Hget_zs HinP Harg_obj Hall_readonly.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (runtime_preserves_r_type_heap CT rΓ h loc_arg
+    (mkruntime_type anyrq C) h&#39; vals_arg stmt rΓ&#39; Harg_obj Heval)
+    <span class="k">as</span> [vals_arg&#39; Harg_obj&#39;].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="k">exists</span> <span class="nv">vals_arg&#39;</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; [<span class="bp">exact</span> Harg_obj&#39;|].</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">eapply</span> transitive_state_preservation_with_end; <span class="nb">eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></article></body></html>

@@ -1,4 +1,5 @@
-+ make
+cd "/Users/aosenxiong/pico-artifact/pico-rocq/" && coq_makefile -f _RocqProject -o CoqMakefile
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -C "/Users/aosenxiong/pico-artifact/pico-rocq/" -f CoqMakefile
 ROCQ DEP VFILES
 ROCQ compile LibTactics.v
 ROCQ compile Tactics.v
@@ -13,10 +14,12 @@ ROCQ compile Bigstep.v
 ROCQ compile Properties.v
 ROCQ compile ConcreteState.v
 ROCQ compile ObjectCreationExamples.v
+ROCQ compile WellformednessRegression.v
+ROCQ compile SemanticsRegression.v
 ROCQ compile Preservation.v
 ROCQ compile ExecutionConfinement.v
-ROCQ compile DeepImmutability.v
-ROCQ compile ConcreteStateImmutability.v
+ROCQ compile AbstractStatePreservation.v
+ROCQ compile ConcreteStatePreservation.v
 ROCQ compile ReadonlyHelper.v
 ROCQ compile MutableCapability.v
 ROCQ compile AuthorityCapability.v
@@ -29,6 +32,6 @@ ROCQ compile LiveCapabilityStack.v
 ROCQ compile PotentialCapability.v
 ROCQ compile ProtectedFieldPreservation.v
 ROCQ compile ReadonlyNoMutation.v
-ROCQ compile ReadonlySafety.v
-ROCQ compile ConcreteImmutability.v
+ROCQ compile ReadonlyStatePreservation.v
+ROCQ compile TransitiveStatePreservation.v
 ROCQ compile WFNOMutationEXP.v

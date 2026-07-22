@@ -1,3 +1,6 @@
-+ make check
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -C "/Users/aosenxiong/pico-artifact/pico-rocq/" -f CoqMakefile
+make[2]: Nothing to be done for `real-all'.
+python3 "/Users/aosenxiong/pico-artifact/pico-rocq/scripts/check-no-axioms-admits.py" "/Users/aosenxiong/pico-artifact/pico-rocq/"
 No forbidden Axiom/admit usage found.
-All 15 manifest-listed public theorems are closed under the global context; the manifest matches every source Theorem declaration.
+python3 "/Users/aosenxiong/pico-artifact/pico-rocq/scripts/check-public-assumptions.py" "/Users/aosenxiong/pico-artifact/pico-rocq/"
+All 20 manifest-listed public results are closed under the global context; the manifest matches every source Theorem declaration.
