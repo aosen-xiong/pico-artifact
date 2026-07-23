@@ -125,8 +125,8 @@ A concrete extension path is:
    reads-from, coherence, synchronization, and happens-before.
 3. Lift heap reachability and abstract-state reachability from a single heap to
    the memory visible to a thread, or define them over a global execution graph.
-4. State the consistency model explicitly—for example, sequential consistency
-   first, followed by a weak-memory model—and identify which PICO guarantees
+4. State the consistency model explicitly, for example sequential consistency
+   first, followed by a weak-memory model, and identify which PICO guarantees
    require data-race freedom, safe publication, synchronization, or atomic
    access.
 5. Reprove preservation and the AS/CS/RS/TS guarantees over concurrent
