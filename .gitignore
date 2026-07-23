@@ -6,13 +6,28 @@
 
 # Local scratch outputs
 /alectryon/
+/output/
+/release/
+/results/
+/tmp/
+/PICOPaper/
 /pico-artifact-anonymous.tar.gz
+/pico-artifact*.tar.gz
 /pico-artifact-image-*.tar
 /*.log
 /*.exit-status
 *.class
 *.fdb_latexmk
 *.fls
+*.py[cod]
+__pycache__/
+.pytest_cache/
+
+# Local credentials and environment overrides
+/.env
+/.env.*
+!/.env.example
+/*.token
 
 # Rocq generated files
 pico-rocq/CoqMakefile
