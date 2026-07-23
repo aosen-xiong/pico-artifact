@@ -50,3 +50,8 @@ checker-framework/**/build/
 checker-framework/checker/dist/
 checker-framework/framework/dist/
 checker-framework/compile.log
+# macOS metadata
+.DS_Store
+._*
+**/.DS_Store
+**/._*

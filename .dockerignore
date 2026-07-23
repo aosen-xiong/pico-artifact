@@ -12,6 +12,8 @@ pico-artifact.tar.gz
 pico-artifact-image-*.tar
 **/.DS_Store
 .DS_Store
+**/._*
+._*
 **/*.log
 **/.idea
 **/.vscode
