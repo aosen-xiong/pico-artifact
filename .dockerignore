@@ -2,11 +2,16 @@
 .gitmodules
 .gitignore
 results/
+release/
+output/
+tmp/
 PICOPaper/
+Rocq-Paper-Review-Prompt.md
 pico-artifact-anonymous.tar.gz
 pico-artifact.tar.gz
 pico-artifact-image-*.tar
 **/.DS_Store
+.DS_Store
 **/*.log
 **/.idea
 **/.vscode
@@ -22,6 +27,7 @@ pico-rocq/*.glob
 pico-rocq/*.aux
 pico-rocq/.*.aux
 pico-rocq/_build/
+pico-rocq/_opam/
 pico-rocq/alectryon/
 pico-rocq/doc/
 pico-rocq/.local/
