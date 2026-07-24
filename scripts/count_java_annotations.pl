@@ -93,6 +93,7 @@ sub count_annotations_in_file {
     my ($file) = @_;
     
     return unless -f $file && -r $file;
+    return if basename($file) =~ /^\._/;
     return unless $file =~ /\.java$/i;
     
     open my $fh, '<', $file or do {

@@ -175,6 +175,7 @@ To inspect it from the host, start the manual evaluation shell with a host-mount
 ```bash
 mkdir -p alectryon
 docker run --rm -it \
+  --network none \
   -v "$PWD/alectryon:/workspace/pico-rocq/alectryon" \
   --entrypoint bash \
   pico-artifact:latest

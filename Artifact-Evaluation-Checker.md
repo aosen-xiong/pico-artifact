@@ -70,7 +70,7 @@ Build the Checker Framework javac wrapper:
 
 ```bash
 cd /workspace/checker-framework
-bash ./gradlew assembleforjavac
+bash ./gradlew --offline assembleforjavac
 ```
 
 Observed warm-run time: about 1 minute 15 seconds. Recommended budget: 2-3 minutes, depending on Gradle cache state.
@@ -131,8 +131,8 @@ Run the two focused PICO test suites:
 
 ```bash
 cd /workspace/checker-framework
-bash ./gradlew PICOConstrictorTest
-bash ./gradlew PICOMutableDefaultTest
+bash ./gradlew --offline PICOConstrictorTest
+bash ./gradlew --offline PICOMutableDefaultTest
 ```
 
 Expected result: both Gradle tasks finish successfully.
@@ -241,6 +241,7 @@ count_java_annotations.pl -l \
   -a @ReceiverDependentMutable -a @Mutable -a @PolyMutable \
   -s pico \
   $(find checker-framework/checker/tests/pico-mutable-default -name '*.java' \
+      ! -name '._*.java' \
       ! -name 'PaperFigureExamples.java' | sort)
 ```
 
@@ -256,6 +257,15 @@ its total row.
 
 ## 5. Troubleshooting
 
-- **Gradle fails because of memory pressure**: rerun Docker with more memory assigned in Docker Desktop.
-- **The checker command cannot find Java files**: ensure it is run inside the container and that `/workspace/jdk/src/java.base/share/classes/java/util/TypecheckedList.txt` exists.
-- **Annotation counting reports missing files**: run the JDK count command from `/workspace/jdk/src/java.base/share/classes/java/util`, because `TypecheckedList.txt` contains filenames relative to that directory.
+- **Gradle fails because of memory pressure**: rerun Docker with more memory
+  assigned in Docker Desktop.
+- **Diagnostics mention a `._*.java` file**: this is macOS AppleDouble metadata,
+  not Java source. Use a fresh artifact copy, or remove the metadata with
+  `find /workspace -type f -name '._*' -delete` before rerunning the test.
+- **The checker command cannot find Java files**: ensure it is run inside the
+  container and that
+  `/workspace/jdk/src/java.base/share/classes/java/util/TypecheckedList.txt`
+  exists.
+- **Annotation counting reports missing files**: run the JDK count command from
+  `/workspace/jdk/src/java.base/share/classes/java/util`, because
+  `TypecheckedList.txt` contains filenames relative to that directory.

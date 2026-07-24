@@ -83,7 +83,8 @@ echo
 echo "=== Step 1: Checker Framework / JDK Evaluation ==="
 cd "${WORKSPACE}/checker-framework"
 
-run_logged "assembleforjavac" "${CHECKER_RESULTS_DIR}/assembleforjavac.log" bash ./gradlew assembleforjavac
+run_logged "assembleforjavac" "${CHECKER_RESULTS_DIR}/assembleforjavac.log" \
+  bash ./gradlew --offline assembleforjavac
 
 mapfile -t JDK_UTIL_FILES < <(sed 's#^#'"${JDK_UTIL_DIR}"'/#' "${TYPECHECKED_LIST}")
 
@@ -117,8 +118,10 @@ if [[ "${JDK_CHECKER_STATUS}" -ne 0 ]]; then
   exit "${JDK_CHECKER_STATUS}"
 fi
 
-run_logged "PICOConstrictorTest" "${CHECKER_RESULTS_DIR}/PICOConstrictorTest.log" bash ./gradlew PICOConstrictorTest
-run_logged "PICOMutableDefaultTest" "${CHECKER_RESULTS_DIR}/PICOMutableDefaultTest.log" bash ./gradlew PICOMutableDefaultTest
+run_logged "PICOConstrictorTest" "${CHECKER_RESULTS_DIR}/PICOConstrictorTest.log" \
+  bash ./gradlew --offline PICOConstrictorTest
+run_logged "PICOMutableDefaultTest" "${CHECKER_RESULTS_DIR}/PICOMutableDefaultTest.log" \
+  bash ./gradlew --offline PICOMutableDefaultTest
 
 echo
 echo "=== Step 2: Annotation and Suppression Counts ==="
@@ -154,7 +157,10 @@ count_java_annotations.pl -t \
   > "${COUNTS_RESULTS_DIR}/constrictor-annotation-counts.csv"
 
 mapfile -d '' -t MUTABLE_DEFAULT_FILES < <(
-  find "${MUTABLE_DEFAULT_DIR}" -name '*.java' ! -name 'PaperFigureExamples.java' -print0 | sort -z
+  find "${MUTABLE_DEFAULT_DIR}" -name '*.java' \
+    ! -name '._*.java' \
+    ! -name 'PaperFigureExamples.java' \
+    -print0 | sort -z
 )
 count_java_annotations.pl -t \
   -a @Assignable -a @Immutable -a @Readonly \

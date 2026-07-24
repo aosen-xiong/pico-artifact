@@ -49,12 +49,21 @@ COPY . /workspace
 RUN test -d /workspace/checker-framework \
   && test -d /workspace/jdk \
   && test -f /workspace/pico-rocq/Makefile \
-  && test -f /workspace/pico-rocq/_RocqProject
+  && test -f /workspace/pico-rocq/_RocqProject \
+  && test -z "$(find /workspace -type f -name '._*' -print -quit)"
 RUN chmod +x /workspace/scripts/*.sh /workspace/checker-framework/gradlew /workspace/checker-framework/checker/bin/javac || true
 
-# Resolve all build dependencies and validate both tracks while constructing
-# the image. Reviewer-time evaluation can therefore run without network access.
-RUN cd /workspace/checker-framework && bash ./gradlew assembleforjavac
+# Resolve the compile and test-runtime dependency graphs and validate the
+# checker while constructing the image. Remove generated project outputs and
+# task state, but retain /root/.gradle for a fresh offline reviewer-time run.
+RUN cd /workspace/checker-framework \
+  && bash ./gradlew --no-daemon \
+       assembleforjavac \
+       PICOConstrictorTest \
+       PICOMutableDefaultTest \
+  && find . -type d \( -name build -o -name testTmp \) \
+       -prune -exec rm -rf {} + \
+  && rm -rf .gradle checker/dist framework/dist compile.log
 RUN cd /workspace/pico-rocq && opam exec -- make check
 
 ENTRYPOINT ["/workspace/scripts/run-artifact.sh"]

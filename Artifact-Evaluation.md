@@ -48,6 +48,7 @@ that directory:
 docker load -i ../pico-artifact-image-linux-amd64.docker.tar
 mkdir -p results
 docker run --rm -it \
+  --network none \
   -v "$PWD/results:/workspace/results" \
   pico-artifact:ae-2026-amd64
 ```
@@ -57,6 +58,7 @@ docker run --rm -it \
 docker load -i ../pico-artifact-image-linux-arm64.docker.tar
 mkdir -p results
 docker run --rm -it \
+  --network none \
   -v "$PWD/results:/workspace/results" \
   pico-artifact:ae-2026-arm64
 ```
@@ -123,16 +125,15 @@ Recommended resources:
 
 ## Prebuilt Docker Images
 
-The artifact submission may include Docker image archives next to the source
+The artifact submission includes two Docker image archives next to the source
 archive:
 
 ```text
 pico-artifact-image-linux-amd64.docker.tar
 pico-artifact-image-linux-arm64.docker.tar
-pico-artifact-image-oci.tar
 ```
 
-Use the platform-specific Docker archive for ordinary Docker workflows:
+Download and use the Docker archive matching the host architecture:
 
 ```bash
 # x86_64 / Intel / AMD hosts
@@ -140,6 +141,7 @@ docker load -i pico-artifact-image-linux-amd64.docker.tar
 rm -rf results
 mkdir -p results
 docker run --rm -it \
+  --network none \
   -v "$PWD/results:/workspace/results" \
   pico-artifact:ae-2026-amd64
 ```
@@ -150,26 +152,9 @@ docker load -i pico-artifact-image-linux-arm64.docker.tar
 rm -rf results
 mkdir -p results
 docker run --rm -it \
+  --network none \
   -v "$PWD/results:/workspace/results" \
   pico-artifact:ae-2026-arm64
-```
-
-The `pico-artifact-image-oci.tar` file is a multi-platform OCI image archive
-containing both `linux/amd64` and `linux/arm64` image manifests. It is included
-as the build artifact corresponding to Docker's multi-platform image format.
-Plain `docker load` expects Docker archive format, so the two
-`*.docker.tar` files are provided for direct reviewer use.
-
-The multi-platform image was built with:
-
-```bash
-docker buildx create --name pico-ae-builder --driver docker-container --use --bootstrap
-docker buildx build \
-  --builder pico-ae-builder \
-  --platform linux/amd64,linux/arm64 \
-  -t pico-artifact:ae-2026 \
-  --output type=oci,dest=pico-artifact-image-oci.tar \
-  .
 ```
 
 The platform-specific Docker-loadable archives were exported with:
@@ -199,6 +184,8 @@ repository root:
 docker build -t pico-artifact:latest .
 ```
 
+Building the image requires network access to install and cache all dependencies. Running the completed image does not require network access.
+
 The checked-out artifact is about 1 GB. The 15-20 GB recommendation leaves room for Docker image layers, Gradle build outputs, OPAM/Rocq dependencies, and generated evaluation results; it is not an observed minimum.
 
 ## Full Automated Evaluation
@@ -209,6 +196,7 @@ To run both tracks and keep the generated logs/tables on the host, run from the 
 rm -rf results
 mkdir -p results
 docker run --rm -it \
+  --network none \
   -v "$PWD/results:/workspace/results" \
   pico-artifact:latest
 ```
@@ -258,7 +246,10 @@ summary and count files with `expected-results/`.
 For manual inspection, start a shell:
 
 ```bash
-docker run --rm -it --entrypoint bash pico-artifact:latest
+docker run --rm -it \
+  --network none \
+  --entrypoint bash \
+  pico-artifact:latest
 ```
 
 Inside the container, the expected repository layout is:

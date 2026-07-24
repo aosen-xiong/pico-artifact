@@ -18,7 +18,7 @@ Missing ${CHECKER_DIR}/checker/dist/checker.jar.
 Build the Checker Framework javac wrapper first:
 
   cd ${CHECKER_DIR}
-  bash ./gradlew assembleforjavac
+  bash ./gradlew --offline assembleforjavac
 
 Then rerun:
 

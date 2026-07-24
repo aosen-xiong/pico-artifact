@@ -11,6 +11,9 @@ Start with the **[Artifact Evaluation Guide](Artifact-Evaluation.md)**. It
 explains how to select a Docker image and run the kick-the-tires and complete
 evaluations.
 
+On Linux, Docker may create output files owned by `root`, so elevated
+permissions may be needed to delete them.
+
 Detailed instructions for the two evaluation tracks are available separately:
 
 - [PICO Checker Framework evaluation](Artifact-Evaluation-Checker.md)
